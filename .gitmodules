@@ -1,0 +1,6 @@
+[submodule "GlossHook"]
+	path = GlossHook
+	url = https://github.com/XMDS/GlossHook/
+[submodule "app/src/main/cpp/luasocket"]
+	path = app/src/main/cpp/luasocket
+	url = https://github.com/lunarmodules/luasocket

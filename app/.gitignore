@@ -1,0 +1,8 @@
+/build
+
+/src/main/assets/resources/
+/src/main/assets/music/
+/src/main/assets/README
+
+/src/main/jniLibs/
+/libs/
