@@ -1,6 +1,7 @@
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.util.zip.ZipInputStream
 
 import java.security.MessageDigest
@@ -27,26 +28,31 @@ void copyDirectory(File dirFrom, File dirTo) {
     }
 }
 
-tasks.register('extractSwordigo') {
-    description = "Extracts a Swordigo APK. Use -Path='swordigo.apk' to provide the APK."
+tasks.register('extractVanillaApk') {
+    description = "Extracts a Vanilla APK into the build dir. Use -Path='/path/to/vanilla.apk' to provide the APK."
+
+    def ath = project.providers.gradleProperty("ath")
+    def path = project.providers.gradleProperty("Path")
 
     onlyIf {
         def buildDir = layout.buildDirectory.get().asFile
-        def sd = file("${buildDir}/swordigo")
+        def vd = file("${buildDir}/vanilla")
 
-        return !sd.exists() || !sd.isDirectory() || (sd.list().length == 0)
+        return !vd.exists() || !vd.isDirectory() || (vd.list().length == 0)
     }
 
     doLast {
         def buildDir = layout.buildDirectory.get()
-        def extractDir = file("${buildDir}/swordigo")
+        def extractDir = file("${buildDir}/vanilla")
 
         Path apkPath
-        if(project.hasProperty("ath")) {
-            apkPath = Paths.get(project.property("ath"))
-        } else if (project.hasProperty("Path")) {
-            apkPath = Paths.get(project.property("ath"))
-        } else throw new GradleException("Swordigo APK is required: `./gradlew extractSwordigo -Path='/path/to/apk'`")
+        if(ath.present) {
+            apkPath = Paths.get(ath.get())
+        } else if (path.present) {
+            apkPath = Paths.get(path.get())
+        } else if (file("../vanilla.apk").exists()) {
+            apkPath = file("../vanilla.apk").toPath()
+        } else throw new GradleException("Vanilla APK is required: `./gradlew ... -Path='/path/to/apk'`")
 
         if (!apkPath.isAbsolute()) {
             apkPath = Paths.get(System.getProperty('user.dir')).resolve(apkPath).normalize()
@@ -78,21 +84,15 @@ tasks.register('extractSwordigo') {
             throw new GradleException("Failed to extract! Make sure it is a valid APK.", e)
         }
     }
-
-    // Use dex2jar to extract some classes:
-    //   GameRenderer
-    //   GameView (plus sub)
-    //   MyGLSurfaceView (plus subs)
-    // Bundle these into a jar, place in `app/libs/renderer.jar`
 }
 
 tasks.register('copyVanillaLibs') {
     description = "Copies the vanilla .so files into the source tree"
-    dependsOn "extractSwordigo"
+    dependsOn "extractVanillaApk"
 
     doLast {
         def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/swordigo")
+        def apk = file("${buildDir}/vanilla")
 
         copyDirectory(
                 file("${apk}/lib/"),
@@ -101,13 +101,13 @@ tasks.register('copyVanillaLibs') {
     }
 }
 
-tasks.register('copyResources') {
+tasks.register('copyVanillaResources') {
     description = "Copies the vanilla resource files into the source tree"
-    dependsOn "extractSwordigo"
+    dependsOn "extractVanillaApk"
 
     doLast {
         def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/swordigo")
+        def apk = file("${buildDir}/vanilla")
 
         Files.createDirectories(file("src/main/assets/resources/").toPath())
 
@@ -118,18 +118,19 @@ tasks.register('copyResources') {
 
         Files.copy(
                 file("${apk}/assets/README").toPath(),
-                file("src/main/assets/README").toPath()
+                file("src/main/assets/README").toPath(),
+                StandardCopyOption.REPLACE_EXISTING
         )
     }
 }
 
-tasks.register('copyMusic') {
+tasks.register('copyVanillaMusic') {
     description = "Copies the vanilla music into the source tree"
-    dependsOn "extractSwordigo"
+    dependsOn "extractVanillaApk"
 
     doLast {
         def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/swordigo")
+        def apk = file("${buildDir}/vanilla")
 
         Files.createDirectories(file("src/main/assets/music/").toPath())
 
@@ -166,3 +167,11 @@ tasks.register('copyMusic') {
     }
 }
 
+tasks.register('extractVanilla') {
+    description = "Meta-task to prepare the entire source tree with a copy of vanilla."
+
+    dependsOn "copyVanillaLibs"
+    dependsOn "copyVanillaResources"
+    dependsOn "copyVanillaMusic"
+    dependsOn "copyVanillaClasses"
+}
