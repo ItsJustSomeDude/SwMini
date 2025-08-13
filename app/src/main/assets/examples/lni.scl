@@ -1,0 +1,119 @@
+Program{
+	String : $
+--[[
+			NOTE
+LNI (Lua Native Interface) only works if you have SwordigoMini.
+
+			CREDITS
+ItsJustSomeDude (basically everything, goated dude.)
+NeverTrolls (lni.scl)
+--]]
+
+LNI = {}
+
+local function RaiseError(type, description)
+	local errstr = "LNI error: "
+		.. type
+		.. "\n"
+		.. description;
+	Game.ShowNotification(errstr)
+	return error(errstr)
+end
+
+local function q(str)
+	return string.format("%q", tostring(str))
+		-- This is silly, but we actually make the serialization _worse_ here.
+		-- "test\n123" -> %q = "\"test\\n123\""
+		:gsub('\\\n', '\n')
+		-- The newlines will be escaped _correctly_ by the escapeStr function later.
+end
+
+local function escapeStr(str)
+	return tostring(str)
+        -- This one DOES get used because q() returns *real newlines.*
+		:gsub('\n', '\\n')
+        -- These will usually _not_ get used, only when LNI.execute is called directly.
+        :gsub('\r', '\\r')
+        :gsub('\t', '\\t')
+        :gsub('\b', '\\b')
+        :gsub('\f', '\\f')
+end
+
+function LNI.Execute(str)
+	if type(str) ~= "string" then
+		return RaiseError("Invalid type provided","LNI.Execute only accepts 'string' datatype.")
+	end
+
+	str = escapeStr(str)
+    if string.sub(str, -1) ~= ";" then
+		str = str .. ";"
+	end
+
+    if not str:match("%w+%(.-%);") then
+		return RaiseError("Syntax error","The input provided in LNI.Execute appears to not have a valid function call.")
+	end
+	return print("\127LNI:" .. str)
+end
+
+function LNI.Quit()
+	return LNI.Execute("quit();")
+end
+
+function LNI.OpenURL(link, askFirst)
+	askFirst = askFirst or false
+	local function isUrl(str)
+		return string.match(str, "^https?://[%w-_%.%?%.:/%+=&]+$") ~= nil
+	end
+	if not isUrl(link) then
+		if Math.RandomInt(1,100) <= 25 then
+			link = "https://youtu.be/dQw4w9WgXcQ"
+		else
+			RaiseError("Invalid link error", "The link provided in LNI.OpenURL is not a valid link.")
+		end
+	end
+	if type(askFirst) ~= "boolean" then
+		return RaiseError("Invalid type provided","LNI.OpenLink's second parameter only accepts the 'boolean' datatype.")
+	end
+	return LNI.Execute("openUrl(" .. q(link) .. "," .. tostring(askFirst) .. ");")
+end
+
+function LNI.Rickroll()
+	return LNI.OpenURL("https://youtu.be/dQw4w9WgXcQ", false) -- get rick rolled
+end
+
+function LNI.CopyToClipboard(a, b)
+	if a == nil then
+		return RaiseError("You have no idea what you're doing", "CopyToClipboard: Params are nil")
+	end
+	if b then
+		if type(b) ~= "string" then
+			return RaiseError("Invalid type provided", "CopyToClipboard: Param [2]:'b' is not a string")
+		end
+		return LNI.Execute("copyToClipboard(" .. q(a) .. "," .. q(b) .. ");")
+	end
+
+	return LNI.Execute("copyToClipboard(" .. q(a) .. ");")
+end
+
+function LNI.SetSpeed(n)
+	n = tonumber(n)
+	if type(n) ~= "number" then
+		return RaiseError("Invalid type provided","SetSpeed only accepts [1]:'n' to be a 'number' datatype.")
+	end
+	return LNI.Execute("setSpeed(" .. n .. ");")
+end
+
+LNI.execute = LNI.Execute;
+LNI.OpenUrl = LNI.OpenURL;
+LNI.openURL = LNI.OpenURL;
+LNI.openUrl = LNI.OpenURL;
+LNI.quit = LNI.Quit;
+LNI.rickroll = LNI.Rickroll;
+LNI.setSpeed = LNI.SetSpeed;
+LNI.copyToClipboard = LNI.CopyToClipboard;
+LNI.copy = LNI.CopyToClipboard;
+LNI.Copy = LNI.CopyToClipboard;
+
+$end
+	# Bytes: @comp
+}

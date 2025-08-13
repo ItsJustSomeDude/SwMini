@@ -1,0 +1,51 @@
+# SwordigoMini - The Modding APK
+### Created by ItsJustSomeDude.
+### Included Lua libraries by NeverTrolls.
+
+This is a rebuilt Swordigo APK *designed* to be modified. It converts some things that were originally compile-time constants into Runtime constants that can be modified with a simple APK editor. It also provides a few new functions to the Lua API for performing some handy system actions.
+
+## Links
+The Facebook, Twitter, and Privacy Policy links on the main page can be edited. Simply put your desired URLs in the `/assets/links/{facebook,twitter,privacy}` files, and they will be used when the button is clicked.
+
+## Music
+Custom Music can be added! Place the mp3's into `assets/music/`, and set as the Music for a map node or use `MusicPlayer.PlayMusic("yoursong")` from Lua.
+To adjust the volume your song plays at, add an entry to `options.gopt` using FileRift. (This isn't needed to get custom music to play, it's only required to adjust the volume of an individual track. Most vanilla tracks play at 50% volume.)
+Please let me know if this feature works, because I don't actually have a way to test it ;-)
+
+## Game Clock
+Wanna go *fast*? Or S L O W? Change the value in `assets/options/speed`. The limit is your imagination! And your phone's GPU...
+This can also be changed dynamically using LNI (see below.)
+I am not responsible for any phone overheating, damage to muscle memory, or speedrun bans resulting from this feature.
+
+## Logs
+Log messages from vanilla libSwordigo, including Lua `print` messages, are redirected to Android logcat, which can then be accessed using adb or an app such as https://f-droid.org/packages/com.dp.logcatapp
+
+## LNI
+SwordigoMini provides a few functions that can be called from Lua by way of the `print` function. Allowed types for arguments are String and Number only. The available functions are:
+
+```lua
+copyToClipboard(content: string);
+copyToClipboard(title: string, content: string);
+-- Alias: copy
+
+openURL(url: string, askFirst?: boolean);
+-- Note, the second parameter is not currently implemented. The URL is always opened without prompting.
+
+setSpeed(speed: number);
+quit();
+```
+
+Included is a Lua library to help perform LNI calls. This should be copied from `assets/examples/lni.scl` into your `FileRift/re_in` folder and added as an ImportedLibrary, either in the scenes where you need it, or in `hiro.scl` to access it everywhere. Once imported, it can be used by simply calling `LNI.copyToClipboard("Hello, world!")` for example.
+
+If building the calls yourself instead of using the Lua Library, the format of a call is:
+
+```lua
+print("\127LNI:functionName(<arguments>);")
+
+-- Be careful to include two layers of Backslash Escaping. Example:
+print("\127LNI:copyToClipboard(\"Hello\\nfrom\\nLNI!\");")
+-- The included Lua Library will do this for you.
+```
+
+Note: LNI functions cannot pass any data back to Lua. If you have an idea  of a function that multiple mods would have use for, let me know, and I'll consider if it's possible.
+

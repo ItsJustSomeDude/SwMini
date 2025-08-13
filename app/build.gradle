@@ -1,0 +1,143 @@
+import com.android.build.gradle.tasks.MergeSourceSetFolders
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace = 'net.itsjustsomedude.swrdg'
+    compileSdk = 35
+
+    buildFeatures {
+        prefab = true
+    }
+
+    defaultConfig {
+        applicationId 'net.itsjustsomedude.swrdg'
+        minSdk = 21
+        targetSdk = 35
+        versionCode 46
+        versionName '1.4.9'
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
+        ndk {
+            // libswordigo only supports arm, so only build natives for arm.
+            //noinspection ChromeOsAbiSupport
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file(project.property("KEYSTORE_PATH"))
+            storePassword project.property("KEYSTORE_PASSWORD")
+            keyAlias project.property("KEY_ALIAS")
+            keyPassword project.property("KEY_PASSWORD")
+        }
+        release {
+            storeFile file(project.property("KEYSTORE_PATH"))
+            storePassword project.property("KEYSTORE_PASSWORD")
+            keyAlias project.property("KEY_ALIAS")
+            keyPassword project.property("KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.release
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            vcsInfo.include = false
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    packagingOptions {
+//        exclude 'com/android/build/gradle/app-metadata.properties'
+//        exclude 'META-INF/com/android/build/gradle/app-metadata.properties'
+
+        jniLibs {
+            pickFirsts += ['**/libshadowhook.so', '**/libshadowhook_nothing.so']
+        }
+    }
+
+//    packaging {
+//        resources {
+//            excludes += "/META-INF/com/**"
+//            excludes += "/META-INF/com/"
+//            excludes += "/META-INF/com"
+//        }
+//    }
+
+    // Rename APK for release builds
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            if (variant.buildType.name == "release") {
+                def appName = "SwordigoMini" // Customize your app name here
+                def versionName = variant.versionName
+                def versionCode = variant.versionCode
+                outputFileName = "${appName}_${versionName}_${versionCode}.apk"
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation files('libs/renderer.jar')
+}
+
+tasks.register("copyGlossHook") {
+    Files.copy(
+            new File("GlossHook/GlossHook/lib/ARM64/libGlossHook.so").toPath(),
+            new File("app/src/main/jniLibs/arm64-v8a/libGlossHook.so").toPath(),
+            StandardCopyOption.REPLACE_EXISTING
+    )
+
+    Files.copy(
+            new File("GlossHook/GlossHook/lib/ARM/libGlossHook.so").toPath(),
+            new File("app/src/main/jniLibs/armeabi-v7a/libGlossHook.so").toPath(),
+            StandardCopyOption.REPLACE_EXISTING
+    )
+}
+
+afterEvaluate {
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+    }
+
+    tasks.withType(MergeSourceSetFolders).tap {
+        configureEach {
+            it.dependsOn copyGlossHook
+        }
+    }
+}
+
+apply from: 'extractor.gradle'

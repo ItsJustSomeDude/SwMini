@@ -1,0 +1,175 @@
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipInputStream
+
+tasks.register('downloadDex2Jar') {
+    description = 'Downloads and extracts dex2jar'
+
+    onlyIf {
+        def buildDir = layout.buildDirectory.get().asFile
+        def dt = file("${buildDir}/dex-tools-v2.4")
+
+        return !dt.exists() || !dt.isDirectory() || (dt.list().length == 0)
+    }
+
+    doLast {
+        def buildDir = layout.buildDirectory.get().asFile
+
+        // Define variables
+        def zipUrl = 'https://github.com/pxb1988/dex2jar/releases/download/v2.4/dex-tools-v2.4.zip'
+        def zipFileName = 'dex-tools-v2.4.zip'
+        def extractDir = file("${buildDir}")
+        def zipFilePath = file("${buildDir}/${zipFileName}")
+
+        // Create build directories if they don't exist
+        buildDir.mkdirs()
+        extractDir.mkdirs()
+
+        // Step 1: Download the ZIP file
+        println "Downloading ZIP from ${zipUrl}"
+        def url = new URL(zipUrl)
+        url.withInputStream { input ->
+            zipFilePath.withOutputStream { output ->
+                output << input
+            }
+        }
+
+        // Step 2: Extract the ZIP file
+        println "Extracting ZIP to ${extractDir}"
+        new ZipInputStream(new FileInputStream(zipFilePath)).withCloseable { zip ->
+            def entry
+            while ((entry = zip.getNextEntry()) != null) {
+                def outputFile = new File(extractDir, entry.name)
+                if (entry.isDirectory()) {
+                    outputFile.mkdirs()
+                } else {
+                    outputFile.parentFile.mkdirs()
+                    outputFile.withOutputStream { output ->
+                        zip.transferTo(output)
+                    }
+                }
+            }
+        }
+
+        // Optional: Clean up the downloaded ZIP file
+        zipFilePath.delete()
+    }
+}
+
+tasks.register('swordigoDex2Jar', JavaExec) {
+    description = 'Runs dex2jar on the swordigo classes.dex'
+    dependsOn "extractSwordigo"
+    dependsOn "downloadDex2Jar"
+
+    onlyIf {
+        def buildDir = layout.buildDirectory.get().asFile
+        def cj = file("${buildDir}/swordigo/classes.jar")
+
+        return !cj.exists() || !cj.isFile() || (cj.length() < 1024)
+    }
+
+    File buildDir = layout.buildDirectory.get().asFile
+    def apk = file("${buildDir}/swordigo")
+
+    classpath =  fileTree(dir: file("${buildDir}/dex-tools-v2.4/lib/"), include: '**/*.jar')
+    mainClass = "com.googlecode.dex2jar.tools.Dex2jarCmd"
+    jvmArgs = ["-Xms512m", "-Xmx2048m"]
+    workingDir = projectDir
+
+    args = ["-o", "${apk}/classes.jar", "${apk}/classes.dex"]
+}
+
+tasks.register('extractSwordigoDex') {
+    description = 'Extracts the classes.jar created by dex2jar'
+    dependsOn "swordigoDex2Jar"
+
+    onlyIf {
+        def buildDir = layout.buildDirectory.get().asFile
+        def sc = file("${buildDir}/swordigoClasses")
+
+        return !sc.exists() || !sc.isDirectory() || (sc.list().length == 0)
+    }
+
+    doLast {
+        File buildDir = layout.buildDirectory.get().asFile
+        def apk = file("${buildDir}/swordigo")
+
+        def zipFilePath = file("${apk}/classes.jar")
+        def extractDir = file("${buildDir}/swordigoClasses")
+
+        new ZipInputStream(new FileInputStream(zipFilePath)).withCloseable { zip ->
+            def entry
+            while ((entry = zip.getNextEntry()) != null) {
+                def outputFile = new File(extractDir, entry.name)
+                if (entry.isDirectory()) {
+                    outputFile.mkdirs()
+                } else {
+                    outputFile.parentFile.mkdirs()
+                    outputFile.withOutputStream { output ->
+                        zip.transferTo(output)
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.register('copySwordigoClasses') {
+    description = 'Bundles and copies the vanilla render classes into the source tree'
+    dependsOn "extractSwordigoDex"
+
+    onlyIf {
+        def rj = file("libs/renderer.jar")
+
+        return !rj.exists() || !rj.isFile() || (rj.length() < 1024)
+    }
+
+    doLast {
+        File buildDir = layout.buildDirectory.get().asFile
+        def classes = file("${buildDir}/swordigoClasses")
+        def swClasses = file("${classes}/com/touchfoo/swordigo")
+
+        def jarPath = file("${buildDir}/renderer.jar")
+        jarPath.parentFile.mkdirs()
+
+        // Create a new JAR file
+        jarPath.withOutputStream { output ->
+            def jar = new JarOutputStream(output)
+
+            // Recursively find all .class files in the directory
+            swClasses.eachFileRecurse { file ->
+                def n = file.name
+                if (!n.endsWith('.class')) return
+
+                if (!n.startsWith("GameRenderer")
+                        && !n.startsWith("GameView")
+                        && !n.startsWith("MyGLSurfaceView")
+                ) return
+
+                // Create a JAR entry for the class file
+                def relativePath = swClasses.toPath().relativize(file.toPath()).toString()
+                def packagePath = "com/touchfoo/swordigo/${relativePath}"
+                def jarEntry = new JarEntry(packagePath.replace('\\', '/'))
+                jar.putNextEntry(jarEntry)
+
+                // Write the class file's contents to the JAR
+                file.withInputStream { input ->
+                    jar.write(input.readAllBytes())
+                }
+
+                jar.closeEntry()
+            }
+
+            // Close the JAR output stream
+            jar.close()
+        }
+
+        Files.copy(
+                jarPath.toPath(),
+                file("libs/renderer.jar").toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+        )
+    }
+}
