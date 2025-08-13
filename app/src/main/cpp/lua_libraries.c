@@ -28,18 +28,24 @@ static int setControlsHidden (lua_State *L) {
 }
 
 static int getProfileID (lua_State *L) {
-    // Push nil probably?
+    // TODO: Push nil probably?
     if (latestProfileId == NULL) return 1;
 
     lua_pushlstring(L, latestProfileId, strlen(latestProfileId));
     return 1;
 }
 
+static int getArch (lua_State *L) {
+    lua_pushliteral(L, splitLiteral("armeabi-v7a", "arm64-v8a"));
+    return 1;
+}
+
 
 #define MINI_MINILIBNAME "Mini"
 static const luaL_Reg minilib[] = {
-        {"SetControlsHidden",   setControlsHidden},
-        {"GetProfileID",   getProfileID},
+        {"SetControlsHidden", setControlsHidden},
+        {"GetProfileID", getProfileID},
+        {"Arch", getArch},
 
         {NULL, NULL}
 };

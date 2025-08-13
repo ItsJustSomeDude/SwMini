@@ -58,20 +58,20 @@ tasks.register('downloadDex2Jar') {
     }
 }
 
-tasks.register('swordigoDex2Jar', JavaExec) {
-    description = 'Runs dex2jar on the swordigo classes.dex'
-    dependsOn "extractSwordigo"
+tasks.register('vanillaDex2Jar', JavaExec) {
+    description = 'Runs dex2jar on the vanilla classes.dex'
+    dependsOn "extractVanillaApk"
     dependsOn "downloadDex2Jar"
 
     onlyIf {
         def buildDir = layout.buildDirectory.get().asFile
-        def cj = file("${buildDir}/swordigo/classes.jar")
+        def cj = file("${buildDir}/vanilla/classes.jar")
 
         return !cj.exists() || !cj.isFile() || (cj.length() < 1024)
     }
 
     File buildDir = layout.buildDirectory.get().asFile
-    def apk = file("${buildDir}/swordigo")
+    def apk = file("${buildDir}/vanilla")
 
     classpath =  fileTree(dir: file("${buildDir}/dex-tools-v2.4/lib/"), include: '**/*.jar')
     mainClass = "com.googlecode.dex2jar.tools.Dex2jarCmd"
@@ -81,23 +81,23 @@ tasks.register('swordigoDex2Jar', JavaExec) {
     args = ["-o", "${apk}/classes.jar", "${apk}/classes.dex"]
 }
 
-tasks.register('extractSwordigoDex') {
+tasks.register('extractVanillaDex') {
     description = 'Extracts the classes.jar created by dex2jar'
-    dependsOn "swordigoDex2Jar"
+    dependsOn "vanillaDex2Jar"
 
     onlyIf {
         def buildDir = layout.buildDirectory.get().asFile
-        def sc = file("${buildDir}/swordigoClasses")
+        def sc = file("${buildDir}/vanillaClasses")
 
         return !sc.exists() || !sc.isDirectory() || (sc.list().length == 0)
     }
 
     doLast {
         File buildDir = layout.buildDirectory.get().asFile
-        def apk = file("${buildDir}/swordigo")
+        def apk = file("${buildDir}/vanilla")
 
         def zipFilePath = file("${apk}/classes.jar")
-        def extractDir = file("${buildDir}/swordigoClasses")
+        def extractDir = file("${buildDir}/vanillaClasses")
 
         new ZipInputStream(new FileInputStream(zipFilePath)).withCloseable { zip ->
             def entry
@@ -116,9 +116,9 @@ tasks.register('extractSwordigoDex') {
     }
 }
 
-tasks.register('copySwordigoClasses') {
+tasks.register('copyVanillaClasses') {
     description = 'Bundles and copies the vanilla render classes into the source tree'
-    dependsOn "extractSwordigoDex"
+    dependsOn "extractVanillaDex"
 
     onlyIf {
         def rj = file("libs/renderer.jar")
@@ -128,7 +128,7 @@ tasks.register('copySwordigoClasses') {
 
     doLast {
         File buildDir = layout.buildDirectory.get().asFile
-        def classes = file("${buildDir}/swordigoClasses")
+        def classes = file("${buildDir}/vanillaClasses")
         def swClasses = file("${classes}/com/touchfoo/swordigo")
 
         def jarPath = file("${buildDir}/renderer.jar")
@@ -165,6 +165,9 @@ tasks.register('copySwordigoClasses') {
             // Close the JAR output stream
             jar.close()
         }
+
+        def renderTarget = file("libs/renderer.jar")
+        renderTarget.parentFile.mkdirs()
 
         Files.copy(
                 jarPath.toPath(),

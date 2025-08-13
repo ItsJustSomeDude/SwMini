@@ -10,10 +10,12 @@
 /* Dynamic pointer offset per architecture. Move n pointers ahead. */
 #define pointerOffset(n) (n * 8)
 #define splitOffset(b32, b64) (b64)
+#define splitLiteral(b32, b64) b64
 #elif defined(__arm__)
 /* Dynamic pointer offset per architecture. Move n pointers ahead. */
 #define pointerOffset(n) (n * 4)
 #define splitOffset(b32, b64) (b32)
+#define splitLiteral(b32, b64) b32
 #endif
 
 

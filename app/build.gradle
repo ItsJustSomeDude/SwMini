@@ -28,7 +28,7 @@ android {
             }
         }
         ndk {
-            // libswordigo only supports arm, so only build natives for arm.
+            // Vanilla only supports arm, so only build natives for arm.
             //noinspection ChromeOsAbiSupport
             abiFilters "armeabi-v7a", "arm64-v8a"
         }
@@ -81,27 +81,16 @@ android {
     }
 
     packagingOptions {
-//        exclude 'com/android/build/gradle/app-metadata.properties'
-//        exclude 'META-INF/com/android/build/gradle/app-metadata.properties'
-
         jniLibs {
             pickFirsts += ['**/libshadowhook.so', '**/libshadowhook_nothing.so']
         }
     }
 
-//    packaging {
-//        resources {
-//            excludes += "/META-INF/com/**"
-//            excludes += "/META-INF/com/"
-//            excludes += "/META-INF/com"
-//        }
-//    }
-
     // Rename APK for release builds
     android.applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
             if (variant.buildType.name == "release") {
-                def appName = "SwordigoMini" // Customize your app name here
+                def appName = "SwordigoMini"
                 def versionName = variant.versionName
                 def versionCode = variant.versionCode
                 outputFileName = "${appName}_${versionName}_${versionCode}.apk"

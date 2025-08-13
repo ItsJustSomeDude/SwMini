@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-project("SwordigoMini Natives")
+project("SwMini Natives")
 
 add_library(mini SHARED
         lua/mini_files.c

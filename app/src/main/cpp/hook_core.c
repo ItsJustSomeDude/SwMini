@@ -65,7 +65,7 @@ void *getOffset(unsigned int offset) {
     return libSwBase + offset;
 }
 
-// Mid-loading - executed after libswordigo has been loaded into ram, but before init.
+// Mid-loading - executed after lsw has been loaded into ram, but before init.
 JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_prepareHooks(JNIEnv* env, jobject obj) {
     libSwHandle = dlopen("libswordigo.so", RTLD_NOLOAD);
     libSwBase = (void*) GlossFindLibMapping("libswordigo.so", -1, libSwPath, &libSwLength);
