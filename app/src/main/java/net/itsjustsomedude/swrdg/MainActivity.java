@@ -209,6 +209,8 @@ public class MainActivity extends Activity implements Runnable {
 
         NativeBridge.setupFilePaths(this);
 
+        LuaNativeInterface.init();
+
         this.setContentView(R.layout.main_activity);
         this.mainViewLayout = this.findViewById(R.id.mainViewLayout);
 //        this.analytics = new Analytics(this);

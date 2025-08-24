@@ -69,7 +69,7 @@ public class NativeBridge {
     public static void processLni(String message) {
         Debug.Log("Received LNI from C");
         try {
-            LuaNativeInterface.processCommand(message);
+            LNIString.execute(message);
 		} catch(Exception e) {
 			Debug.Log("LNI Failure:", e);
 		}

@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.net.Uri;
 
-import net.itsjustsomedude.swrdg.LuaNativeInterface;
+import net.itsjustsomedude.swrdg.LNIString;
 import net.itsjustsomedude.swrdg.MainActivity;
 import net.itsjustsomedude.swrdg.MiniOverlay;
 import net.itsjustsomedude.swrdg.ModProperties;
@@ -175,7 +175,7 @@ public class Native {
     }
 
     public static void initiateGoogleSignIn() {
-        LuaNativeInterface.processCommand(ModProperties.googleAction);
+        LNIString.execute(ModProperties.googleAction);
 //        mainActivity.runOnUiThread(new Runnable() {
 //            public void run() {
 //                Debug.Log("initiateGoogleSignIn called from native");
@@ -261,9 +261,9 @@ public class Native {
         Debug.Log("Open URL: " + url);
 
         if(Objects.equals(url, "http://www.twitter.com/touch_foo")) {
-            LuaNativeInterface.processCommand(ModProperties.twitterLink);
+            LNIString.execute(ModProperties.twitterLink);
         } else if (Objects.equals(url, "http://www.facebook.com/144881932264830")) {
-            LuaNativeInterface.processCommand(ModProperties.facebookLink);
+            LNIString.execute(ModProperties.facebookLink);
         } else if (Objects.equals(url, "http://privacy.touchfoo.com/")) {
 //            LuaNativeInterface.processCommand(ModProperties.privacyLink);
             MainActivity a = mainActivityRef.get();

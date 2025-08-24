@@ -4,243 +4,156 @@ import android.util.Log;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.touchfoo.swordigo.GameTime;
-import com.touchfoo.swordigo.Native;
 
 public class LuaNativeInterface {
 	private static final String TAG = "LNI_Java";
 
-	private static final HashMap<String, Class<?>> classes = new HashMap<>();
-	private static final HashMap<String, String> methods = new HashMap<>();
-	private static final HashMap<String, String> signatures = new HashMap<>();
+	private static class LNIMethod {
+		Class<?> clazz;
+		// methodID is only in C.
+		int[] params;
+		int returnType;
 
-	private static native void init();
+		String methodName;
 
-	public static void addMethod(Class<?> clazz, String method, String signature) {
-		String ms = method + ":" + signature;
-		classes.put(ms, clazz);
-		methods.put(ms, method);
-		signatures.put(ms, signature);
-
-//		clazz.getMethods()
-//
-//		String methodName = method.getName();
-//		Class<?> returnType = method.getReturnType();
-//		Class<?>[] parameterTypes = method.getParameterTypes();
-//
-//		StringBuilder sig = new StringBuilder();
-//		sig.append(returnType.getName()).append(" ").append(methodName).append("(");
-//		for (int i = 0; i < parameterTypes.length; i++) {
-//			signature.append(parameterTypes[i].getName());
-//			if (i < parameterTypes.length - 1) {
-//				signature.append(", ");
-//			}
-//		}
-//		signature.append(")");
-
-		Log.d(TAG, "Added new method " + method);
-	}
-
-	public static Class<?> getClass(String ms) {
-		return classes.get(ms);
-	}
-
-	public static String getMethod(String ms) {
-		return methods.get(ms);
-	}
-
-	public static String getSignature(String ms) {
-		return signatures.get(ms);
-	}
-
-	static {
-		addMethod(LuaNativeInterface.class, "openUrl", "");
+        LNIMethod(String methodName, Class<?> clazz, int[] params, int returnType) {
+            this.methodName = methodName;
+			this.clazz = clazz;
+			this.params = params;
+			this.returnType = returnType;
+        }
     }
 
+	private static final ArrayList<LNIMethod> methods = new ArrayList<>();
 
+//	private static final HashMap<String, Class<?>> classes = new HashMap<>();
+//	private static final HashMap<String, String> signatures = new HashMap<>();
+//	private static final HashMap<String, int[]> params = new HashMap<>();
 
-	public static void openUrl(String url, boolean askFirst) {
-		Native.openURL(url);
+	private static native void nativeInit();
+	private static native void register(Class<?> targetClass, String methodName, String signature, int[] params, int returnType);
+
+	public static void init() {
+		nativeInit();
+		// Register all the "statically waiting" methods.
+
+		addMethod(LNIFunctions.class, "setSpeed");
+		addMethod(LNIFunctions.class, "spit");
+		addMethod(LNIFunctions.class, "spitReturn");
 	}
 
-	public static void copyToClipboard(String title, String content) {
-		Native.copyToClipboard(title, content);
-	}
+	private static String getClassSignature(Class<?> clazz) throws IllegalArgumentException {
+		if(clazz == null) throw new IllegalArgumentException("Class is null");
 
-	public static void setSpeed(double speed) {
-		GameTime.scaling = Math.clamp(speed, 0.05, 16);
-	}
-
-	public static void quit() {
-		MainActivity mainActivity = Native.getActivity();
-		if (mainActivity == null) return;
-
-		mainActivity.finish();
-	}
-
-	public static <T> void removeTrailingNulls(ArrayList<T> list) {
-		int i = list.size() - 1;
-		while (i >= 0 && list.get(i) == null) {
-			list.remove(i);
-			i--;
+		if(clazz.isArray()) {
+			// getName already creates the right signature for array types.
+			return clazz.getName();
+		} else if (clazz.equals(void.class)) {
+			return "V";
+        } else if (clazz.isPrimitive()) {
+			switch (clazz.getName()) {
+				case "boolean": return "Z";
+				case "byte": return "B";
+				case "char": return "C";
+				case "short": return "S";
+				case "int": return "I";
+				case "long": return "J";
+				case "float": return "F";
+				case "double": return "D";
+				default: throw new IllegalArgumentException("Unsupported primitive type: " + clazz.getName());
+			}
+		} else {
+			return "L" + clazz.getName().replace(".", "/") + ";";
 		}
 	}
 
-	public static Pattern functionPattern = Pattern.compile("(\\w+)\\((.*?)\\);$");
+	private static String getMethodSignature(Method m) {
+		if(m == null) throw new IllegalArgumentException("Method is null");
 
-	public static final Map<Character, Character> escapeMap = Map.of(
-			'n', '\n',
-			't', '\t',
-			'r', '\r',
-			'b', '\b',
-			'f', '\f'
-	);
+		StringBuilder sig = new StringBuilder();
 
-	public static void processCommand(String command) {
-//		Debug.Log("Beginning LNI command! (internal)");
-
-		Matcher funcMatch = functionPattern.matcher(command);
-		// Bad match, not valid LNI.
-		if (!funcMatch.find()) {
-			Log.e(TAG, "Bad func name");
-			return;
+		sig.append("(");
+		for (Class<?> param : m.getParameterTypes()) {
+			sig.append(getClassSignature(param));
 		}
+		sig.append(")");
+		sig.append(getClassSignature(m.getReturnType()));
 
-		String funcName = funcMatch.group(1);
-		String paramsString = funcMatch.group(2);
+		return sig.toString();
+	}
 
-		// Bad LNI instruction
-		if(funcName == null || paramsString == null) {
-			Log.e(TAG, "Bad regex");
-			return;
-		}
+	/**
+	 * Returns true if the passed class is a valid param or return value for an LNI function.
+	 */
+	private static boolean validLNIClass(Class<?> clazz) {
+		return clazz == String.class || clazz == void.class || clazz.isPrimitive();
+	}
 
-		// Lowercase the first letter, because Swordigo uselessly capitalizes stuff
-		// so modders do the same...
-		funcName = funcName.substring(0, 1).toLowerCase() + funcName.substring(1);
+	private static int getLNIType(Class<?> clazz) {
+		if(clazz.equals(void.class)) return 0;
+		else if (clazz.equals(boolean.class)) return 1;
+		else if (clazz.isPrimitive()) return 2;
+		else if (clazz.equals(String.class)) return 3;
 
-		// System.out.println("Function Name: " + funcName);
+		else return -1;
+	}
 
-		ArrayList<String> stringArgs = new ArrayList<>();
-		ArrayList<Double> numArgs = new ArrayList<>();
+	public static void addMethod(Class<?> clazz, String methodName) {
+		Method[] ms = clazz.getMethods();
 
-		StringBuilder arg = null;
-
-		// Start by reading the function name.
-		// boolean inName = true;
-		// String funcName;
-		// TODO: remove the regex, make the parser also slurp the function name.
-
-		boolean inString = false;
-		boolean inSingleString = false;
-		boolean inEscape = false;
-		boolean inNumber = false;
-		boolean decimal = false;
-		for (int i = 0; i <= paramsString.length(); i++) {
-			char c = (i < paramsString.length()) ? paramsString.charAt(i) : ',';
-
-			if(inString && !inEscape && c == '\\') {
-				// "test\n"
-				//      ^
-				inEscape = true;
-			} else if (inString && inEscape) {
-				// "test\n"
-				//       ^
-				if(escapeMap.containsKey(c))
-					arg.append(escapeMap.get(c));
-				else
-					arg.append(c);
-				inEscape = false;
-			} else if (inString && ((!inSingleString && c == '"') || (inSingleString && c == '\''))) {
-				// "Testing"
-				//         ^
-				// 'smol quotes'
-				//             ^
-				inString = false;
-				inSingleString = false;
-				stringArgs.add(arg.toString());
-				numArgs.add(null);
-			} else if (inString) {
-				// "Whatever"
-				//    ^
-				arg.append(c);
-			} else if (inNumber && Character.isDigit(c)) {
-				// 12345
-				//  ^
-				arg.append(c);
-			} else if (inNumber && c == '.' && !decimal) {
-				// 123.45
-				//    ^
-				arg.append('.');
-				decimal = true;
-			} else if (inNumber && (c == ',' || c == ' ')) {
-				// 123.45,
-				//       ^
-				// 1234 ,
-				//     ^
-				inNumber = false;
-				String a = arg.toString();
-				stringArgs.add(a);
-				numArgs.add(Double.parseDouble(a));
-			} else if (/* !inString && */ !inNumber) {
-				if(c == '\''){
-					inString = true;
-					inSingleString = true;
-					arg = new StringBuilder();
-				}
-				else if(c == '"'){
-					inString = true;
-					arg = new StringBuilder();
-				}
-				else if(Character.isDigit(c) || c == '.') {
-					inNumber = true;
-					arg = new StringBuilder();
-					// We have to add the first char already.
-					arg.append(c);
-				}
-			} else {
-				// throw new Exception("Didn't expect char: " + c);
-				return;
+		Method method = null;
+		for (Method m : ms) {
+			if(m.getName().equals(methodName)) {
+				method = m;
+				break;
 			}
 		}
-
-		removeTrailingNulls(stringArgs);
-		removeTrailingNulls(numArgs);
-
-		switch (funcName) {
-			case "copy":
-			case "copyToClipboard":
-				// wrong number of args.
-				if (stringArgs.isEmpty() || stringArgs.size() > 2) {
-					Log.e(TAG, "bad args");
-					return;
-				}
-				else if (stringArgs.size() == 1)
-					LuaNativeInterface.copyToClipboard(null, stringArgs.get(0));
-				else
-					LuaNativeInterface.copyToClipboard( stringArgs.get(0), stringArgs.get(1));
-				break;
-			case "openURL":
-			case "openUrl":
-				// System.out.println(stringArgs.get(0));
-				LuaNativeInterface.openUrl(stringArgs.get(0), false);
-				break;
-			case "setSpeed":
-				// System.out.println(numArgs.get(0));
-				// TODO:
-				setSpeed(numArgs.get(0));
-				break;
-			case "quit":
-				quit();
-				break;
-
-			default:
-				Log.e(TAG, "Unknown LNI Func " + funcName);
+		if(method == null) {
+			Log.e(TAG, "Could not find LNI method " + methodName);
+			return;
 		}
+
+		Class<?> returnType = method.getReturnType();
+		if(!validLNIClass(returnType)) {
+			Log.e(TAG, "Invalid return type '" + returnType.getName() + "' for LNI function '" + methodName + "'");
+			return;
+		}
+
+		Class<?>[] paramClasses = method.getParameterTypes();
+		int[] paramTypes = new int[paramClasses.length];
+		int i = 0;
+		for (Class<?> param : paramClasses) {
+			if (!validLNIClass(param)) {
+				Log.e(TAG, "Invalid parameter type '" + param.getName() + "' for LNI function '" + methodName + "'");
+				return;
+			}
+			paramTypes[i] = getLNIType(param);
+		}
+
+		String sig = getMethodSignature(method);
+
+//		classes.put(methodName, clazz);
+//		signatures.put(methodName, sig);
+//		params.put(methodName, paramTypes);
+
+		Log.d(TAG, "Begin register... method: " + methodName + ", sig: " + sig);
+		register(clazz, methodName, sig, paramTypes, getLNIType(returnType));
+
+		Log.d(TAG, "Added new method " + methodName);
 	}
+
+//	// Called from C
+//	public static Class<?> getClass(String ms) {
+//		return classes.get(ms);
+//	}
+//
+//	// Called from C
+//	public static String getSignature(String ms) {
+//		return signatures.get(ms);
+//	}
+//
+//	// Called from C
+//	public static int[] getParams(String ms) {
+//		return params.get(ms);
+//	}
 }
