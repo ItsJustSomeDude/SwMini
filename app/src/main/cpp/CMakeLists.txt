@@ -10,7 +10,9 @@ add_library(mini SHARED
         lua/loslib.c
         lua/liolib.c
 
+#        prober.c
 #        network.c
+
         caver.c
         lua_core.c
         lua_libraries.c
