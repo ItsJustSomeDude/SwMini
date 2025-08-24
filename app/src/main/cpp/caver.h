@@ -7,11 +7,6 @@
 
 void setupCaverHooks();
 
-DEFINE_SYMBOL_HOOK_H(
-        GameOverlayView_GameOverlayView,
-        void, (void* this)
-)
-
 extern void *latestGameOverlayView;
 extern const char *latestProfileId;
 

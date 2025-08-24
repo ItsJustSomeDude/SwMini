@@ -1,4 +1,3 @@
-#include <android/log.h>
 #include <jni.h>
 #include <string.h>
 
@@ -23,7 +22,7 @@ static int setControlsHidden (lua_State *L) {
     if (latestGameOverlayView == NULL) return 1;
 
     GameOverlayView_SetControlsHidden(latestGameOverlayView, hidden);
-    *(bool *)(latestGameOverlayView + splitOffset(0, 0xe4)) = hidden;
+    *(bool *)(latestGameOverlayView + archSplit(0, 0xe4)) = hidden;
 
     lua_pushnil(L);
     return 0;
@@ -38,7 +37,7 @@ static int getProfileID (lua_State *L) {
 }
 
 static int getArch (lua_State *L) {
-    lua_pushliteral(L, splitLiteral("armeabi-v7a", "arm64-v8a"));
+    lua_pushliteral(L, archSplit("armeabi-v7a", "arm64-v8a"));
     return 1;
 }
 
@@ -48,6 +47,7 @@ static const luaL_Reg minilib[] = {
         {"SetControlsHidden", setControlsHidden},
         {"GetProfileID", getProfileID},
         {"Arch", getArch},
+        {"ExecuteLNI", executeLNI},
 
         {NULL, NULL}
 };
@@ -57,8 +57,7 @@ LUALIB_API int open_mini (lua_State *L) {
     return 1;
 }
 
-DEFINE_SYMBOL_HOOK_H(openString, void, (lua_State* L))
-DEFINE_HOOK_ADDR(openString, luaopen_string, void, (lua_State* L)) {
+STATIC_DL_HOOK_ADDR(openString, luaopen_string, void, (lua_State * L)) {
     LOGD("Loading all Patched Lua Libraries.");
 
     static const luaL_Reg lualibs[] = {

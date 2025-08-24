@@ -7,6 +7,12 @@
 
 #define LOG_TAG "MiniLuaCore"
 
+/**
+ * This file defines the core fetching portion of SwMini Lua.
+ * All the required functions are fetched from the compiled library with dlsym.
+ * This is needed due to dynamic loading and C++ name mangling.
+ */
+
 lua_State *(*lua_newstate) (lua_Alloc f, void *ud);
 void       (*lua_close) (lua_State *L);
 lua_State *(*lua_newthread) (lua_State *L);

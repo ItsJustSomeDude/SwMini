@@ -6,13 +6,14 @@
 
 #include "hook_core.h"
 #include "hook.h"
-#include "string_hook.h"
+#include "patches/cstrings.h"
 #include "lua_core.h"
 #include "lua_libraries.h"
 #include "caver.h"
 #include "libs/Gloss.h"
-#include "network.h"
+#include "patches/network.h"
 #include "log.h"
+#include "patches/32patch.h"
 
 #define LOG_TAG "MiniHookCore"
 
@@ -40,7 +41,7 @@ void *hookAddr(void* func_addr, void *new_addr, void **orig_addr) {
             archSplit(I_THUMB, I_ARM64)
     );
     if (stub == NULL) {
-        LOGD("Failed to hook address %p", func_addr);
+        LOGD("Failed to hook address: %p", func_addr);
         return NULL;
     }
     return stub;
@@ -53,7 +54,7 @@ void *hookOffset(unsigned long offset, void *new_addr, void **orig_addr) {
 void *getSym(const char* symbol) {
     void* ptr = dlsym(libSwHandle, symbol);
     if(ptr == NULL) {
-        LOGD("Symbol %s lookup failed: %s", symbol, dlerror());
+        LOGD("Symbol '%s' lookup failed: %s", symbol, dlerror());
         return NULL;
     }
     return ptr;
@@ -67,6 +68,10 @@ void *getOffset(unsigned int offset) {
 JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_prepareHooks(JNIEnv* env, jobject obj) {
     libSwHandle = dlopen("libswordigo.so", RTLD_NOLOAD);
     libSwBase = (void*) GlossFindLibMapping("libswordigo.so", -1, libSwPath, &libSwLength);
+
+#ifdef __arm__
+    setup32Patch();
+#endif
 
 //    setupNetworkHooks();
 

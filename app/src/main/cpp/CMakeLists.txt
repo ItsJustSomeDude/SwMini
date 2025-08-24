@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project("SwMini Natives")
 
 add_library(mini SHARED
-        lua/mini_files.c
+        lua_ext/mini_files.c
         lua/ltablib.c
         lua/lmathlib.c
         lua/ldblib.c
@@ -19,7 +19,7 @@ add_library(mini SHARED
         main.c
         hook_core.c
         hook.c
-        string_hook.c
+        patches/cstrings.c
         lni.c
 
         jni.c
@@ -44,6 +44,10 @@ add_library(mini SHARED
 
         lua_ext/lfs.c
 )
+
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 
 # Add prebuilt static library
 add_library(GlossHook SHARED IMPORTED)

@@ -3,13 +3,13 @@
 #include <dlfcn.h>
 #include <android/log.h>
 #include <jni.h>
-#include "string_hook.h"
+#include "cstrings.h"
 
-#include "libs/khash.h"
-#include "hook_core.h"
-#include "libs/Gloss.h"
-#include "symbol.h"
-#include "log.h"
+#include "../libs/khash.h"
+#include "../hook_core.h"
+#include "../libs/Gloss.h"
+#include "../symbol.h"
+#include "../log.h"
 
 #define LOG_TAG "MiniCString"
 
@@ -52,10 +52,10 @@ void cleanup_string_hook() {
     kh_destroy_str(h);
 }
 
-#define CREATE_BASIC_STRING_OFFSET splitOffset(0x37bbe0, 0x565b48)
+#define CREATE_BASIC_STRING_OFFSET archSplit(0x37bbe0, 0x565b48)
 
-DEFINE_SYMBOL_HOOK_H(createBasicString, void, (size_t **destinationPointer, char *strDataPointer))
-DEFINE_HOOK_OFFSET(createBasicString, CREATE_BASIC_STRING_OFFSET, void, (size_t **destinationPointer, char *strDataPointer)) {
+H_DL_FUNCTION_HOOK(createBasicString, void, (size_t * *destinationPointer, char *strDataPointer))
+DL_HOOK_OFFSET(createBasicString, CREATE_BASIC_STRING_OFFSET, void, (size_t * *destinationPointer, char *strDataPointer)) {
     if(strDataPointer == NULL || *strDataPointer == '\0') {
         orig_createBasicString(destinationPointer, strDataPointer);
         return;
