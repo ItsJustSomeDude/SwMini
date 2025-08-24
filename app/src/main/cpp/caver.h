@@ -15,7 +15,7 @@ DEFINE_SYMBOL_HOOK_H(
 extern void *latestGameOverlayView;
 extern const char *latestProfileId;
 
-DEFINE_SYMBOL_H(
+H_DL_FUNCTION(
         GameOverlayView_SetControlsHidden,
         void, (void* this, bool hide)
 )

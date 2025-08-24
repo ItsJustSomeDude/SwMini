@@ -21,8 +21,6 @@ static size_t libSwLength;
 static void* libSwHandle;
 static void* libSwBase;
 
-#define HOOK_MODE splitOffset(I_THUMB, I_ARM64)
-
 void *hookSym(const char *symName, void *newAddr, void **origAddr) {
     void* sym = getSym(symName);
     if (sym == NULL) {
@@ -39,7 +37,7 @@ void *hookAddr(void* func_addr, void *new_addr, void **orig_addr) {
             new_addr,
             orig_addr,
             false,
-            HOOK_MODE
+            archSplit(I_THUMB, I_ARM64)
     );
     if (stub == NULL) {
         LOGD("Failed to hook address %p", func_addr);

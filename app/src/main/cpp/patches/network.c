@@ -3,13 +3,12 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <stdbool.h>
-#include "symbol.h"
+#include "../symbol.h"
 
 bool allowNetwork = true;
 
 #define netHook(func, ret, params, call)            \
-DEFINE_SYMBOL_H(h##func, ret, params)               \
-DEFINE_HOOK_ADDR(h##func, func, ret, params) {      \
+STATIC_DL_HOOK_ADDR(h##func, func, ret, params) {   \
     if(allowNetwork)                                \
         return orig_h##func call;                   \
     errno = EACCES;                                 \

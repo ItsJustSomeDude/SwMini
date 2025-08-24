@@ -9,7 +9,7 @@
 
 void *latestGameOverlayView = NULL;
 
-DEFINE_HOOK_SYM(
+STATIC_DL_HOOK_SYMBOL(
         GameOverlayView_GameOverlayView,
         "_ZN5Caver15GameOverlayViewC1Ev",
         void, (void* this)
@@ -19,7 +19,7 @@ DEFINE_HOOK_SYM(
     LOGD("Caught new GOV: %p", latestGameOverlayView);
 }
 
-DEFINE_SYMBOL_SYM(
+DL_FUNCTION_SYMBOL(
         GameOverlayView_SetControlsHidden,
         "_ZN5Caver15GameOverlayView17SetControlsHiddenEb",
         void, (void* this, bool hide)
@@ -27,22 +27,15 @@ DEFINE_SYMBOL_SYM(
 
 const char* latestProfileId;
 
-DEFINE_SYMBOL_HOOK_H(lfp, void*,
-        (void *this, char **param_1, unsigned int param_2,
-                long param_3, long param_4,
-                long param_5, long param_6, long param_7))
-DEFINE_HOOK_SYM(lfp, "_ZN5Caver13PlayerProfile12LoadFromPathERKSsb", void*,
-                (void *this, char **param_1, unsigned int param_2,
-                        long param_3, long param_4,
-                        long param_5, long param_6, long param_7)) {
-//    LOGD("Well ok lol %p, %p -> '%s'", this, param_1, *param_1);
-//    LOGD("%ui, %p, %p, %p, %p, %p", param_2, param_3, param_4, param_5, param_6, param_7);
-
+STATIC_DL_HOOK_SYMBOL(
+        lfp,
+        "_ZN5Caver13PlayerProfile12LoadFromPathERKSsb",
+        void*,
+        (void *this, char **p1, unsigned int p2, long p3, long p4, long p5, long p6, long p7)
+) {
     latestProfileId = *(char**)(this + pointerOffset(3));
-
-    LOGD("DEREF Test: '%s'", latestProfileId);
-
-    return orig_lfp(this, param_1, param_2, param_3, param_4, param_5, param_6, param_7);
+    LOGD("Fetched new Profile ID: %s", latestProfileId);
+    return orig_lfp(this, p1, p2, p3, p4, p5, p6, p7);
 }
 
 void setupCaverHooks() {
