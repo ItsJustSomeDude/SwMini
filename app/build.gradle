@@ -80,20 +80,45 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
-    packagingOptions {
-        jniLibs {
-            pickFirsts += ['**/libshadowhook.so', '**/libshadowhook_nothing.so']
-        }
-    }
-
-    // Rename APK for release builds
-    android.applicationVariants.configureEach { variant ->
+    applicationVariants.configureEach { /* com.android.build.gradle.internal.api.ApplicationVariantImpl */ variant ->
         variant.outputs.configureEach { output ->
             if (variant.buildType.name == "release") {
                 def appName = "SwordigoMini"
                 def versionName = variant.versionName
                 def versionCode = variant.versionCode
                 outputFileName = "${appName}_${versionName}_${versionCode}.apk"
+            }
+        }
+
+        // TODO: Create a "mergeMiniAssets" task that does this and the Readme thing.
+        variant.mergeAssetsProvider.get().doLast {
+            File outputDir = it.outputDir.getAsFile().get()
+
+            // Ok, so we need to merge the `mini_resources` contents into the `resources` folder,
+            // then delete `mini_res_src` and `mini_resources`.
+
+            File resourcesDir = new File(outputDir, "resources")
+            File compiledRes = new File(outputDir, "res")
+            File miniResSrcDir = new File(outputDir, "mini_resources")
+
+            if (compiledRes.exists() && compiledRes.isDirectory() && resourcesDir.exists() && resourcesDir.isDirectory()) {
+                File gitignore = new File(compiledRes, ".gitignore")
+                if(gitignore.exists()) {
+                    delete(gitignore)
+                }
+
+                copy {
+                    from compiledRes
+                    into resourcesDir
+                }
+            }
+
+            if (miniResSrcDir.exists()) {
+                delete(miniResSrcDir)
+            }
+
+            if (compiledRes.exists()) {
+                delete(compiledRes)
             }
         }
     }
@@ -117,6 +142,14 @@ tasks.register("copyGlossHook") {
     )
 }
 
+tasks.register("copyReadme") {
+    Files.copy(
+            new File("README.md").toPath(),
+            new File("app/src/main/assets/README_MINI").toPath(),
+            StandardCopyOption.REPLACE_EXISTING
+    )
+}
+
 afterEvaluate {
     tasks.withType(JavaCompile).configureEach {
         options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
@@ -125,6 +158,7 @@ afterEvaluate {
     tasks.withType(MergeSourceSetFolders).tap {
         configureEach {
             it.dependsOn copyGlossHook
+            it.dependsOn copyReadme
         }
     }
 }
