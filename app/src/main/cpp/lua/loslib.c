@@ -18,7 +18,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "mini_files.h"
+#include "../lua_ext/mini_files.h"
 
 
 static int os_pushresult (lua_State *L, int i, const char *filename) {

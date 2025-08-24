@@ -52,16 +52,16 @@ public class NativeBridge {
         File ext = ctx.getExternalFilesDir(null);
         String e = null;
         if(ext != null)
-            e = ext.getAbsolutePath() + "/%s";
+            e = ext.getAbsolutePath() + "/";
 
         File extCache = ctx.getExternalCacheDir();
         String c = null;
         if(extCache != null)
-            c = extCache.getAbsolutePath() + "/%s";
+            c = extCache.getAbsolutePath() + "/";
 
         setPaths(
-                ctx.getFilesDir().getAbsolutePath() + "/%s",
-                ctx.getCacheDir().getAbsolutePath() + "/%s",
+                ctx.getFilesDir().getAbsolutePath() + "/",
+                ctx.getCacheDir().getAbsolutePath() + "/",
                 e, c
         );
     }

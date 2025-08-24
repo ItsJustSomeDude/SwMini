@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <linux/limits.h>
 #include <jni.h>
+#include "../log.h"
+
+#define LOG_TAG "MiniFiles"
 
 const char* externalFilesPath = NULL;
 const char* externalCachePath = NULL;
@@ -37,11 +40,11 @@ Java_net_itsjustsomedude_swrdg_NativeBridge_setPaths(
 const char* convertPath(const char* path) {
 
 #define CMP(PATH, REPLACE) \
-    if (REPLACE != NULL && strncasecmp(path, PATH, strlen(PATH)) == 0) { \
-        static char result[PATH_MAX];                               \
-        snprintf(result, PATH_MAX, REPLACE, path + strlen(PATH));   \
-        printf("Translated Path: %s\n", result);                      \
-        return result;                                              \
+    if (REPLACE != NULL && strncasecmp(path, PATH, strlen(PATH)) == 0) {  \
+        static char result[PATH_MAX];                                     \
+        snprintf(result, PATH_MAX, "%s%s", REPLACE, path + strlen(PATH)); \
+        LOGD("Translated Lua path: '%s' -> '%s'", path, result);          \
+        return result;                                                    \
     }
 
     CMP(EXTERNAL_FILES_BASE, externalFilesPath)

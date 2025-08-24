@@ -17,7 +17,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "mini_files.h"
+#include "../lua_ext/mini_files.h"
 
 
 #define IO_INPUT	1
@@ -484,7 +484,7 @@ static const luaL_Reg iolib[] = {
   {"lines", io_lines},
   {"open", io_open},
   {"output", io_output},
-  {"popen", io_popen},
+//  {"popen", io_popen},
   {"read", io_read},
   {"tmpfile", io_tmpfile},
   {"type", io_type},
