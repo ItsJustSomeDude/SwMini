@@ -37,6 +37,8 @@ add_library(mini SHARED
         luasocket/src/tcp.c
         luasocket/src/udp.c
         luasocket/src/options.c
+
+        lua_ext/lfs.c
 )
 
 # Add prebuilt static library

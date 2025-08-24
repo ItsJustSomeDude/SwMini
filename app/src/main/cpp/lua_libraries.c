@@ -11,6 +11,8 @@
 #include "caver.h"
 #include "luasocket/src/luasocket.h"
 #include "log.h"
+#include "lni2.h"
+#include "lua_ext/lfs.h"
 
 #define LOG_TAG "MiniLuaLibs"
 
@@ -92,10 +94,12 @@ DEFINE_HOOK_ADDR(openString, luaopen_string, void, (lua_State* L)) {
     luaopen_socket_core(L);
     lua_setglobal(L, "broken_socket");
 
+    luaopen_lfs(L);
+
     orig_openString(L);
 
     // TODO: Possible Caver bug? An item is left on the stack, check for crashes. Mini pops it, but this might not be a good thing.
-    lua_pop(L, 1);
+//    lua_pop(L, 1);
 }
 
 void setup_lua_lib_hook() {
