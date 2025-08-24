@@ -18,7 +18,9 @@
 ** ===================================================================
 */
 
-#define LUA_DL_DLOPEN
+/* IJSD: Mini Conf changes. */
+#define LUA_USE_DLOPEN
+#define LUA_USE_MKSTEMP
 
 /*
 @@ LUA_ANSI controls the use of non-ansi features.
