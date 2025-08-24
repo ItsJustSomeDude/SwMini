@@ -24,6 +24,8 @@ add_library(mini SHARED
 
         lni2.c
 
+        patches/32patch.c
+
         luasocket/src/luasocket.c
         luasocket/src/io.c
         luasocket/src/select.c
