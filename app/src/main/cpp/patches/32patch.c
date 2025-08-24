@@ -3,7 +3,7 @@
 #include <string.h>
 #include "32patch.h"
 #include "../symbol.h"
-#include "lua.h"
+#include "../lua/lua.h"
 #include "../log.h"
 #include "../tools/prober.h"
 

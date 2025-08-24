@@ -19,7 +19,6 @@ add_library(mini SHARED
         main.c
         hook_core.c
         hook.c
-        patches/cstrings.c
         lni.c
 
         jni.c
@@ -27,6 +26,8 @@ add_library(mini SHARED
         lni2.c
 
         patches/32patch.c
+        patches/cstrings.c
+        patches/assets.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c

@@ -14,6 +14,7 @@
 #include "patches/network.h"
 #include "log.h"
 #include "patches/32patch.h"
+#include "patches/assets.h"
 
 #define LOG_TAG "MiniHookCore"
 
@@ -74,6 +75,8 @@ JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_prepareHooks(
 #endif
 
 //    setupNetworkHooks();
+
+    setupAssetPatch();
 
     setupCaverHooks();
 
