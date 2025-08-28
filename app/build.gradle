@@ -129,25 +129,35 @@ dependencies {
 }
 
 tasks.register("copyGlossHook") {
-    Files.copy(
-            new File("GlossHook/GlossHook/lib/ARM64/libGlossHook.so").toPath(),
-            new File("app/src/main/jniLibs/arm64-v8a/libGlossHook.so").toPath(),
-            StandardCopyOption.REPLACE_EXISTING
-    )
+    doLast {
+        def glossSource = file("../GlossHook/GlossHook/lib")
+        def destLibs = file("src/main/jniLibs")
 
-    Files.copy(
-            new File("GlossHook/GlossHook/lib/ARM/libGlossHook.so").toPath(),
-            new File("app/src/main/jniLibs/armeabi-v7a/libGlossHook.so").toPath(),
-            StandardCopyOption.REPLACE_EXISTING
-    )
+        if(!glossSource.exists()) {
+            throw new GradleException("GlossHook directory not found! Make sure the git submodules were included.")
+        }
+
+        println("Copying GlossHook from ${glossSource.absolutePath} to ${destLibs.absolutePath}.")
+
+        def dest32 = file("${destLibs}/armeabi-v7a")
+        def dest64 = file("${destLibs}/arm64-v8a")
+        dest32.mkdirs()
+        dest64.mkdirs()
+
+        Files.copy(file("${glossSource}/ARM/libGlossHook.so").toPath(), file("${dest32}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(file("${glossSource}/ARM64/libGlossHook.so").toPath(), file("${dest64}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
+    }
 }
 
 tasks.register("copyReadme") {
-    Files.copy(
-            new File("README.md").toPath(),
-            new File("app/src/main/assets/README_MINI").toPath(),
-            StandardCopyOption.REPLACE_EXISTING
-    )
+    doLast {
+
+        Files.copy(
+                file("../README.md").toPath(),
+                file("src/main/assets/README_MINI").toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+        )
+    }
 }
 
 afterEvaluate {
