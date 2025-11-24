@@ -47,18 +47,8 @@ android {
     }
 
     signingConfigs {
-        debug {
-            storeFile file(project.property("KEYSTORE_PATH"))
-            storePassword project.property("KEYSTORE_PASSWORD")
-            keyAlias project.property("KEY_ALIAS")
-            keyPassword project.property("KEY_PASSWORD")
-        }
-        release {
-            storeFile file(project.property("KEYSTORE_PATH"))
-            storePassword project.property("KEYSTORE_PASSWORD")
-            keyAlias project.property("KEY_ALIAS")
-            keyPassword project.property("KEY_PASSWORD")
-        }
+        // This is configured at the bottom of the file.
+        release {}
     }
 
     buildTypes {
@@ -70,6 +60,7 @@ android {
             vcsInfo.include = false
         }
         debug {
+            signingConfig = signingConfigs.release
             debuggable true
             minifyEnabled false
         }
@@ -170,6 +161,31 @@ afterEvaluate {
             it.dependsOn copyGlossHook
             it.dependsOn copyReadme
         }
+    }
+}
+
+// Load sensitive values only from ~/.gradle/gradle.properties or <project>/local.properties
+def home = System.properties['user.home']
+def localPropertiesFile = rootProject.file("local.properties")
+def localProperties = new Properties()
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+} else {
+    // Fallback to user's home .gradle/gradle.properties (never commit)
+    def globalPropsFile = file("${home}/.gradle/gradle.properties")
+    if (globalPropsFile.exists()) {
+        localProperties.load(new FileInputStream(globalPropsFile))
+    }
+}
+
+if(localProperties.containsKey('KEYSTORE_PASSWORD')) {
+    android.signingConfigs.release {
+        storeFile file(localProperties['KEYSTORE_PATH'])
+        storePassword localProperties['KEYSTORE_PASSWORD']
+        keyAlias localProperties['KEY_ALIAS']
+        keyPassword localProperties['KEY_PASSWORD']
+        v1SigningEnabled true
+        v2SigningEnabled true
     }
 }
 
