@@ -4,6 +4,7 @@
 #include "symbol.h"
 #include "log.h"
 #include <string.h>
+#include <malloc.h>
 
 #define LOG_TAG "MiniCaverHook"
 
@@ -28,14 +29,19 @@ DL_FUNCTION_SYMBOL(
 const char* latestProfileId;
 
 STATIC_DL_HOOK_SYMBOL(
-        lfp,
-        "_ZN5Caver13PlayerProfile12LoadFromPathERKSsb",
+        loadProfile,
+        "_ZN5Caver22MainMenuViewController38ProfileSelectionViewControllerDidStartEPNS_20ProfileSelectionViewERKN5boost10shared_ptrINS_13PlayerProfileEEE",
         void*,
-        (void *this, char **p1, unsigned int p2, long p3, long p4, long p5, long p6, long p7)
+        (void *this, void* p1, void** profile)
 ) {
-    latestProfileId = *(char**)(this + pointerOffset(3));
+    const char* profileId = *(char**)(*profile + pointerOffset(3));
+    if(latestProfileId != NULL) {
+        // Free the old string copy.
+        free((void*) latestProfileId);
+    }
+    latestProfileId = strdup(profileId);
     LOGD("Fetched new Profile ID: %s", latestProfileId);
-    return orig_lfp(this, p1, p2, p3, p4, p5, p6, p7);
+    return orig_loadProfile(this, p1, profile);
 }
 
 void setupCaverHooks() {
@@ -43,5 +49,5 @@ void setupCaverHooks() {
     dlsym_GameOverlayView_SetControlsHidden();
     hook_GameOverlayView_GameOverlayView();
 
-    hook_lfp();
+    hook_loadProfile();
 }

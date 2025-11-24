@@ -30,7 +30,10 @@ static int setControlsHidden (lua_State *L) {
 
 static int getProfileID (lua_State *L) {
     // TODO: Push nil probably?
-    if (latestProfileId == NULL) return 1;
+    if (latestProfileId == NULL) {
+        lua_pushnil(L);
+        return 1;
+    }
 
     lua_pushlstring(L, latestProfileId, strlen(latestProfileId));
     return 1;
