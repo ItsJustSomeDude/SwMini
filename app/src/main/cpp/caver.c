@@ -3,22 +3,11 @@
 #include "caver.h"
 #include "symbol.h"
 #include "log.h"
+#include "libs/Gloss.h"
 #include <string.h>
 #include <malloc.h>
 
 #define LOG_TAG "MiniCaverHook"
-
-void *latestGameOverlayView = NULL;
-
-STATIC_DL_HOOK_SYMBOL(
-        GameOverlayView_GameOverlayView,
-        "_ZN5Caver15GameOverlayViewC1Ev",
-        void, (void* this)
-) {
-    orig_GameOverlayView_GameOverlayView(this);
-    latestGameOverlayView = this;
-    LOGD("Caught new GOV: %p", latestGameOverlayView);
-}
 
 DL_FUNCTION_SYMBOL(
         GameOverlayView_SetControlsHidden,
@@ -34,7 +23,7 @@ STATIC_DL_HOOK_SYMBOL(
         void*,
         (void *this, void* p1, void** profile)
 ) {
-    const char* profileId = *(char**)(*profile + pointerOffset(3));
+    const char* profileId = $(char*, *profile, (3 * sizeof(void *)), (3 * sizeof(void *)));
     if(latestProfileId != NULL) {
         // Free the old string copy.
         free((void*) latestProfileId);
@@ -47,7 +36,8 @@ STATIC_DL_HOOK_SYMBOL(
 void setupCaverHooks() {
     LOGD("Setting up Caver hooks.");
     dlsym_GameOverlayView_SetControlsHidden();
-    hook_GameOverlayView_GameOverlayView();
 
     hook_loadProfile();
+
+//    redirectWithinLibrary(0x3d7e68, /*0x3d7eac*/ 0, true);
 }

@@ -28,6 +28,7 @@ add_library(mini SHARED
         patches/32patch.c
         patches/cstrings.c
         patches/assets.c
+        patches/panic.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c

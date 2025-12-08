@@ -159,7 +159,7 @@ tasks.register('copyVanillaMusic') {
                     Files.copy(
                             f.toPath(),
                             file("src/main/assets/music/${m.value}").toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            StandardCopyOption.REPLACE_EXISTING
                     )
                 }
             }

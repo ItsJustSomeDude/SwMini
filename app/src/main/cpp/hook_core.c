@@ -15,6 +15,7 @@
 #include "log.h"
 #include "patches/32patch.h"
 #include "patches/assets.h"
+#include "patches/panic.h"
 
 #define LOG_TAG "MiniHookCore"
 
@@ -65,6 +66,18 @@ void *getOffset(unsigned int offset) {
     return libSwBase + offset;
 }
 
+/** Returns the stub? */
+void* redirectWithinLibrary(long from, long to, bool use4byte) {
+    LOGD("Redirecting within: from: %p", libSwBase + from);
+    // void* addr, void* new_addr, bool is_4_byte_hook, i_set mode
+    return GlossHookRedirect(
+            libSwBase + from,
+            libSwBase + to,
+            use4byte,
+            archSplit(I_THUMB, I_ARM64)
+    );
+}
+
 // Mid-loading - executed after lsw has been loaded into ram, but before init.
 JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_prepareHooks(JNIEnv* env, jobject obj) {
     libSwHandle = dlopen("libswordigo.so", RTLD_NOLOAD);
@@ -80,6 +93,7 @@ JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_prepareHooks(
 
     setupCaverHooks();
 
+    setup_panic_hook();
     setup_string_hook();
     setup_lua_core();
     setup_lua_lib_hook();

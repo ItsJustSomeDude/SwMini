@@ -7,7 +7,6 @@
 
 void setupCaverHooks();
 
-extern void *latestGameOverlayView;
 extern const char *latestProfileId;
 
 H_DL_FUNCTION(
