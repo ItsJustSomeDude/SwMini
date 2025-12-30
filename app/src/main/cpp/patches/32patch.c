@@ -1,11 +1,11 @@
 #ifdef __arm__
 
 #include <string.h>
-#include "32patch.h"
-#include "../symbol.h"
-#include "../lua/lua.h"
+#include "../hooks.h"
 #include "../log.h"
 #include "../tools/prober.h"
+#include "patches.h"
+#include "lua.h"
 
 #define LOG_TAG "Mini32Patch"
 
@@ -179,49 +179,50 @@
 //}
 
 STATIC_DL_HOOK_SYMBOL(
-        codedStream,
-        "_ZN5Caver5Proto7Program27MergePartialFromCodedStreamEPN6google8protobuf2io16CodedInputStreamE",
-        long,
-        (void* this, void* stream, int p2, uint p3)
+	codedStream,
+	"_ZN5Caver5Proto7Program27MergePartialFromCodedStreamEPN6google8protobuf2io16CodedInputStreamE",
+	long,
+	(void* this, void* stream, int p2, uint p3)
 ) {
-    LOGD("codedStream: this: %p, stream: %p, %d %d", this, stream, p2, p3);
+	LOGD("codedStream Args: this: %p, stream: %p, %d %d", this, stream, p2, p3);
 
-    long ret = orig_codedStream(this, stream, p2, p3);
-    LOGD("Return: %p", ret);
-    return ret;
+	long ret = orig_codedStream(this, stream, p2, p3);
+	LOGD("codedStream Return: %p", (void *) ret);
+	return ret;
 }
 
 STATIC_DL_HOOK_SYMBOL(
-        loadIntoState,
-        "_ZNK5Caver7Program13LoadIntoStateEP9lua_State",
-        void,
-        (void *this, lua_State *L)
+	loadIntoState,
+	"_ZNK5Caver7Program13LoadIntoStateEP9lua_State",
+	void,
+	(void *this, lua_State *L)
 ) {
-    LOGD("Hooked loadIntoState called - this: %p", this);
+	LOGD("Hooked loadIntoState called - this: %p", this);
 
-    char* stringLua = **(char***)(this + 4);
+	char *stringLua = **(char ***) (this + 4);
 //    char* bytesLua = **(char***)(this + 12);
 
 //    LOGD("Bytes (%p): %s", bytesLua, bytesLua);
 //    LOGD("String (%p): %s", stringLua, stringLua);
 
-    *(void **)(this + 12) = &stringLua;
+	*(void **) (this + 12) = &stringLua;
 
 //    **(void ***)(this + 12) = stringLua;
 //    **(void ***)(this + 12) = **(char***)(this + 4);
 
 //    LOGD("After patch Bytes (%p): %s", **(char***)(this + 12), **(char***)(this + 12));
 
-    orig_loadIntoState(this, L);
+	orig_loadIntoState(this, L);
 }
 
 void setup32Patch() {
-//    updateAreas();
+	LOGD("Applying 32bit Program::Bytes patch");
 
-    LOGD("Applying 32bit patch");
-    hook_loadIntoState();
+	//    updateAreas();
 
-    hook_codedStream();
+	hook_loadIntoState();
+
+	hook_codedStream();
 
 //    hook_programConstructor();
 //    hook_idk();

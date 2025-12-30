@@ -1,2 +1,4 @@
+# This is the `res` folder. Files in here will overwrite ones in the main `resources` folder (which contains Vanilla's resources.)
+# No contents here will be stored in git.
 *
 !.gitignore

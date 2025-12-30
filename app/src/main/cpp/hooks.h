@@ -1,7 +1,17 @@
-#ifndef SWMINI_SYMBOL_H
-#define SWMINI_SYMBOL_H
+#ifndef SWMINI_HOOKS_H
+#define SWMINI_HOOKS_H
 
-#include "hook_core.h"
+#include <stdbool.h>
+
+void *hook_symbol(const char *symName, void *newAddr, void **origAddr);
+void *hook_address(void *func_addr, void *new_addr, void **orig_addr);
+void *hook_offset(unsigned long offset, void *new_addr, void **orig_addr);
+void *symbol_address(const char *symbol);
+void *offset_address(unsigned int offset);
+
+void *redirect_within_library(long from, long to, bool use4byte);
+
+void setup_hooks();
 
 /**
  * This file defines macros to help call and hook functions from dynamically loaded libraries.
@@ -53,7 +63,7 @@ inline void* dlsym_##name();
 type_##name *name;                                      \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = getSym(symbol);                       \
+    return name = symbol_offset(symbol);                       \
 }
 
 /**
@@ -67,7 +77,7 @@ void* dlsym_##name() {                                  \
 type_##name *name;                                      \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = getOffset(offset);                    \
+    return name = offset_address(offset);                    \
 }
 
 /**
@@ -83,7 +93,7 @@ void* dlsym_##name() {                                  \
 ret (*name) params;                                     \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = getSym(sym);                          \
+    return name = symbol_address(sym);                          \
 }
 
 
@@ -100,7 +110,7 @@ void* dlsym_##name() {                                  \
 ret (*name) params;                                     \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = getOffset(offset);                    \
+    return name = offset_address(offset);                    \
 }
 
 /**
@@ -114,7 +124,7 @@ void* dlsym_##name() {                                  \
  * @param name User-friendly name for this hook, matching a previous H_DL_FUNCTION expansion.
  *
  */
-#define H_DL_HOOK(name, ...)                        \
+#define H_DL_HOOK(name, ...)                            \
 extern type_##name *orig_##name;                        \
 extern void *stub_##name;                               \
 inline void *hook_##name();
@@ -129,8 +139,8 @@ inline void *hook_##name();
  * @see H_DL_FUNCTION
  * @see H_DL_HOOK
  */
-#define H_DL_FUNCTION_HOOK(name, ret, params)         \
-    H_DL_FUNCTION(name, ret, params)                  \
+#define H_DL_FUNCTION_HOOK(name, ret, params)           \
+    H_DL_FUNCTION(name, ret, params)                    \
     H_DL_HOOK(name)
 
 /** @internal */
@@ -146,11 +156,11 @@ void* hook_##name() {                                   \
 static ret hooked_##name params
 
 /** @internal */
-#define _define_static_hook(name, ret, params, hf, hp)         \
+#define _define_static_hook(name, ret, params, hf, hp)  \
 static ret hooked_##name params;                        \
-static ret (*orig_##name) params;                         \
-static void* stub_##name;                                      \
-static void* hook_##name() {                                   \
+static ret (*orig_##name) params;                       \
+static void* stub_##name;                               \
+static void* hook_##name() {                            \
     return stub_##name = hf(                            \
         hp, hooked_##name, (void**)&orig_##name         \
     );                                                  \
@@ -167,8 +177,8 @@ static ret hooked_##name params
  * @param ret Return type of function
  * @param params Params of the function, (in parenthesis).
  */
-#define DL_HOOK_SYMBOL(name, symbol, ret, params)      \
-    _define_hook(name, ret, params, hookSym, symbol)
+#define DL_HOOK_SYMBOL(name, symbol, ret, params)       \
+    _define_hook(name, ret, params, hook_symbol, symbol)
 
 /**
  * Create a function hook from a pointer offset.
@@ -178,8 +188,8 @@ static ret hooked_##name params
  * @param ret Return type of function
  * @param params Params of the function, (in parenthesis).
  */
-#define DL_HOOK_OFFSET(name, offset, ret, params)   \
-    _define_hook(name, ret, params, hookOffset, offset)
+#define DL_HOOK_OFFSET(name, offset, ret, params)       \
+    _define_hook(name, ret, params, hook_offset, offset)
 
 /**
  * Create a function hook from an address.
@@ -189,8 +199,8 @@ static ret hooked_##name params
  * @param ret Return type of function
  * @param params Params of the function, (in parenthesis).
  */
-#define DL_HOOK_ADDR(name, addr, ret, params)       \
-    _define_hook(name, ret, params, hookAddr, addr)
+#define DL_HOOK_ADDR(name, addr, ret, params)           \
+    _define_hook(name, ret, params, hook_address, addr)
 
 /**
  * Create a function hook from a dynamic symbol name, standalone in one file.
@@ -202,7 +212,7 @@ static ret hooked_##name params
  * @param params Params of the function, (in parenthesis).
  */
 #define STATIC_DL_HOOK_SYMBOL(name, symbol, ret, params)    \
-    _define_static_hook(name, ret, params, hookSym, symbol)
+    _define_static_hook(name, ret, params, hook_symbol, symbol)
 
 /**
  * Create a function hook from a library offset, standalone in one file.
@@ -214,7 +224,7 @@ static ret hooked_##name params
  * @param params Params of the function, (in parenthesis).
  */
 #define STATIC_DL_HOOK_OFFSET(name, offset, ret, params)    \
-    _define_static_hook(name, ret, params, hookOffset, offset)
+    _define_static_hook(name, ret, params, hook_offset, offset)
 
 /**
  * Create a function hook from a runtime address, standalone in one file.
@@ -226,6 +236,6 @@ static ret hooked_##name params
  * @param params Params of the function, (in parenthesis).
  */
 #define STATIC_DL_HOOK_ADDR(name, addr, ret, params)    \
-    _define_static_hook(name, ret, params, hookAddr, addr)
+    _define_static_hook(name, ret, params, hook_address, addr)
 
-#endif //SWMINI_SYMBOL_H
+#endif //SWMINI_HOOKS_H

@@ -4,31 +4,41 @@ project("SwMini Natives")
 
 add_library(mini SHARED
         lua_ext/mini_files.c
+
         lua/ltablib.c
         lua/lmathlib.c
         lua/ldblib.c
         lua/loslib.c
         lua/liolib.c
 
-#        prober.c
-#        network.c
+        mini_lua/lni/register.c
+        mini_lua/lni/execute.c
+        mini_lua/lni/bind.c
 
-        caver.c
+        mini_lua/controls.c
+        mini_lua/library.c
+        mini_lua/profile.c
+        mini_lua/arch.c
+        # mini_lua/scene_find_all.c
+
+        # prober.c
+        # network.c
+
         lua_core.c
-        lua_libraries.c
         main.c
-        hook_core.c
-        hook.c
-        lni.c
+        hooks.c
+        #        lni.c
+
+        log.c
 
         jni.c
-
-        lni2.c
+        java.c
 
         patches/32patch.c
         patches/cstrings.c
         patches/assets.c
         patches/panic.c
+        patches/lua_libs.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c
@@ -45,11 +55,8 @@ add_library(mini SHARED
         luasocket/src/options.c
 
         lua_ext/lfs.c
-)
 
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+)
 
 # Add prebuilt static library
 add_library(GlossHook SHARED IMPORTED)
@@ -65,8 +72,14 @@ target_include_directories(mini PUBLIC ${CMAKE_SOURCE_DIR}/lua)
 
 find_library(log-lib log)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DNDK_DEBUG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+endif ()
+
 target_link_libraries(
-    mini
-    GlossHook
-    ${log-lib}
+        mini
+        GlossHook
+        ${log-lib}
 )

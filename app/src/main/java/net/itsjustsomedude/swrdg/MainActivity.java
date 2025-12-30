@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -27,100 +29,100 @@ import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends Activity implements Runnable {
-    AudioManager.OnAudioFocusChangeListener afChangeListener;
-//    public Analytics analytics;
-    AudioManager audioManager;
-//    public GameServices gameServices;
-    GameView gameView = null;
-//    public GamesSignIn gamesSignIn;
+	public PersistentState persistentState;
+	AudioManager.OnAudioFocusChangeListener afChangeListener;
+	//    public Analytics analytics;
+	AudioManager audioManager;
+	//    public GameServices gameServices;
+	GameView gameView = null;
+	//    public GamesSignIn gamesSignIn;
 //    EditText hiddenEditText = null;
-    boolean textboxInit = false;
-    boolean inBackground = false;
-    boolean inactive = false;
-    RelativeLayout mainViewLayout = null;
-    private Timer myTimer;
-    public PersistentState persistentState;
-//    public IStoreController storeController;
-    int ticks = 0;
+	boolean textboxInit = false;
+	boolean inBackground = false;
+	boolean inactive = false;
+	RelativeLayout mainViewLayout = null;
+	//    public IStoreController storeController;
+	int ticks = 0;
+	private Timer myTimer;
 
-    private void TimerMethod() {
-        this.runOnUiThread(this);
-    }
+	private void TimerMethod() {
+		this.runOnUiThread(this);
+	}
 
-    void AbandonAudioFocus() {
-        this.audioManager.abandonAudioFocus(this.afChangeListener);
-    }
+	void AbandonAudioFocus() {
+		this.audioManager.abandonAudioFocus(this.afChangeListener);
+	}
 
-    void GetAudioFocus() {
-        if (this.audioManager.requestAudioFocus(this.afChangeListener, 3, 1) == 1) {
-            Debug.Log("Got audio focus");
-        } else {
-            Debug.Log("Didn't get audio focus");
-        }
-    }
+	void GetAudioFocus() {
+		if (this.audioManager.requestAudioFocus(this.afChangeListener, 3, 1) == 1) {
+			Debug.Log("Got audio focus");
+		} else {
+			Debug.Log("Didn't get audio focus");
+		}
+	}
 
-    public void StartGettingTextInput(String var1) {
-        Debug.Log("StartGettingTextInput");
+	public void StartGettingTextInput(String var1) {
+		Debug.Log("StartGettingTextInput");
 
-        EditText tb = this.findViewById(R.id.hiddenEditText);
-        if(!textboxInit) {
-            Debug.Log("Creating EditText");
+		EditText tb = this.findViewById(R.id.hiddenEditText);
+		if (!textboxInit) {
+			Debug.Log("Creating EditText");
 
-            tb.setImeOptions(268435456);
-            tb.addTextChangedListener(new TextWatcher() {
-                public void afterTextChanged(Editable var1) {
-                    String var3 = var1.toString();
-                    Debug.Log("Text changed: " + var3);
-                    gameView.queueEvent(() -> {
-                        Native.textInputTextDidChange(var3);
-                    });
-                }
+			tb.setImeOptions(268435456);
+			tb.addTextChangedListener(new TextWatcher() {
+				public void afterTextChanged(Editable var1) {
+					String var3 = var1.toString();
+					Debug.Log("Text changed: " + var3);
+					gameView.queueEvent(() -> {
+						Native.textInputTextDidChange(var3);
+					});
+				}
 
-                public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {
-                }
+				public void beforeTextChanged(CharSequence var1, int var2, int var3, int var4) {
+				}
 
-                public void onTextChanged(CharSequence var1, int var2, int var3, int var4) {
-                }
-            });
-            tb.setOnEditorActionListener((TextView v, int var2, KeyEvent ke) -> {
-                if (var2 == EditorInfo.IME_ACTION_DONE) {
-                    Debug.Log("Text editing done");
-                    this.gameView.queueEvent(Native::textInputDidFinish);
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-        }
+				public void onTextChanged(CharSequence var1, int var2, int var3, int var4) {
+				}
+			});
+			tb.setOnEditorActionListener((TextView v, int var2, KeyEvent ke) -> {
+				if (var2 == EditorInfo.IME_ACTION_DONE) {
+					Debug.Log("Text editing done");
+					this.gameView.queueEvent(Native::textInputDidFinish);
+					return true;
+				} else {
+					return false;
+				}
+			});
+		}
 
-        if (tb != null) {
-            this.mainViewLayout.setVisibility(View.VISIBLE);
-            tb.setText(var1);
-            tb.setFocusable(true);
-            tb.setFocusableInTouchMode(true);
-            boolean var2 = tb.requestFocus();
-            Debug.Log("Trying to focus edit text: " + var2);
-            ((InputMethodManager)this.getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(tb, 0);
-            tb.setSelection(var1.length());
-        }
+		if (tb != null) {
+			this.mainViewLayout.setVisibility(View.VISIBLE);
+			tb.setText(var1);
+			tb.setFocusable(true);
+			tb.setFocusableInTouchMode(true);
+			boolean var2 = tb.requestFocus();
+			Debug.Log("Trying to focus edit text: " + var2);
+			((InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(tb, 0);
+			tb.setSelection(var1.length());
+		}
 
-    }
+	}
 
-    public void StopGettingTextInput() {
-        EditText tb = this.findViewById(R.id.hiddenEditText);
+	public void StopGettingTextInput() {
+		EditText tb = this.findViewById(R.id.hiddenEditText);
 
-        Debug.Log("Trying to hide keyboard");
-        InputMethodManager inputService = (InputMethodManager)this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputService != null) {
-            if (tb != null) {
-                inputService.hideSoftInputFromWindow(tb.getWindowToken(), 0);
-            }
-        }
+		Debug.Log("Trying to hide keyboard");
+		InputMethodManager inputService = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+		if (inputService != null) {
+			if (tb != null) {
+				inputService.hideSoftInputFromWindow(tb.getWindowToken(), 0);
+			}
+		}
 
-        this.mainViewLayout.setVisibility(View.GONE);
-    }
+		this.mainViewLayout.setVisibility(View.GONE);
+	}
 
-    void connectStoreControllerWithDelay() {
+	void connectStoreControllerWithDelay() {
 //        (new Handler()).postDelayed(new Runnable(this) {
 //            final MainActivity this$0;
 //
@@ -159,148 +161,159 @@ public class MainActivity extends Activity implements Runnable {
 //
 //            }
 //        }, 200L);
-    }
+	}
 
-    public boolean isInBackground() {
-        return this.inBackground;
-    }
+	public boolean isInBackground() {
+		return this.inBackground;
+	}
 
-    protected void onActivityResult(int var1, int var2, Intent var3) {
-        Debug.Log("onActivityResult(" + var1 + "," + var2 + "," + var3);
-        super.onActivityResult(var1, var2, var3);
-    }
+	protected void onActivityResult(int var1, int var2, Intent var3) {
+		Debug.Log("onActivityResult(" + var1 + "," + var2 + "," + var3);
+		super.onActivityResult(var1, var2, var3);
+	}
 
-    public void onBackPressed() {
-        if (this.gameView != null) {
-            this.gameView.queueEvent(() -> {
-                Debug.Log("onBackPressed");
-                Native.handleBackButtonPress();
-            });
-        }
-    }
+	public void onBackPressed() {
+		if (this.gameView != null) {
+			this.gameView.queueEvent(() -> {
+				Debug.Log("onBackPressed");
+				Native.handleBackButtonPress();
+			});
+		}
+	}
 
-    protected void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
+	protected void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
 
-        System.loadLibrary("mini");
-        System.loadLibrary("openal-soft");
-        System.loadLibrary("swordigo");
+		System.loadLibrary("mini");
+		System.loadLibrary("openal-soft");
+		System.loadLibrary("swordigo");
 
-        Debug.Log("All libraries loaded.");
+		Debug.Log("All libraries loaded.");
 
-        ModProperties.loadProperties(this);
-        NativeBridge.loadLibraries(this);
+		ModProperties.loadProperties(this);
+		NativeBridge.loadLibraries(this);
 
-        NativeBridge.prepareHooks();
-        NativeBridge.setupCStringHooks(this);
+		NativeBridge.midLoad();
+		NativeBridge.setupCStringHooks(this);
 
-        Debug.Log("onCreate");
+		Debug.Log("onCreate");
 //        RemoteConfig.createInstance(this);
-        this.persistentState = new PersistentState(this);
-        this.audioManager = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE);
-        this.afChangeListener = change -> {};
-        this.getWindow().addFlags(128);
+		this.persistentState = new PersistentState(this);
+		this.audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+		this.afChangeListener = change -> {
+		};
+		this.getWindow().addFlags(128);
 
-        Native.mainActivityRef = new WeakReference<>(this);
+		// 1.4.10
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			WindowManager.LayoutParams wi = this.getWindow().getAttributes();
+			wi.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+			this.getWindow().setAttributes(wi);
+		}
 
-        Native.setFilesDir(this.getApplicationContext().getFilesDir().toString());
-        Native.setCacheDir(this.getApplicationContext().getCacheDir().toString());
-        Native.setAssetManager(this.getAssets());
+		Native.mainActivityRef = new WeakReference<>(this);
 
-        NativeBridge.setupFilePaths(this);
+		Native.setFilesDir(this.getApplicationContext().getFilesDir().toString());
+		Native.setCacheDir(this.getApplicationContext().getCacheDir().toString());
+		Native.setAssetManager(this.getAssets());
 
-        LuaNativeInterface.init();
+		NativeBridge.setupFilePaths(this);
 
-        this.setContentView(R.layout.main_activity);
-        this.mainViewLayout = this.findViewById(R.id.mainViewLayout);
+		LNIFunctions.register();
+		LuaNativeInterface.init();
+
+		this.setContentView(R.layout.main_activity);
+		this.mainViewLayout = this.findViewById(R.id.mainViewLayout);
 //        this.analytics = new Analytics(this);
 //        this.setupGameServices();
 //        this.setupStoreController();
-        Native.handleApplicationLaunch();
+		Native.handleApplicationLaunch();
 
-        this.gameView = new GameView(this);
-        this.gameView.setEGLConfigChooser(5, 6, 5, 0, 16, 0);
-        this.gameView.setPreserveEGLContextOnPause(true);
-        this.gameView.setGameRenderer(new GameRenderer(this));
+		NativeBridge.lateLoad();
 
-        this.addContentView(this.gameView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        this.connectStoreControllerWithDelay();
+		this.gameView = new GameView(this);
+		this.gameView.setEGLConfigChooser(5, 6, 5, 0, 16, 0);
+		this.gameView.setPreserveEGLContextOnPause(true);
+		this.gameView.setGameRenderer(new GameRenderer(this));
 
-        MiniOverlay.mainActivityRef = new WeakReference<>(this);
-        MiniOverlay.init(this, this.mainViewLayout);
+		this.addContentView(this.gameView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+		this.connectStoreControllerWithDelay();
 
-        MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
-        MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
-        MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
+		MiniOverlay.mainActivityRef = new WeakReference<>(this);
+		MiniOverlay.init(this, this.mainViewLayout);
 
-        GameTime.scaling = ModProperties.defaultSpeed;
-    }
+		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
+		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
+		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
 
-    protected void onDestroy() {
-        super.onDestroy();
-        Debug.Log("onDestroy");
-        if (this.gameView != null) {
-            CountDownLatch latch = new CountDownLatch(1);
-            this.gameView.queueEvent(() -> {
-                    Debug.Log("handleApplicationQuit");
-                    Native.handleApplicationQuit();
-                    latch.countDown();
-            });
+		GameTime.scaling = ModProperties.defaultSpeed;
+	}
 
-            try {
-                latch.await();
-            } catch (InterruptedException ignored) {
-            }
-        }
-    }
+	protected void onDestroy() {
+		super.onDestroy();
+		Debug.Log("onDestroy");
+		if (this.gameView != null) {
+			CountDownLatch latch = new CountDownLatch(1);
+			this.gameView.queueEvent(() -> {
+				Debug.Log("handleApplicationQuit");
+				Native.handleApplicationQuit();
+				latch.countDown();
+			});
 
-    public boolean onKeyDown(int var1, KeyEvent var2) {
-        if (var1 == KeyEvent.KEYCODE_MENU) {
-            if (this.gameView != null) {
-                this.gameView.queueEvent(() -> {
-                    Debug.Log("onMenuPressed");
-                    Native.handleMenuButtonPress();
-                });
-                return true;
-            }
-        }
+			try {
+				latch.await();
+			} catch (InterruptedException ignored) {
+			}
+		}
+	}
 
-        return super.onKeyDown(var1, var2);
-    }
+	public boolean onKeyDown(int var1, KeyEvent var2) {
+		if (var1 == KeyEvent.KEYCODE_MENU) {
+			if (this.gameView != null) {
+				this.gameView.queueEvent(() -> {
+					Debug.Log("onMenuPressed");
+					Native.handleMenuButtonPress();
+				});
+				return true;
+			}
+		}
 
-    protected void onPause() {
-        super.onPause();
+		return super.onKeyDown(var1, var2);
+	}
 
-        this.inactive = true;
-        if (this.gameView != null) {
-            this.gameView.queueEvent(() -> {
-                Debug.Log("didBecomeInactive");
+	protected void onPause() {
+		super.onPause();
 
-                if (ModProperties.pauseLostFocus)
-                    Native.applicationDidBecomeInactive();
+		this.inactive = true;
+		if (this.gameView != null) {
+			this.gameView.queueEvent(() -> {
+				Debug.Log("didBecomeInactive");
 
-                this.runOnUiThread(() -> {
-                    this.gameView.onPause();
-                    Debug.Log("GLSurfaceView paused");
-                });
-            });
-        }
-    }
+				if (ModProperties.pauseLostFocus)
+					Native.applicationDidBecomeInactive();
 
-    protected void onRestart() {
-        super.onRestart();
-    }
+				this.runOnUiThread(() -> {
+					this.gameView.onPause();
+					Debug.Log("GLSurfaceView paused");
+				});
+			});
+		}
+	}
 
-    protected void onResume() {
-        super.onResume();
-        this.gameView.setLowProfileUI();
-        if (this.inactive) {
-            this.inactive = false;
-            if (this.gameView != null) {
-                this.gameView.onResume();
-                this.gameView.queueEvent(() -> {
-                    Debug.Log("didBecomeActive");
-                    Native.applicationDidBecomeActive();
+	protected void onRestart() {
+		super.onRestart();
+	}
+
+	protected void onResume() {
+		super.onResume();
+		this.gameView.setLowProfileUI();
+		if (this.inactive) {
+			this.inactive = false;
+			if (this.gameView != null) {
+				this.gameView.onResume();
+				this.gameView.queueEvent(() -> {
+					Debug.Log("didBecomeActive");
+					Native.applicationDidBecomeActive();
 
 //                    this.runOnUiThread(() -> {
 //                        new Handler().postDelayed(() -> {
@@ -309,17 +322,17 @@ public class MainActivity extends Activity implements Runnable {
 //                            }
 //                        }, 1000L);
 //                    });
-                });
-            }
-        }
+				});
+			}
+		}
 
-    }
+	}
 
-    protected void onStart() {
-        super.onStart();
-        this.persistentState.startMeasuringAppForegroundTime();
-        if (this.inBackground) {
-            this.inBackground = false;
+	protected void onStart() {
+		super.onStart();
+		this.persistentState.startMeasuringAppForegroundTime();
+		if (this.inBackground) {
+			this.inBackground = false;
 //            this.gameServices.adsHelper.onEnterForeground();
 //            if (this.storeController == null) {
 //                this.setupStoreController();
@@ -328,13 +341,13 @@ public class MainActivity extends Activity implements Runnable {
 //                this.connectStoreControllerWithDelay();
 //            }
 
-            if (this.gameView != null) {
-                this.gameView.queueEvent(() -> {
-                    Debug.Log("didEnterForeground");
-                    Native.applicationDidEnterForeground();
-                });
-            }
-        }
+			if (this.gameView != null) {
+				this.gameView.queueEvent(() -> {
+					Debug.Log("didEnterForeground");
+					Native.applicationDidEnterForeground();
+				});
+			}
+		}
 //        else {
 //            this.gameServices.adsHelper.onApplicationStart();
 //        }
@@ -346,12 +359,12 @@ public class MainActivity extends Activity implements Runnable {
 //                }
 //        }, 200L);
 
-        long var1 = Math.max(this.persistentState.getDelayMillisToReviewFlow(), 3600000L);
-        long var3 = this.persistentState.getTotalForegroundMillisForReviewFlow();
-        Debug.Log("Delay to review flow: " + var1 / 1000L +
-                " seconds, elapsed foreground time: " +
-                var3 / 1000L +
-                " seconds");
+		long var1 = Math.max(this.persistentState.getDelayMillisToReviewFlow(), 3600000L);
+		long var3 = this.persistentState.getTotalForegroundMillisForReviewFlow();
+		Debug.Log("Delay to review flow: " + var1 / 1000L +
+			" seconds, elapsed foreground time: " +
+			var3 / 1000L +
+			" seconds");
 //        if (var3 >= var1) {
 //            this.persistentState.setTotalForegroundMillisForReviewFlow(0L);
 //            this.persistentState.setDelayMillisToReviewFlow(var1 * 2L);
@@ -386,45 +399,45 @@ public class MainActivity extends Activity implements Runnable {
 //            }, 10L);
 //        }
 
-    }
+	}
 
-    protected void onStop() {
-        super.onStop();
-        this.persistentState.finishMeasuringAppForegroundTime();
-        this.inBackground = true;
+	protected void onStop() {
+		super.onStop();
+		this.persistentState.finishMeasuringAppForegroundTime();
+		this.inBackground = true;
 //        this.gameServices.adsHelper.onEnterBackground();
-        if (this.gameView != null) {
-            this.gameView.queueEvent(() -> {
-                Debug.Log("didEnterBackground");
-                Native.applicationDidEnterBackground();
-            });
-        }
+		if (this.gameView != null) {
+			this.gameView.queueEvent(() -> {
+				Debug.Log("didEnterBackground");
+				Native.applicationDidEnterBackground();
+			});
+		}
 
 //        if (this.storeController != null && this.storeController.shouldDisposeWhenGoingToBackground() && !this.storeController.isPurchaseFlowInProgress()) {
 //            this.storeController.dispose();
 //            this.storeController = null;
 //        }
 
-    }
+	}
 
-    public void onWindowFocusChanged(boolean var1) {
-        super.onWindowFocusChanged(var1);
-        if (var1) {
-            this.gameView.setImmersiveMode();
-        }
-    }
+	public void onWindowFocusChanged(boolean var1) {
+		super.onWindowFocusChanged(var1);
+		if (var1) {
+			this.gameView.setImmersiveMode();
+		}
+	}
 
-    public void run() {
-        ++this.ticks;
-    }
+	public void run() {
+		++this.ticks;
+	}
 
-    public void runOnGameThread(Runnable var1) {
-        if (this.gameView != null) {
-            this.gameView.queueEvent(var1);
-        }
-    }
+	public void runOnGameThread(Runnable var1) {
+		if (this.gameView != null) {
+			this.gameView.queueEvent(var1);
+		}
+	}
 
-    void setupGameServices() {
+	void setupGameServices() {
 //        this.gamesSignIn = new GamesSignIn(this, new GamesSignIn.GamesSignInListener(this) {
 //            final MainActivity this$0;
 //
@@ -490,9 +503,9 @@ public class MainActivity extends Activity implements Runnable {
 //            }
 //        });
 //        this.gameServices = new GameServices(this, this.gamesSignIn);
-    }
+	}
 
-    void setupStoreController() {
+	void setupStoreController() {
 //        StoreController var1 = new StoreController(this);
 //        this.storeController = var1;
 //        var1.addEventListener(new IStoreController.EventListener(this) {
@@ -661,5 +674,5 @@ public class MainActivity extends Activity implements Runnable {
 //                });
 //            }
 //        });
-    }
+	}
 }

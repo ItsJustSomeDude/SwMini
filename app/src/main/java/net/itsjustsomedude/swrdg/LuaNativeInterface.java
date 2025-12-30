@@ -7,60 +7,67 @@ import java.util.ArrayList;
 
 public class LuaNativeInterface {
 	private static final String TAG = "LNI_Java";
+	private static final ArrayList<WaitingFunctionEntry> waitingMethods = new ArrayList<>();
+	/**
+	 * Whether the Native Init is done. If `true`, functions are ready to be sent to C.
+	 */
+	private static boolean initialized = false;
 
-	private static class LNIMethod {
-		Class<?> clazz;
-		// methodID is only in C.
-		int[] params;
-		int returnType;
+	/**
+	 * Send a method to C to be registered. nativeInit must have been completed already.
+	 */
+	private static native void nativeRegister(Class<?> targetClass, String methodName, String signature, int[] params, int returnType);
 
-		String methodName;
+	/** Performs the C-side initialization for LNI.
+	 * It creates global references, sets up tables, etc. */
+//    private static native void nativeInit();
 
-        LNIMethod(String methodName, Class<?> clazz, int[] params, int returnType) {
-            this.methodName = methodName;
-			this.clazz = clazz;
-			this.params = params;
-			this.returnType = returnType;
-        }
-    }
-
-	private static final ArrayList<LNIMethod> methods = new ArrayList<>();
-
-//	private static final HashMap<String, Class<?>> classes = new HashMap<>();
-//	private static final HashMap<String, String> signatures = new HashMap<>();
-//	private static final HashMap<String, int[]> params = new HashMap<>();
-
-	private static native void nativeInit();
-	private static native void register(Class<?> targetClass, String methodName, String signature, int[] params, int returnType);
-
+	/**
+	 * Start up the LNI system. This is called by the MainActivity after the engine has been started up.
+	 */
 	public static void init() {
-		nativeInit();
-		// Register all the "statically waiting" methods.
+		if (initialized) {
+			Log.e(TAG, "Attempted to double-initialize LNI Class!");
+			return;
+		}
 
-		addMethod(LNIFunctions.class, "setSpeed");
-		addMethod(LNIFunctions.class, "spit");
-		addMethod(LNIFunctions.class, "spitReturn");
+//        nativeInit();
+		initialized = true;
+		// Now that `initialized` is true, function registrations will be sent to native immediately.
+
+		for (WaitingFunctionEntry method : waitingMethods) {
+			performRegistration(method.clazz, method.methodName);
+		}
 	}
 
 	private static String getClassSignature(Class<?> clazz) throws IllegalArgumentException {
-		if(clazz == null) throw new IllegalArgumentException("Class is null");
+		if (clazz == null) throw new IllegalArgumentException("Class is null");
 
-		if(clazz.isArray()) {
+		if (clazz.isArray()) {
 			// getName already creates the right signature for array types.
 			return clazz.getName();
 		} else if (clazz.equals(void.class)) {
 			return "V";
-        } else if (clazz.isPrimitive()) {
+		} else if (clazz.isPrimitive()) {
 			switch (clazz.getName()) {
-				case "boolean": return "Z";
-				case "byte": return "B";
-				case "char": return "C";
-				case "short": return "S";
-				case "int": return "I";
-				case "long": return "J";
-				case "float": return "F";
-				case "double": return "D";
-				default: throw new IllegalArgumentException("Unsupported primitive type: " + clazz.getName());
+				case "boolean":
+					return "Z";
+				case "byte":
+					return "B";
+				case "char":
+					return "C";
+				case "short":
+					return "S";
+				case "int":
+					return "I";
+				case "long":
+					return "J";
+				case "float":
+					return "F";
+				case "double":
+					return "D";
+				default:
+					throw new IllegalArgumentException("Unsupported primitive type: " + clazz.getName());
 			}
 		} else {
 			return "L" + clazz.getName().replace(".", "/") + ";";
@@ -68,7 +75,7 @@ public class LuaNativeInterface {
 	}
 
 	private static String getMethodSignature(Method m) {
-		if(m == null) throw new IllegalArgumentException("Method is null");
+		if (m == null) throw new IllegalArgumentException("Method is null");
 
 		StringBuilder sig = new StringBuilder();
 
@@ -84,37 +91,56 @@ public class LuaNativeInterface {
 
 	/**
 	 * Returns true if the passed class is a valid param or return value for an LNI function.
+	 * Allowed: void, bool, double, String
 	 */
 	private static boolean validLNIClass(Class<?> clazz) {
-		return clazz == String.class || clazz == void.class || clazz.isPrimitive();
+		return clazz == void.class || clazz == boolean.class || clazz == double.class || clazz == String.class;
 	}
 
 	private static int getLNIType(Class<?> clazz) {
-		if(clazz.equals(void.class)) return 0;
+		if (clazz.equals(void.class)) return 0;
 		else if (clazz.equals(boolean.class)) return 1;
-		else if (clazz.isPrimitive()) return 2;
+		else if (clazz.equals(double.class)) return 2;
 		else if (clazz.equals(String.class)) return 3;
 
 		else return -1;
 	}
 
-	public static void addMethod(Class<?> clazz, String methodName) {
+	public static void registerMethod(Class<?> clazz, String methodName) {
+		// This is what external functions use to register a method.
+		if (initialized) {
+			Log.i(TAG, "Doing now " + methodName);
+			// We've already done the C parts, so it's ready to receive a method.
+			performRegistration(clazz, methodName);
+		} else {
+			Log.i(TAG, "Doing later " + methodName);
+			// Add the method to the queue list.
+			waitingMethods.add(new WaitingFunctionEntry(clazz, methodName));
+		}
+	}
+
+	/**
+	 * Must be called after nativeInit is done.
+	 */
+	private static void performRegistration(Class<?> clazz, String methodName) {
 		Method[] ms = clazz.getMethods();
+
+		// TODO: Make this work with Overloads
 
 		Method method = null;
 		for (Method m : ms) {
-			if(m.getName().equals(methodName)) {
+			if (m.getName().equals(methodName)) {
 				method = m;
 				break;
 			}
 		}
-		if(method == null) {
-			Log.e(TAG, "Could not find LNI method " + methodName);
+		if (method == null) {
+			Log.e(TAG, "Could not find LNI method " + methodName + " in class " + clazz.getName());
 			return;
 		}
 
 		Class<?> returnType = method.getReturnType();
-		if(!validLNIClass(returnType)) {
+		if (!validLNIClass(returnType)) {
 			Log.e(TAG, "Invalid return type '" + returnType.getName() + "' for LNI function '" + methodName + "'");
 			return;
 		}
@@ -128,32 +154,25 @@ public class LuaNativeInterface {
 				return;
 			}
 			paramTypes[i] = getLNIType(param);
+			i++;
 		}
 
 		String sig = getMethodSignature(method);
 
-//		classes.put(methodName, clazz);
-//		signatures.put(methodName, sig);
-//		params.put(methodName, paramTypes);
-
 		Log.d(TAG, "Begin register... method: " + methodName + ", sig: " + sig);
-		register(clazz, methodName, sig, paramTypes, getLNIType(returnType));
+		// Send it over to C!
+		nativeRegister(clazz, methodName, sig, paramTypes, getLNIType(returnType));
 
 		Log.d(TAG, "Added new method " + methodName);
 	}
 
-//	// Called from C
-//	public static Class<?> getClass(String ms) {
-//		return classes.get(ms);
-//	}
-//
-//	// Called from C
-//	public static String getSignature(String ms) {
-//		return signatures.get(ms);
-//	}
-//
-//	// Called from C
-//	public static int[] getParams(String ms) {
-//		return params.get(ms);
-//	}
+	private static class WaitingFunctionEntry {
+		Class<?> clazz;
+		String methodName;
+
+		WaitingFunctionEntry(Class<?> clazz, String methodName) {
+			this.clazz = clazz;
+			this.methodName = methodName;
+		}
+	}
 }

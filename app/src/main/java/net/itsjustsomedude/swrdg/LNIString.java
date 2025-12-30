@@ -147,15 +147,15 @@ public class LNIString {
                     Log.e(TAG, "bad args");
                     return;
                 }
-                else if (stringArgs.size() == 1)
-                    LNIFunctions.copyToClipboard(null, stringArgs.get(0));
-                else
-                    LNIFunctions.copyToClipboard( stringArgs.get(0), stringArgs.get(1));
+//                else if (stringArgs.size() == 1)
+//                    LNIFunctions.copyToClipboard(null, stringArgs.get(0));
+//                else
+//                    LNIFunctions.copyToClipboard( stringArgs.get(0), stringArgs.get(1));
                 break;
             case "openURL":
             case "openUrl":
                 // System.out.println(stringArgs.get(0));
-                LNIFunctions.openUrl(stringArgs.get(0), false);
+//                LNIFunctions.openUrl(stringArgs.get(0), false);
                 break;
             case "setSpeed":
                 // System.out.println(numArgs.get(0));

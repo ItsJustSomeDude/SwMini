@@ -1,45 +1,64 @@
 package net.itsjustsomedude.swrdg;
 
-import android.util.Log;
-
 import com.touchfoo.swordigo.GameTime;
 import com.touchfoo.swordigo.Native;
 
+/**
+ * @noinspection unused
+ */
 public class LNIFunctions {
-    private static final String TAG = "LNIFunctions";
+	private static final String TAG = "LNIFunctions";
 
-    public static void openUrl(String url, boolean askFirst) {
-        Native.openURL(url);
-    }
+	public static void register() {
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "openUrl");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "copyToClipboard");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "setSpeed");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "getSpeed");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "quit");
 
-    public static void copyToClipboard(String title, String content) {
-        Native.copyToClipboard(title, content);
-    }
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "returnTest1");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "argTest1");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "errorTest1");
+		LuaNativeInterface.registerMethod(LNIFunctions.class, "errorTest2");
+	}
 
-    public static void setSpeed(double speed) {
-        GameTime.scaling = Math.clamp(speed, 0.05, 16);
-    }
+	public static void openUrl(String url) {
+		Native.openURL(url);
+	}
+//    public static void askOpenUrl(String url, boolean askFirst) {}
 
-    public static void quit() {
-        MainActivity mainActivity = Native.getActivity();
-        if (mainActivity == null) return;
+	public static void copyToClipboard(String content) {
+		Native.copyToClipboard("Swordigo", content);
+	}
 
-        mainActivity.finish();
-    }
+	public static double getSpeed() {
+		return GameTime.scaling;
+	}
 
-    public static void spit() {
-        Log.d(TAG, "I am printed from Java, from Lua!");
-    }
+	public static void setSpeed(double speed) {
+		GameTime.scaling = Math.clamp(speed, 0.05, 16);
+	}
 
-    public static String spitReturn() {
-        Log.d(TAG, "I am printed from Java, from Lua! And now I return something?");
-        return "Returned from Java";
-    }
+	public static void quit() {
+		MainActivity mainActivity = Native.getActivity();
+		if (mainActivity == null) return;
 
-    static {
-//        LuaNativeInterface.addMethod(LNIFunctions.class, "openUrl");
-//        LuaNativeInterface.addMethod(LNIFunctions.class, "copyToClipboard");
-//        LuaNativeInterface.addMethod(LNIFunctions.class, "setSpeed");
-//        LuaNativeInterface.addMethod(LNIFunctions.class, "quit");
-    }
+		mainActivity.finish();
+	}
+
+	public static String returnTest1() {
+		return "String from Java";
+	}
+
+	public static String argTest1(String arg1, String arg2) {
+		return "Args: " + arg1 + ", " + arg2;
+	}
+
+	public static String errorTest1() throws Exception {
+		throw new Exception("Intentional Java Error.");
+	}
+
+	public static String errorTest2(String arg1) throws Exception {
+		throw new Exception("Intentional Java Error: " + arg1);
+	}
 }

@@ -1,18 +1,14 @@
-#ifndef NEEDLE_JNI_H
-#define NEEDLE_JNI_H
+#ifndef SWMINI_JNI_H
+#define SWMINI_JNI_H
 
 #include <jni.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern JavaVM *g_jvm;  // Global JVM pointer
 
-JNIEnv* get_jni_env();
+// Utility to get JNIEnv* for current thread (attaches if needed)
+JNIEnv *get_jni_env();
 
-JNIEXPORT void JNICALL Java_net_itsjustsomedude_swrdg_NativeBridge_init(JNIEnv *, jclass);
+// Utility to detach current thread if attached
+void detach_jni_thread();
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif //NEEDLE_JNI_H
+#endif //SWMINI_JNI_H

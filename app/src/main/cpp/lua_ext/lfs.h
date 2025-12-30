@@ -14,7 +14,7 @@
 #define chdir(p)	(-1)
 #define chdir_error	"Function 'chdir' not provided by system"
 #else
-#define chdir_error	strerror(errno)
+#define chdir_error    strerror(errno)
 #endif
 
 #ifdef _WIN32
@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-LFS_EXPORT int luaopen_lfs(lua_State * L);
+LFS_EXPORT int luaopen_lfs(lua_State *L);
 
 #ifdef __cplusplus
 }
