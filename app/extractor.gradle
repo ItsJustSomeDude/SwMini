@@ -2,176 +2,241 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.util.zip.ZipInputStream
-
 import java.security.MessageDigest
+import java.util.zip.ZipInputStream
 
 apply from: 'dex2jar.gradle'
 
 // https://stackoverflow.com/a/33307025
 void copyDirectory(File dirFrom, File dirTo) {
-    // creation the target dir
-    if (!dirTo.exists()){
-        dirTo.mkdir()
-    }
+	// creation the target dir
+	if (!dirTo.exists()) {
+		dirTo.mkdir()
+	}
 
-    // copying the daughter files
-    dirFrom.eachFile(groovy.io.FileType.FILES) { File source ->
-        File target = new File(dirTo,source.getName())
-        target.bytes = source.bytes
-    }
+	// copying the daughter files
+	dirFrom.eachFile(groovy.io.FileType.FILES) { File source ->
+		File target = new File(dirTo, source.getName())
+		target.bytes = source.bytes
+	}
 
-    // copying the daughter dirs - recursion
-    dirFrom.eachFile(groovy.io.FileType.DIRECTORIES) { File source ->
-        File target = new File(dirTo,source.getName())
-        copyDirectory(source, target)
-    }
+	// copying the daughter dirs - recursion
+	dirFrom.eachFile(groovy.io.FileType.DIRECTORIES) { File source ->
+		File target = new File(dirTo, source.getName())
+		copyDirectory(source, target)
+	}
+}
+
+void deleteDirectory(File dir) {
+	if (!dir.exists()) {
+		return
+	}
+
+	// Delete files first
+	dir.eachFile(groovy.io.FileType.FILES) { File file ->
+		file.delete()
+	}
+
+	// Recurse into subdirectories
+	dir.eachFile(groovy.io.FileType.DIRECTORIES) { File subdir ->
+		deleteDirectory(subdir)
+	}
+
+	// Finally delete the directory itself
+	dir.delete()
 }
 
 tasks.register('extractVanillaApk') {
-    description = "Extracts a Vanilla APK into the build dir. Use -Path='/path/to/vanilla.apk' to provide the APK."
+	description = "Extracts a Vanilla APK into the build dir. Use -Path='/path/to/vanilla.apk' to provide the APK."
 
-    def ath = project.providers.gradleProperty("ath")
-    def path = project.providers.gradleProperty("Path")
+	def ath = project.providers.gradleProperty("ath")
+	def path = project.providers.gradleProperty("Path")
 
-    onlyIf {
-        def buildDir = layout.buildDirectory.get().asFile
-        def vd = file("${buildDir}/vanilla")
+	onlyIf {
+		def buildDir = layout.buildDirectory.get().asFile
+		def vd = file("${buildDir}/vanilla")
 
-        return !vd.exists() || !vd.isDirectory() || (vd.list().length == 0)
-    }
+		return !vd.exists() || !vd.isDirectory() || (vd.list().length == 0)
+	}
 
-    doLast {
-        def buildDir = layout.buildDirectory.get()
-        def extractDir = file("${buildDir}/vanilla")
+	doLast {
+		def buildDir = layout.buildDirectory.get()
+		def extractDir = file("${buildDir}/vanilla")
 
-        Path apkPath
-        if(ath.present) {
-            apkPath = Paths.get(ath.get())
-        } else if (path.present) {
-            apkPath = Paths.get(path.get())
-        } else if (file("../vanilla.apk").exists()) {
-            apkPath = file("../vanilla.apk").toPath()
-        } else throw new GradleException("Vanilla APK is required: `./gradlew ... -Path='/path/to/apk'`")
+		Path apkPath
+		if (ath.present) {
+			apkPath = Paths.get(ath.get())
+		} else if (path.present) {
+			apkPath = Paths.get(path.get())
+		} else if (file("../vanilla.apk").exists()) {
+			apkPath = file("../vanilla.apk").toPath()
+		} else throw new GradleException("Vanilla APK is required: `./gradlew ... -Path='/path/to/apk'`")
 
-        if (!apkPath.isAbsolute()) {
-            apkPath = Paths.get(System.getProperty('user.dir')).resolve(apkPath).normalize()
-        }
+		if (!apkPath.isAbsolute()) {
+			apkPath = Paths.get(System.getProperty('user.dir')).resolve(apkPath).normalize()
+		}
 
-        def apkFile = apkPath.toFile()
-        if (!apkFile.exists() || !apkFile.isFile())
-            throw new GradleException("Invalid APK path: ${apkFile.absolutePath}")
+		def apkFile = apkPath.toFile()
+		if (!apkFile.exists() || !apkFile.isFile())
+			throw new GradleException("Invalid APK path: ${apkFile.absolutePath}")
 
-        println "Using apk: ${apkPath}"
-        println "Extracting to ${extractDir}"
+		println "Using apk: ${apkPath}"
+		println "Extracting to ${extractDir}"
 
-        try {
-            new ZipInputStream(new FileInputStream(apkFile)).withCloseable { zip ->
-                def entry
-                while ((entry = zip.getNextEntry()) != null) {
-                    def outputFile = new File(extractDir, entry.name)
-                    if (entry.isDirectory()) {
-                        outputFile.mkdirs()
-                    } else {
-                        outputFile.parentFile.mkdirs()
-                        outputFile.withOutputStream { output ->
-                            zip.transferTo(output)
-                        }
-                    }
-                }
-            }
-        } catch (e) {
-            throw new GradleException("Failed to extract! Make sure it is a valid APK.", e)
-        }
-    }
+		try {
+			new ZipInputStream(new FileInputStream(apkFile)).withCloseable { zip ->
+				def entry
+				while ((entry = zip.getNextEntry()) != null) {
+					def outputFile = new File(extractDir, entry.name)
+					if (entry.isDirectory()) {
+						outputFile.mkdirs()
+					} else {
+						outputFile.parentFile.mkdirs()
+						outputFile.withOutputStream { output ->
+							zip.transferTo(output)
+						}
+					}
+				}
+			}
+		} catch (e) {
+			throw new GradleException("Failed to extract! Make sure it is a valid APK.", e)
+		}
+	}
 }
 
 tasks.register('copyVanillaLibs') {
-    description = "Copies the vanilla .so files into the source tree"
-    dependsOn "extractVanillaApk"
+	description = "Copies the vanilla .so files into the source tree"
+	dependsOn "extractVanillaApk"
 
-    doLast {
-        def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/vanilla")
+	doLast {
+		def buildDir = layout.buildDirectory.get()
+		def apk = file("${buildDir}/vanilla")
 
-        copyDirectory(
-                file("${apk}/lib/"),
-                file("src/main/jniLibs/")
-        )
-    }
+		Files.createDirectories(file("src/main/jniLibs/arm64-v8a/").toPath())
+		Files.createDirectories(file("src/main/jniLibs/armeabi-v7a/").toPath())
+
+		Files.copy(
+			file("${apk}/lib/arm64-v8a/libopenal-soft.so").toPath(),
+			file("src/main/jniLibs/arm64-v8a/libopenal-soft.so").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+
+		Files.copy(
+			file("${apk}/lib/arm64-v8a/libswordigo.so").toPath(),
+			file("src/main/jniLibs/arm64-v8a/libswordigo.so").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+
+		Files.copy(
+			file("${apk}/lib/armeabi-v7a/libopenal-soft.so").toPath(),
+			file("src/main/jniLibs/armeabi-v7a/libopenal-soft.so").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+
+		Files.copy(
+			file("${apk}/lib/armeabi-v7a/libswordigo.so").toPath(),
+			file("src/main/jniLibs/armeabi-v7a/libswordigo.so").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+	}
 }
 
 tasks.register('copyVanillaResources') {
-    description = "Copies the vanilla resource files into the source tree"
-    dependsOn "extractVanillaApk"
+	description = "Copies the vanilla resource files into the source tree"
+	dependsOn "extractVanillaApk"
 
-    doLast {
-        def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/vanilla")
+	doLast {
+		def buildDir = layout.buildDirectory.get()
+		def apk = file("${buildDir}/vanilla")
 
-        Files.createDirectories(file("src/main/assets/resources/").toPath())
+		Files.createDirectories(file("src/main/assets/resources/").toPath())
 
-        copyDirectory(
-                file("${apk}/assets/resources"),
-                file("src/main/assets/resources/")
-        )
+		copyDirectory(
+			file("${apk}/assets/resources"),
+			file("src/main/assets/resources/")
+		)
 
-        Files.copy(
-                file("${apk}/assets/README").toPath(),
-                file("src/main/assets/README").toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-        )
-    }
+		Files.copy(
+			file("${apk}/assets/README").toPath(),
+			file("src/main/assets/README").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+	}
 }
 
 tasks.register('copyVanillaMusic') {
-    description = "Copies the vanilla music into the source tree"
-    dependsOn "extractVanillaApk"
+	description = "Copies the vanilla music into the source tree"
+	dependsOn "extractVanillaApk"
 
-    doLast {
-        def buildDir = layout.buildDirectory.get()
-        def apk = file("${buildDir}/vanilla")
+	doLast {
+		def buildDir = layout.buildDirectory.get()
+		def apk = file("${buildDir}/vanilla")
 
-        Files.createDirectories(file("src/main/assets/music/").toPath())
+		Files.createDirectories(file("src/main/assets/music/").toPath())
 
-        def musicMap = Map.of(
-                "1f49b4ac4f5f642ed2eb0428dad0ae77d62c7cd344785eeb078616f404f4864a", "1_dung73.mp3",
-                "346f67ee88d9c5ed4b6660750a6d5b34867312c24fb85c8c18758e7cd447773a", "1_hero2.mp3",
-                "352028e55025507ba9655ae8f6cd48f62886b6d9404aff944c5fdfb4e63216fb", "squire_new2.mp3",
-                "7609232f8f2223a65d35a6a6bc974284c2801aabcfa6ec2a554654a3341ddd99", "1_plaintest2.mp3",
-                "975136dc23510b71e8f7d6a5b96af8a1505b9885781c6064cfd73eaa5fa7d216", "momentofwonder.mp3",
-                "af8486c1bf84e8bfe5d08345f751ec05896e218e477b3c3a3f1039404fe8565b", "2cave2.mp3",
-                "c6d0a727c038f0eb647b5cfebc8d0cb4e52f46db2364b333d7210952c7271f65", "heartbeat.mp3",
-                "ece3ccbfd6a44b95a1c8bbe7294d42c1ca3231ca6271723bc08ca53c5c6a67cb", "gameover.mp3",
-                "eea51816eb5fd4cb85fcc7b86c70b620f5d2ed6bac369f8036843946d3486dfc", "1_boss23.mp3"
-        )
+		def musicMap = Map.of(
+			"1f49b4ac4f5f642ed2eb0428dad0ae77d62c7cd344785eeb078616f404f4864a", "1_dung73.mp3",
+			"346f67ee88d9c5ed4b6660750a6d5b34867312c24fb85c8c18758e7cd447773a", "1_hero2.mp3",
+			"352028e55025507ba9655ae8f6cd48f62886b6d9404aff944c5fdfb4e63216fb", "squire_new2.mp3",
+			"7609232f8f2223a65d35a6a6bc974284c2801aabcfa6ec2a554654a3341ddd99", "1_plaintest2.mp3",
+			"975136dc23510b71e8f7d6a5b96af8a1505b9885781c6064cfd73eaa5fa7d216", "momentofwonder.mp3",
+			"af8486c1bf84e8bfe5d08345f751ec05896e218e477b3c3a3f1039404fe8565b", "2cave2.mp3",
+			"c6d0a727c038f0eb647b5cfebc8d0cb4e52f46db2364b333d7210952c7271f65", "heartbeat.mp3",
+			"ece3ccbfd6a44b95a1c8bbe7294d42c1ca3231ca6271723bc08ca53c5c6a67cb", "gameover.mp3",
+			"eea51816eb5fd4cb85fcc7b86c70b620f5d2ed6bac369f8036843946d3486dfc", "1_boss23.mp3"
+		)
 
-        def res = file("${apk}/res")
+		def res = file("${apk}/res")
 
-        res.eachFile { File f ->
-            if(f.isDirectory()) return
+		res.eachFile { File f ->
+			if (f.isDirectory()) return
 
-            musicMap.each {m ->
-                def sha256 = MessageDigest.getInstance("SHA-256").digest(f.bytes).encodeHex().toString()
-                if(m.key == sha256) {
-                    println "Copying ${f.name} -> ${m.value}"
+			musicMap.each { m ->
+				def sha256 = MessageDigest.getInstance("SHA-256").digest(f.bytes).encodeHex().toString()
+				if (m.key == sha256) {
+					println "Copying ${f.name} -> ${m.value}"
 
-                    Files.copy(
-                            f.toPath(),
-                            file("src/main/assets/music/${m.value}").toPath(),
-                            StandardCopyOption.REPLACE_EXISTING
-                    )
-                }
-            }
-        }
-    }
+					Files.copy(
+						f.toPath(),
+						file("src/main/assets/music/${m.value}").toPath(),
+						StandardCopyOption.REPLACE_EXISTING
+					)
+				}
+			}
+		}
+	}
 }
 
 tasks.register('extractVanilla') {
-    description = "Meta-task to prepare the entire source tree with a copy of vanilla."
+	description = "Meta-task to prepare the entire source tree with a copy of vanilla."
 
-    dependsOn "copyVanillaLibs"
-    dependsOn "copyVanillaResources"
-    dependsOn "copyVanillaMusic"
-    dependsOn "copyVanillaClasses"
+	dependsOn "copyVanillaLibs"
+	dependsOn "copyVanillaResources"
+	dependsOn "copyVanillaMusic"
+	dependsOn "copyVanillaClasses"
+}
+
+tasks.register('cleanVanilla') {
+	description = "Deletes all the files that Vanilla Extraction leaves behind."
+	doLast {
+		def buildDir = layout.buildDirectory.get()
+
+		def apk = file("${buildDir}/vanilla")
+		def classes = file("${buildDir}/vanillaClasses")
+		def jniLibs = file("src/main/jniLibs")
+		def libs = file("libs")
+
+		def music = file("src/main/assets/music")
+		def resources = file("src/main/assets/resources")
+		def readme = file("src/main/assets/README")
+
+		deleteDirectory(apk)
+		deleteDirectory(classes)
+		deleteDirectory(jniLibs)
+		deleteDirectory(libs)
+
+		deleteDirectory(music)
+		deleteDirectory(resources)
+		Files.delete(readme.toPath())
+	}
 }

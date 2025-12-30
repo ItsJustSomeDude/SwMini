@@ -1,167 +1,168 @@
 import com.android.build.gradle.tasks.MergeSourceSetFolders
+
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 plugins {
-    alias(libs.plugins.android.application)
+	alias(libs.plugins.android.application)
 }
 
 android {
-    namespace = 'net.itsjustsomedude.swrdg'
-    compileSdk = 35
+	namespace = 'net.itsjustsomedude.swrdg'
+	compileSdk = 35
 
-    buildFeatures {
-        prefab = true
-    }
+	buildFeatures {
+		prefab = true
+	}
 
-    defaultConfig {
-        applicationId 'net.itsjustsomedude.swrdg'
-        minSdk = 21
-        targetSdk = 35
-        versionCode 46
-        versionName '1.4.9'
+	defaultConfig {
+		applicationId 'net.itsjustsomedude.swrdg'
+		minSdk = 21
+		targetSdk = 35
+		versionCode 46
+		versionName '1.4.10'
 
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
-            }
-        }
-        ndk {
-            // Vanilla only supports arm, so only build natives for arm.
-            //noinspection ChromeOsAbiSupport
-            abiFilters "armeabi-v7a", "arm64-v8a"
-        }
-    }
+		externalNativeBuild {
+			cmake {
+				cppFlags ""
+				arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+			}
+		}
+		ndk {
+			// Vanilla only supports arm, so only build natives for arm.
+			//noinspection ChromeOsAbiSupport
+			abiFilters "armeabi-v7a", "arm64-v8a"
+		}
+	}
 
-    externalNativeBuild {
-        cmake {
-            path "src/main/cpp/CMakeLists.txt"
-        }
-    }
+	externalNativeBuild {
+		cmake {
+			path "src/main/cpp/CMakeLists.txt"
+		}
+	}
 
-    sourceSets {
-        main {
-            jniLibs.srcDirs = ['src/main/jniLibs']
-        }
-    }
+	sourceSets {
+		main {
+			jniLibs.srcDirs = ['src/main/jniLibs']
+		}
+	}
 
-    signingConfigs {
-        // This is configured at the bottom of the file.
-        release {}
-    }
+	signingConfigs {
+		// This is configured at the bottom of the file.
+		release {}
+	}
 
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.release
-            minifyEnabled = false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+	buildTypes {
+		release {
+			signingConfig = signingConfigs.release
+			minifyEnabled = false
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            vcsInfo.include = false
-        }
-        debug {
-            signingConfig = signingConfigs.release
-            debuggable true
-            minifyEnabled false
-        }
-    }
+			vcsInfo.include = false
+		}
+		debug {
+			signingConfig = signingConfigs.release
+			debuggable true
+			minifyEnabled false
+		}
+	}
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_11
+		targetCompatibility JavaVersion.VERSION_11
+	}
 
-    applicationVariants.configureEach { /* com.android.build.gradle.internal.api.ApplicationVariantImpl */ variant ->
-        variant.outputs.configureEach { output ->
-            if (variant.buildType.name == "release") {
-                def appName = "SwordigoMini"
-                def versionName = variant.versionName
-                def versionCode = variant.versionCode
-                outputFileName = "${appName}_${versionName}_${versionCode}.apk"
-            }
-        }
+	applicationVariants.configureEach { /* com.android.build.gradle.internal.api.ApplicationVariantImpl */ variant ->
+		variant.outputs.configureEach { output ->
+			if (variant.buildType.name == "release") {
+				def appName = "SwordigoMini"
+				def versionName = variant.versionName
+				def versionCode = variant.versionCode
+				outputFileName = "${appName}_${versionName}_${versionCode}.apk"
+			}
+		}
 
-        // TODO: Create a "mergeMiniAssets" task that does this and the Readme thing.
-        variant.mergeAssetsProvider.get().doLast {
-            File outputDir = it.outputDir.getAsFile().get()
+		// TODO: Create a "mergeMiniAssets" task that does this and the Readme thing.
+		variant.mergeAssetsProvider.get().doLast {
+			File outputDir = it.outputDir.getAsFile().get()
 
-            // Ok, so we need to merge the `mini_resources` contents into the `resources` folder,
-            // then delete `mini_res_src` and `mini_resources`.
+			// Ok, so we need to merge the `mini_resources` contents into the `resources` folder,
+			// then delete `mini_res_src` and `mini_resources`.
 
-            File resourcesDir = new File(outputDir, "resources")
-            File compiledRes = new File(outputDir, "res")
-            File miniResSrcDir = new File(outputDir, "mini_resources")
+			File resourcesDir = new File(outputDir, "resources")
+			File compiledRes = new File(outputDir, "res")
+			File miniResSrcDir = new File(outputDir, "mini_resources")
 
-            if (compiledRes.exists() && compiledRes.isDirectory() && resourcesDir.exists() && resourcesDir.isDirectory()) {
-                File gitignore = new File(compiledRes, ".gitignore")
-                if(gitignore.exists()) {
-                    delete(gitignore)
-                }
+			if (compiledRes.exists() && compiledRes.isDirectory() && resourcesDir.exists() && resourcesDir.isDirectory()) {
+				File gitignore = new File(compiledRes, ".gitignore")
+				if (gitignore.exists()) {
+					delete(gitignore)
+				}
 
-                copy {
-                    from compiledRes
-                    into resourcesDir
-                }
-            }
+				copy {
+					from compiledRes
+					into resourcesDir
+				}
+			}
 
-            if (miniResSrcDir.exists()) {
-                delete(miniResSrcDir)
-            }
+			if (miniResSrcDir.exists()) {
+				delete(miniResSrcDir)
+			}
 
-            if (compiledRes.exists()) {
-                delete(compiledRes)
-            }
-        }
-    }
+			if (compiledRes.exists()) {
+				delete(compiledRes)
+			}
+		}
+	}
 }
 
 dependencies {
-    implementation files('libs/renderer.jar')
+	implementation files('libs/renderer.jar')
 }
 
 tasks.register("copyGlossHook") {
-    doLast {
-        def glossSource = file("../GlossHook/GlossHook/lib")
-        def destLibs = file("src/main/jniLibs")
+	doLast {
+		def glossSource = file("../GlossHook/GlossHook/lib")
+		def destLibs = file("src/main/jniLibs")
 
-        if(!glossSource.exists()) {
-            throw new GradleException("GlossHook directory not found! Make sure the git submodules were included.")
-        }
+		if (!glossSource.exists()) {
+			throw new GradleException("GlossHook directory not found! Make sure the git submodules were included.")
+		}
 
-        println("Copying GlossHook from ${glossSource.absolutePath} to ${destLibs.absolutePath}.")
+		println("Copying GlossHook from ${glossSource.absolutePath} to ${destLibs.absolutePath}.")
 
-        def dest32 = file("${destLibs}/armeabi-v7a")
-        def dest64 = file("${destLibs}/arm64-v8a")
-        dest32.mkdirs()
-        dest64.mkdirs()
+		def dest32 = file("${destLibs}/armeabi-v7a")
+		def dest64 = file("${destLibs}/arm64-v8a")
+		dest32.mkdirs()
+		dest64.mkdirs()
 
-        Files.copy(file("${glossSource}/ARM/libGlossHook.so").toPath(), file("${dest32}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
-        Files.copy(file("${glossSource}/ARM64/libGlossHook.so").toPath(), file("${dest64}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
-    }
+		Files.copy(file("${glossSource}/ARM/libGlossHook.so").toPath(), file("${dest32}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
+		Files.copy(file("${glossSource}/ARM64/libGlossHook.so").toPath(), file("${dest64}/libGlossHook.so").toPath(), StandardCopyOption.REPLACE_EXISTING)
+	}
 }
 
 tasks.register("copyReadme") {
-    doLast {
+	doLast {
 
-        Files.copy(
-                file("../README.md").toPath(),
-                file("src/main/assets/README_MINI").toPath(),
-                StandardCopyOption.REPLACE_EXISTING
-        )
-    }
+		Files.copy(
+			file("../README.md").toPath(),
+			file("src/main/assets/README_MINI").toPath(),
+			StandardCopyOption.REPLACE_EXISTING
+		)
+	}
 }
 
 afterEvaluate {
-    tasks.withType(JavaCompile).configureEach {
-        options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
-    }
+	tasks.withType(JavaCompile).configureEach {
+		options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+	}
 
-    tasks.withType(MergeSourceSetFolders).tap {
-        configureEach {
-            it.dependsOn copyGlossHook
-            it.dependsOn copyReadme
-        }
-    }
+	tasks.withType(MergeSourceSetFolders).tap {
+		configureEach {
+			it.dependsOn copyGlossHook
+			it.dependsOn copyReadme
+		}
+	}
 }
 
 // Load sensitive values only from ~/.gradle/gradle.properties or <project>/local.properties
@@ -169,24 +170,24 @@ def home = System.properties['user.home']
 def localPropertiesFile = rootProject.file("local.properties")
 def localProperties = new Properties()
 if (localPropertiesFile.exists()) {
-    localProperties.load(new FileInputStream(localPropertiesFile))
+	localProperties.load(new FileInputStream(localPropertiesFile))
 } else {
-    // Fallback to user's home .gradle/gradle.properties (never commit)
-    def globalPropsFile = file("${home}/.gradle/gradle.properties")
-    if (globalPropsFile.exists()) {
-        localProperties.load(new FileInputStream(globalPropsFile))
-    }
+	// Fallback to user's home .gradle/gradle.properties (never commit)
+	def globalPropsFile = file("${home}/.gradle/gradle.properties")
+	if (globalPropsFile.exists()) {
+		localProperties.load(new FileInputStream(globalPropsFile))
+	}
 }
 
-if(localProperties.containsKey('KEYSTORE_PASSWORD')) {
-    android.signingConfigs.release {
-        storeFile file(localProperties['KEYSTORE_PATH'])
-        storePassword localProperties['KEYSTORE_PASSWORD']
-        keyAlias localProperties['KEY_ALIAS']
-        keyPassword localProperties['KEY_PASSWORD']
-        v1SigningEnabled true
-        v2SigningEnabled true
-    }
+if (localProperties.containsKey('KEYSTORE_PASSWORD')) {
+	android.signingConfigs.release {
+		storeFile file(localProperties['KEYSTORE_PATH'])
+		storePassword localProperties['KEYSTORE_PASSWORD']
+		keyAlias localProperties['KEY_ALIAS']
+		keyPassword localProperties['KEY_PASSWORD']
+		v1SigningEnabled true
+		v2SigningEnabled true
+	}
 }
 
 apply from: 'extractor.gradle'
