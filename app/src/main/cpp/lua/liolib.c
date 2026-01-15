@@ -17,7 +17,8 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "../lua_ext/mini_files.h"
+
+#include "../features/use_lua_paths.h"
 
 
 #define IO_INPUT    1
@@ -157,7 +158,7 @@ static int io_tostring(lua_State *L) {
 
 
 static int io_open(lua_State *L) {
-	const char *filename = convertPath(luaL_checkstring(L, 1));
+	const char *filename = luaL_checkstring(L, 1);
 	const char *mode = luaL_optstring(L, 2, "r");
 	FILE **pf = newfile(L);
 	*pf = fopen(filename, mode);
@@ -170,7 +171,7 @@ static int io_open(lua_State *L) {
 ** correct __close for 'popen' files
 */
 static int io_popen(lua_State *L) {
-	const char *filename = convertPath(luaL_checkstring(L, 1));
+	const char *filename = luaL_checkstring(L, 1);
 	const char *mode = luaL_optstring(L, 2, "r");
 	FILE **pf = newfile(L);
 	*pf = lua_popen(L, filename, mode);
@@ -197,7 +198,7 @@ static FILE *getiofile(lua_State *L, int findex) {
 
 static int g_iofile(lua_State *L, int f, const char *mode) {
 	if (!lua_isnoneornil(L, 1)) {
-		const char *filename = convertPath(lua_tostring(L, 1));
+		const char *filename = lua_tostring(L, 1);
 		if (filename) {
 			FILE **pf = newfile(L);
 			*pf = fopen(filename, mode);
@@ -248,7 +249,7 @@ static int io_lines(lua_State *L) {
 		lua_rawgeti(L, LUA_ENVIRONINDEX, IO_INPUT);
 		return f_lines(L);
 	} else {
-		const char *filename = convertPath(luaL_checkstring(L, 1));
+		const char *filename = luaL_checkstring(L, 1);
 		FILE **pf = newfile(L);
 		*pf = fopen(filename, "r");
 		if (*pf == NULL)

@@ -2,6 +2,7 @@
 #define SWMINI_HOOKS_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 void *hook_symbol(const char *symName, void *newAddr, void **origAddr);
 void *hook_address(void *func_addr, void *new_addr, void **orig_addr);
@@ -10,6 +11,8 @@ void *symbol_address(const char *symbol);
 void *offset_address(unsigned int offset);
 
 void *redirect_within_library(long from, long to, bool use4byte);
+
+void write_in_library(long offset, void *data, size_t size);
 
 void setup_hooks();
 

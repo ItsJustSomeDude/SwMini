@@ -58,6 +58,10 @@ void *offset_address(unsigned int offset) {
 	return libSwBase + offset;
 }
 
+void write_in_library(long offset, void *data, size_t size) {
+	WriteMemory(libSwBase + offset, data, size, true);
+}
+
 /** Returns the stub? */
 void *redirect_within_library(long from, long to, bool use4byte) {
 	LOGD("Redirecting within: from: %p", libSwBase + from);

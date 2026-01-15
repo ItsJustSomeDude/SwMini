@@ -1,8 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
-#include "../hooks.h"
-#include "../log.h"
+#include "../../hooks.h"
+#include "../../log.h"
 #include "lua.h"
+#include "../../features/coin_limit.h"
 
 #define LOG_TAG "MiniLuaProfile"
 
@@ -21,6 +22,10 @@ STATIC_DL_HOOK_SYMBOL(
 	}
 	latestProfileId = strdup(profileId);
 	LOGD("Fetched new Profile ID: %s", latestProfileId);
+
+	// Since we're entering a new Save file, reset the Coin Limit in case it was modified from Lua.
+	reset_coin_limit();
+
 	return orig_loadProfileId(this, p1, profile);
 }
 

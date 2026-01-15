@@ -6,9 +6,9 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-#include "../mini_lua/library.h"
+#include "../lua_libs/mini/mini.h"
 #include "../luasocket/src/luasocket.h"
-#include "../lua_ext/lfs.h"
+#include "../lua_libs/lfs.h"
 
 #define LOG_TAG "MiniLuaLibs"
 
@@ -57,7 +57,7 @@ STATIC_DL_HOOK_ADDR(openString, luaopen_string, void, (lua_State * L)) {
 // lua_pop(L, 1);
 }
 
-void init_lua_libs() {
+void init_patch_lua_libs() {
 	LOGD("Applying Lua Library Loading patch, at address %p", luaopen_string);
 
 	hook_openString();

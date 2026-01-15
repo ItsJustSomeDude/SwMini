@@ -5,29 +5,6 @@
 
 #define LOG_TAG "MiniPanic"
 
-//STATIC_DL_HOOK_ADDR(atPanic, lua_atpanic, void*, (lua_State* L, void* function)) {
-//    LOGD("Setting atPanic hook!");
-//    return orig_atPanic(L, function);
-//}
-
-//int panic(lua_State* L) {
-////    const char* errStr = lua_tolstring(L,-1,NULL);
-//    LOGD("Lua Panic!!!");
-//    return 0;
-//}
-
-//STATIC_DL_HOOK_SYMBOL(atP2, "_Z11lua_atpanicP9lua_StatePFiS0_E", void*, (lua_State* L, void* function)) {
-////    orig_atP2(L, function);
-//    LOGD("Setting atPanic hook! (2)");
-//    return orig_atP2(L, function);
-//}
-
-//STATIC_DL_HOOK_SYMBOL(programPanic, "_ZN5Caver12ProgramPanicEP9lua_State", void, (lua_State* L)) {
-//    LOGE("Caught Lua Panic!");
-//
-//    orig_programPanic(L);
-//}
-
 STATIC_DL_HOOK_SYMBOL(programExecute, "_ZN5Caver12ProgramState7ExecuteEi", void,
                       (void* this, int stackIndex)) {
 	lua_State *L = *(lua_State **) (this);
@@ -163,7 +140,7 @@ STATIC_DL_HOOK_SYMBOL(programResume, "_ZN5Caver12ProgramState6ResumeEi", void,
 	}
 }
 
-void setup_panic_hook() {
+void init_patch_panic() {
 	LOGD("Applying Lua Panic patch");
 
 	dlsym_getSpeedMultiplier();

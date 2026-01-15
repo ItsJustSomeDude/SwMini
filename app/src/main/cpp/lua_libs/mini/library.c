@@ -1,6 +1,19 @@
-#include "library.h"
+#include "mini.h"
 #include "lauxlib.h"
-#include "lni/lni.h"
+#include "../lni/lni.h"
+#include "../../features/coin_limit.h"
+
+static int lua_coin_limit(lua_State *L) {
+	lua_Integer n = luaL_checkinteger(L, 1);
+
+	if (n < 0 || n > 0xFFFF)
+		return luaL_error(L, "Coin Limit must be 0–65535");
+
+	unsigned short limit = (unsigned short) n;
+	set_coin_limit(limit);
+
+	return 0;
+}
 
 const luaL_Reg minilib[] = {
 	{"SetControlsHidden", setControlsHidden},
@@ -8,6 +21,12 @@ const luaL_Reg minilib[] = {
 	{"Arch",              get_arch},
 	{"ExecuteLNI",        lni_execute},
 	{"BindLNI",           lni_bind},
+
+	{"SceneFindAll",      scene_find_all},
+
+	{"ToggleDebug",       tdb},
+
+	{"SetCoinLimit",      lua_coin_limit},
 
 //{ "TestGOV", test },
 //{ "TestGAO", test2 },
@@ -30,4 +49,6 @@ LUALIB_API int open_mini(lua_State *L) {
 void init_mini_lua_lib() {
 	init_setControlsHidden();
 	init_profileId();
+	init_scene_find_all();
+	init_lua_debug();
 }

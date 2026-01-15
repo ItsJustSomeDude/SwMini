@@ -4,19 +4,16 @@
 #include <stdbool.h>
 
 #ifdef __arm__
-void setup32Patch();
+void init_patch_32bit();
 #endif //__arm__
 
-void setupAssetPatch();
+void init_patch_assets();
 
-void setup_string_hook(void);
-void cleanup_string_hook(void);
+extern bool allow_network_access;
+void init_patch_network(void);
 
-extern bool allowNetwork;
-void setupNetworkHooks(void);
+void init_patch_panic();
 
-void setup_panic_hook();
-
-void init_lua_libs();
+void init_patch_lua_libs();
 
 #endif //SWMINI_PATCHES_H

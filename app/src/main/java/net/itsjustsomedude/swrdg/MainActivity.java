@@ -20,7 +20,6 @@ import android.widget.TextView;
 
 import com.touchfoo.swordigo.Debug;
 import com.touchfoo.swordigo.GameRenderer;
-import com.touchfoo.swordigo.GameTime;
 import com.touchfoo.swordigo.GameView;
 import com.touchfoo.swordigo.Native;
 
@@ -190,11 +189,13 @@ public class MainActivity extends Activity implements Runnable {
 
 		Debug.Log("All libraries loaded.");
 
-		ModProperties.loadProperties(this);
 		NativeBridge.loadLibraries(this);
 
 		NativeBridge.midLoad();
 		NativeBridge.setupCStringHooks(this);
+
+		// TODO: Unsure if this is the best place to do this.
+		ModProperties.loadDefaultPropertiesFile(this);
 
 		Debug.Log("onCreate");
 //        RemoteConfig.createInstance(this);
@@ -242,11 +243,9 @@ public class MainActivity extends Activity implements Runnable {
 		MiniOverlay.mainActivityRef = new WeakReference<>(this);
 		MiniOverlay.init(this, this.mainViewLayout);
 
-		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
-		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
-		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
-
-		GameTime.scaling = ModProperties.defaultSpeed;
+//		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
+//		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
+//		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
 	}
 
 	protected void onDestroy() {

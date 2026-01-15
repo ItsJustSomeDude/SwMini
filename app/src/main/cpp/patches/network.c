@@ -7,7 +7,7 @@
 
 #define LOG_TAG "MiniNetworkPatch"
 
-bool allowNetwork = true;
+bool allow_network_access = true;
 
 #define netHook(func, ret, params, call)            \
 STATIC_DL_HOOK_ADDR(h##func, func, ret, params) {   \
@@ -157,7 +157,7 @@ netHook(
 	(fd, buf, n, flags, src_addr, src_addr_length)
 )
 
-void setupNetworkHooks() {
+void init_patch_network() {
 	LOGD("Applying Network patch");
 
 //    hook_haccept4();

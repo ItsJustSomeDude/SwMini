@@ -7,7 +7,9 @@
 #include "hooks.h"
 
 #include "patches/patches.h"
-#include "mini_lua/library.h"
+#include "lua_libs/mini/mini.h"
+#include "features/coin_limit.h"
+#include "features/cstrings/cstrings.h"
 
 #define LOG_TAG "MiniNativeMain"
 
@@ -41,18 +43,21 @@ void midLoad() {
 	setup_lua_core();
 
 #ifdef __arm__
-	setup32Patch();
+	init_patch_32bit();
 #endif
 
-//    setupNetworkHooks();
+//    init_patch_network();
 
-	setupAssetPatch();
+	init_patch_assets();
 
-	setup_panic_hook();
-	setup_string_hook();
+	init_patch_panic();
+
+	init_feature_cstrings();
 
 	init_mini_lua_lib();
-	init_lua_libs();
+	init_patch_lua_libs();
+
+	init_feature_coin_limit();
 }
 
 /** This is called after libsw has been initialized from Java. */

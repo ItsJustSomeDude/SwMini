@@ -68,12 +68,11 @@
 
 #endif
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 #include "lfs.h"
-#include "mini_files.h"
 
 #define LFS_VERSION "1.8.0"
 #define LFS_LIBNAME "fs"
@@ -155,7 +154,7 @@ typedef struct dir_data {
 #define _O_BINARY             0
 #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
-#define STAT_FUNC stat
+#define STAT_FUNC mini_path_stat
 #define LSTAT_FUNC lstat
 
 #endif
@@ -215,6 +214,8 @@ static int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
 }
 
 #endif
+
+#include "../features/use_lua_paths.h"
 
 /*
 ** Utility functions
@@ -443,8 +444,7 @@ static int lfs_lock_dir(lua_State *L) {
 	size_t pathl;
 	char *ln;
 	const char *lockfile = "/lockfile.lfs";
-	// IJSD: path conversion.
-	const char *path = convertPath(luaL_checklstring(L, 1, &pathl));
+	const char *path = luaL_checklstring(L, 1, &pathl);
 	lock = (lfs_Lock *) lua_newuserdata(L, sizeof(lfs_Lock));
 	ln = (char *) malloc(pathl + strlen(lockfile) + 1);
 	if (!ln) {
@@ -554,14 +554,14 @@ static int file_unlock(lua_State *L) {
 ** @param #3 True if link is symbolic (optional).
 */
 static int make_link(lua_State *L) {
-	// IJSD: path conversion.
-	const char *oldpath = convertPath(luaL_checkstring(L, 1));
-	const char *newpath = convertPath(luaL_checkstring(L, 2));
+	const char *oldpath = luaL_checkstring(L, 1);
+	const char *newpath = luaL_checkstring(L, 2);
 #ifndef _WIN32
-	return pushresult(L,
-	                  (lua_toboolean(L, 3) ? symlink : link)(oldpath,
-	                                                         newpath),
-	                  NULL);
+	return pushresult(
+		L,
+		(lua_toboolean(L, 3) ? symlink : link)(
+			oldpath, newpath),
+		NULL);
 #else
 	int symbolic = lua_toboolean(L, 3);
   STAT_STRUCT oldpathinfo;
@@ -596,8 +596,7 @@ static int make_link(lua_State *L) {
 ** @param #1 Directory path.
 */
 static int make_dir(lua_State *L) {
-	// IJSD: path conversion.
-	const char *path = convertPath(luaL_checkstring(L, 1));
+	const char *path = luaL_checkstring(L, 1);
 	return pushresult(L, lfs_mkdir(path), NULL);
 }
 
@@ -607,8 +606,7 @@ static int make_dir(lua_State *L) {
 ** @param #1 Directory path.
 */
 static int remove_dir(lua_State *L) {
-	// IJSD: path conversion.
-	const char *path = convertPath(luaL_checkstring(L, 1));
+	const char *path = luaL_checkstring(L, 1);
 	return pushresult(L, rmdir(path), NULL);
 }
 
@@ -648,7 +646,6 @@ static int dir_iter(lua_State *L) {
   }
 #else
 	if ((entry = readdir(d->dir)) != NULL) {
-		// IJSD: TODO: Convert path back to SwMini format.
 		lua_pushstring(L, entry->d_name);
 		return 1;
 	} else {
@@ -684,8 +681,7 @@ static int dir_close(lua_State *L) {
 ** Factory of directory iterators
 */
 static int dir_iter_factory(lua_State *L) {
-	// IJSD: path conversion.
-	const char *path = convertPath(luaL_checkstring(L, 1));
+	const char *path = luaL_checkstring(L, 1);
 	dir_data *d;
 	lua_pushcfunction(L, dir_iter);
 	d = (dir_data *) lua_newuserdata(L, sizeof(dir_data));
@@ -794,8 +790,7 @@ static const char *mode2string(mode_t mode) {
 ** @param #3 Modification time in seconds, access time is used if missing.
 */
 static int file_utime(lua_State *L) {
-	// IJSD: path conversion.
-	const char *file = convertPath(luaL_checkstring(L, 1));
+	const char *file = luaL_checkstring(L, 1);
 	struct utimbuf utb, *buf;
 
 	if (lua_gettop(L) == 1)       /* set to current date/time */
@@ -975,8 +970,7 @@ struct _stat_members members[] = {
 static int _file_info_(lua_State *L,
                        int (*st)(const char *, STAT_STRUCT *)) {
 	STAT_STRUCT info;
-	// IJSD: path conversion.
-	const char *file = convertPath(luaL_checkstring(L, 1));
+	const char *file = luaL_checkstring(L, 1);
 	int i;
 
 	if (st(file, &info)) {
@@ -1028,7 +1022,7 @@ static int file_info(lua_State *L) {
 ** 0 on failure (with stack unchanged, and errno set).
 */
 static int push_link_target(lua_State *L) {
-	const char *file = convertPath(luaL_checkstring(L, 1));
+	const char *file = luaL_checkstring(L, 1);
 #ifdef _WIN32
 	HANDLE h = CreateFile(file, GENERIC_READ,
 						FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -1069,7 +1063,6 @@ static int push_link_target(lua_State *L) {
 	}
 	if (ok) {
 		target[tsize] = '\0';
-		// IJSD: TODO: Convert path back to SwMini format.
 		lua_pushlstring(L, target, tsize);
 	}
 #ifdef _WIN32

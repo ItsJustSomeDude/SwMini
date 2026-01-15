@@ -18,7 +18,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "../lua_ext/mini_files.h"
+#include "../features/use_lua_paths.h"
 
 
 static int os_pushresult(lua_State *L, int i, const char *filename) {
@@ -41,15 +41,15 @@ static int os_pushresult(lua_State *L, int i, const char *filename) {
 //}
 
 static int os_remove(lua_State *L) {
-	const char *filename = convertPath(luaL_checkstring(L, 1));
+	const char *filename = luaL_checkstring(L, 1);
 
 	return os_pushresult(L, remove(filename) == 0, filename);
 }
 
 
 static int os_rename(lua_State *L) {
-	const char *fromname = convertPath(luaL_checkstring(L, 1));
-	const char *toname = convertPath(luaL_checkstring(L, 2));
+	const char *fromname = luaL_checkstring(L, 1);
+	const char *toname = luaL_checkstring(L, 2);
 	return os_pushresult(L, rename(fromname, toname) == 0, fromname);
 }
 

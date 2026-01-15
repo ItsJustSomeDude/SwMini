@@ -82,7 +82,7 @@ STATIC_DL_HOOK_SYMBOL(
 	return ret;
 }
 
-void setup32Patch() {
+void init_patch_32bit() {
 	LOGD("Applying 32bit Program::Bytes patch");
 
 	default_proto_string = offset_address(0x464710);

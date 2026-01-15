@@ -5,9 +5,9 @@
 #include <string.h>
 #include "../log.h"
 #include "../hooks.h"
-#include "../lua_ext/mini_files.h"
-#include "../mini_lua/library.h"
+#include "../lua_libs/mini/mini.h"
 #include "patches.h"
+#include "../features/lua_paths.h"
 
 #define max(a, b) \
    ({ __typeof__ (a) _a = (a); \
@@ -254,7 +254,7 @@ STATIC_DL_HOOK_SYMBOL(
 	return ret;
 }
 
-void setupAssetPatch() {
+void init_patch_assets() {
 	LOGD("Applying External Assets patch");
 
 	hook_openAsset();

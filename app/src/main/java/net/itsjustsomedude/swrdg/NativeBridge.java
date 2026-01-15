@@ -10,15 +10,13 @@ import java.util.Properties;
 
 public class NativeBridge {
 
-	public static native void prepareHooks();
-
-	public static native void cleanupHooks();
-
 	public static native void addStringReplacement(String source, String replacement);
 
-	public static native void setPaths(String files, String cache, String extFiles, String extCache);
+	public static native void setDefaultCoinLimit(int limit);
 
-	public static native void init();
+	public static native void setTooRichAmount(int amount);
+
+	public static native void setPaths(String files, String cache, String extFiles, String extCache);
 
 	public static native void midLoad();
 

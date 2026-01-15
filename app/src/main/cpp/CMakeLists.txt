@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.4.1)
 project("SwMini Natives")
 
 add_library(mini SHARED
-        lua_ext/mini_files.c
+        assembly/thumb.c
+        assembly/arm64.c
 
         lua/ltablib.c
         lua/lmathlib.c
@@ -11,15 +12,16 @@ add_library(mini SHARED
         lua/loslib.c
         lua/liolib.c
 
-        mini_lua/lni/register.c
-        mini_lua/lni/execute.c
-        mini_lua/lni/bind.c
+        lua_libs/lni/register.c
+        lua_libs/lni/execute.c
+        lua_libs/lni/bind.c
 
-        mini_lua/controls.c
-        mini_lua/library.c
-        mini_lua/profile.c
-        mini_lua/arch.c
-        # mini_lua/scene_find_all.c
+        lua_libs/mini/controls.c
+        lua_libs/mini/library.c
+        lua_libs/mini/profile.c
+        lua_libs/mini/arch.c
+        lua_libs/mini/scene_find_all.c
+        lua_libs/mini/debug.c
 
         # prober.c
         # network.c
@@ -35,7 +37,6 @@ add_library(mini SHARED
         java.c
 
         patches/32patch.c
-        patches/cstrings.c
         patches/assets.c
         patches/panic.c
         patches/lua_libs.c
@@ -54,8 +55,18 @@ add_library(mini SHARED
         luasocket/src/udp.c
         luasocket/src/options.c
 
-        lua_ext/lfs.c
+        lua_libs/lfs.c
 
+        features/coin_limit.c
+        features/lua_paths.c
+
+        features/cstrings/workarounds.c
+        features/cstrings/register.c
+        features/cstrings/hooks.c
+
+        #        stdlib/gabi++/include/new
+        #        stdlib/stdlib/new
+        iterate.cpp
 )
 
 # Add prebuilt static library
@@ -68,7 +79,17 @@ set_target_properties(
         ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libGlossHook.so
 )
 
-target_include_directories(mini PUBLIC ${CMAKE_SOURCE_DIR}/lua)
+target_include_directories(mini
+        PUBLIC ${CMAKE_SOURCE_DIR}/lua
+        #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib
+        #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib/stl
+        #        PUBLIC ${CMAKE_SOURCE_DIR}/gabi++/include
+)
+#target_include_directories(mini PUBLIC ${CMAKE_SOURCE_DIR}/stdlib)
+
+#target_include_directories(mini SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/stdlib)
+
+#include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/stdlib)
 
 find_library(log-lib log)
 
