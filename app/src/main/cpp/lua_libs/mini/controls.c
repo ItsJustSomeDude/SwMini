@@ -34,7 +34,7 @@ int setControlsHidden(lua_State *L) {
 	//                                        \-GameSceneView
 	//                                                   \-GameOverlayView
 
-	void *gameSceneView = $(void*, gameController, 0x70, 0xd8);
+	void *gameSceneView = *$(void*, gameController, 0x70, 0xd8);
 	LOGD("GameSceneView: %p", gameSceneView);
 
 	// These next two offsets can be found in Caver::GameSceneView::SetCinematicModeEnabled
@@ -43,10 +43,10 @@ int setControlsHidden(lua_State *L) {
 	//       ^              ^
 	// 64bit:0x100          0xe4
 
-	void *gameOverlayView = $(void*, gameSceneView, 0xcc, 0x100);
+	void *gameOverlayView = *$(void*, gameSceneView, 0xcc, 0x100);
 	LOGD("GameOverlayView: %p", gameOverlayView);
 
-	$(bool, gameOverlayView, 0xbc, 0xe4) = hidden;
+	*$(bool, gameOverlayView, 0xbc, 0xe4) = hidden;
 	GameOverlayView_SetControlsHidden(gameOverlayView, hidden);
 
 	return 0;

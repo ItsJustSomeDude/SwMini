@@ -15,7 +15,7 @@ STATIC_DL_HOOK_SYMBOL(
 	void*,
 	(void *this, void* p1, void** profile)
 ) {
-	const char *profileId = $(char*, *profile, (3 * sizeof(void *)), (3 * sizeof(void *)));
+	const char *profileId = *$(char*, *profile, (3 * sizeof(void *)), (3 * sizeof(void *)));
 	if (latestProfileId != NULL) {
 		// Free the old string copy.
 		free((void *) latestProfileId);

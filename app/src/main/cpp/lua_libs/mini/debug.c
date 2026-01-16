@@ -24,7 +24,7 @@ int tdb(lua_State *L) {
 	//                                        \-GameSceneView
 	//                                                   \-GameOverlayView
 
-	void *gameSceneView = $(void*, gameController, 0x70, 0xd8);
+	void *gameSceneView = *$(void*, gameController, 0x70, 0xd8);
 	LOGD("GameSceneView: %p", gameSceneView);
 
 	toggle_debug_info(gameSceneView);

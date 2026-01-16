@@ -31,12 +31,8 @@ void setup_hooks();
 /** Dynamic pointer offset per architecture. Move n pointers ahead. */
 #define pointerOffset(n) (n * sizeof(void*))
 
-
-#define queryOffset(type, baseAddress, b32, b64) \
-    (*(type*)(baseAddress + archSplit(b32, b64)))
-
 #define $(type, base, b32, b64) \
-    queryOffset(type, base, b32, b64)
+    ((type*)(base + archSplit(b32, b64)))
 
 /**
  * Used to make a header for any function from a dynamic library, in an H file.

@@ -25,10 +25,6 @@ STATIC_DL_HOOK_SYMBOL(
 //	LOGD("32bit ::Proto::Program::MergePartial call begin.");
 //	LOGD("Args: this = %p, stream = %p", this, stream);
 
-	char *iter = $(char*, stream, 0x4, 0x4);
-	char *field8 = $(char*, stream, 0x8, 0x8);
-	char *field14 = $(char*, stream, 0x14, 0x14);
-
 //	LOGD("Starter Values in Stream: ", iter, field8, field14);
 
 	long ret = orig_codedStream(this, stream);

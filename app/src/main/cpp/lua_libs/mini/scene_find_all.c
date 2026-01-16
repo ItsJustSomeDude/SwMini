@@ -32,7 +32,7 @@ int scene_find_all(lua_State *L) {
 	const void *scene = lua_touserdata(L, -1);
 	LOGD("Found Scene: %p", scene);
 
-	void *objTreeMaybe = $(void*, scene, 0, 0xb0);
+	void *objTreeMaybe = *$(void*, scene, 0, 0xb0);
 
 	LOGD("Iterating the tree...");
 	//
