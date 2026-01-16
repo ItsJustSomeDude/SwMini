@@ -28,6 +28,8 @@ const luaL_Reg minilib[] = {
 
 	{"SetCoinLimit",      lua_coin_limit},
 
+	{"RecreateHero",      recreate_hero},
+
 //{ "TestGOV", test },
 //{ "TestGAO", test2 },
 
@@ -51,4 +53,5 @@ void init_mini_lua_lib() {
 	init_profileId();
 	init_scene_find_all();
 	init_lua_debug();
+	init_lua_recreate_hero();
 }

@@ -22,6 +22,7 @@ add_library(mini SHARED
         lua_libs/mini/arch.c
         lua_libs/mini/scene_find_all.c
         lua_libs/mini/debug.c
+        lua_libs/mini/recreate_hero.c
 
         # prober.c
         # network.c

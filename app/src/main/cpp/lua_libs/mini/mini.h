@@ -25,4 +25,7 @@ int get_arch(lua_State *L);
 int tdb(lua_State *L);
 void init_lua_debug();
 
+int recreate_hero(lua_State *L);
+void init_lua_recreate_hero();
+
 #endif //SWMINI_MINI_LUA_LIBRARY_H
