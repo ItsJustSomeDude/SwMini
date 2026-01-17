@@ -1,7 +1,7 @@
 #ifdef __arm__
 
-#include "../hooks.h"
-#include "../log.h"
+#include "hooks.h"
+#include "log.h"
 #include "patches.h"
 
 #define LOG_TAG "Mini32Patch"

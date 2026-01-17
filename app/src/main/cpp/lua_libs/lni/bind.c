@@ -1,7 +1,7 @@
 #include "lni.h"
 #include "lua.h"
 #include "lauxlib.h"
-#include "../../log.h"
+#include "log.h"
 
 #define LOG_TAG "MiniLNIBind"
 

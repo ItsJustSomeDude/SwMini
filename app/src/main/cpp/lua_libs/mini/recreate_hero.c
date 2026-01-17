@@ -1,5 +1,6 @@
 #include "mini.h"
-#include "../../log.h"
+#include "log.h"
+#include "caver/component.h"
 
 #define LOG_TAG "MiniRecreateHero"
 

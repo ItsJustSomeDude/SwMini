@@ -5,12 +5,12 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "../../libs/khash.h"
+#include "libs/khash.h"
 
 #include "jni.h"
 #include "lni.h"
-#include "../../log.h"
-#include "../../jni.h"
+#include "log.h"
+#include "jni.h"
 
 #define LOG_TAG "MiniLNICore"
 

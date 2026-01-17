@@ -18,7 +18,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "../features/use_lua_paths.h"
+#include "features/use_lua_paths.h"
 
 
 #define IO_INPUT    1

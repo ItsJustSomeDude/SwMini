@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "prober.h"
-#include "../log.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <stdlib.h>

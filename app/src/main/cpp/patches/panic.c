@@ -1,6 +1,6 @@
-#include "../hooks.h"
+#include "hooks.h"
 #include "lua.h"
-#include "../log.h"
+#include "log.h"
 #include "patches.h"
 
 #define LOG_TAG "MiniPanic"

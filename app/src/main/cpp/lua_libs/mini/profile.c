@@ -1,9 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
-#include "../../hooks.h"
-#include "../../log.h"
+#include "hooks.h"
+#include "log.h"
 #include "lua.h"
-#include "../../features/coin_limit.h"
+#include "features/coin_limit.h"
 
 #define LOG_TAG "MiniLuaProfile"
 

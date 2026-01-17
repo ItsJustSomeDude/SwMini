@@ -1,7 +1,7 @@
 
-#include "../../hooks.h"
+#include "hooks.h"
 #include "lua.h"
-#include "../../log.h"
+#include "log.h"
 
 #define LOG_TAG "MiniLuaDebug"
 

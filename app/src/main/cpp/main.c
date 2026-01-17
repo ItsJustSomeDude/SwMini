@@ -10,6 +10,8 @@
 #include "lua_libs/mini/mini.h"
 #include "features/coin_limit.h"
 #include "features/cstrings/cstrings.h"
+#include "caver/caver.h"
+#include "features/armor_models.h"
 
 #define LOG_TAG "MiniNativeMain"
 

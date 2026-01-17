@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
-#include "../log.h"
-#include "../hooks.h"
-#include "../lua_libs/mini/mini.h"
+#include "log.h"
+#include "hooks.h"
+#include "lua_libs/mini/mini.h"
 #include "patches.h"
-#include "../features/lua_paths.h"
+#include "features/lua_paths.h"
 
 #define max(a, b) \
    ({ __typeof__ (a) _a = (a); \

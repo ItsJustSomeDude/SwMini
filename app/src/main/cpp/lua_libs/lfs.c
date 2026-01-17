@@ -215,7 +215,7 @@ static int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
 
 #endif
 
-#include "../features/use_lua_paths.h"
+#include "features/use_lua_paths.h"
 
 /*
 ** Utility functions

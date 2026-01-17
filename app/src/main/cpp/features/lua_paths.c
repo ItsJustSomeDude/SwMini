@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <linux/limits.h>
-#include "../log.h"
+#include "log.h"
 #include "lua_paths.h"
 
 #define LOG_TAG "MiniLuaPaths"

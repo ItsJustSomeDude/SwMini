@@ -1,4 +1,4 @@
-#include "jni.h"
+#include "java.h"
 #include "log.h"
 #include "main.h"
 

@@ -2,8 +2,8 @@
 #include <string.h>
 #include <jni.h>
 #include "cstrings.h"
-#include "../../libs/khash.h"
-#include "../../log.h"
+#include "libs/khash.h"
+#include "log.h"
 
 #define LOG_TAG "MiniCStringRegister"
 

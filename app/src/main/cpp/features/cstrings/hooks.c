@@ -1,7 +1,7 @@
 #include <string.h>
 #include "cstrings.h"
-#include "../../hooks.h"
-#include "../../log.h"
+#include "hooks.h"
+#include "log.h"
 
 #define LOG_TAG "MiniCStringHooks"
 
@@ -14,6 +14,14 @@
 // However, we put the hook on the shorter function.
 
 // 1.4.9 offsets: archSplit(0x37bbe0, 0x565b48)
+
+#define CREATE_BASIC_STRING_OFFSET archSplit(0x37bc60, 0x566bb8)
+
+DL_FUNCTION_OFFSET(
+	create_basic_string,
+	CREATE_BASIC_STRING_OFFSET,
+	void, (CppString * *destinationPointer, const char *strDataPointer)
+)
 
 STATIC_DL_HOOK_OFFSET(
 	createBasicString,

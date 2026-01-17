@@ -1,8 +1,8 @@
-#include "../../hooks.h"
+#include "hooks.h"
 #include "lua.h"
-#include "../../log.h"
+#include "log.h"
 #include "lauxlib.h"
-#include "../../iterate.h"
+#include "iterate.h"
 
 #define LOG_TAG "MiniLuaFindAll"
 

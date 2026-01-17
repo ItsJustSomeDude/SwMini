@@ -1,7 +1,7 @@
 #include "cstrings.h"
-#include "../../hooks.h"
-#include "../../log.h"
-#include "../../assembly/arm64.h"
+#include "hooks.h"
+#include "log.h"
+#include "assembly/arm64.h"
 
 #include <stdint.h>
 #include <string.h>
