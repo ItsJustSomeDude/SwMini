@@ -24,14 +24,11 @@ android {
 
 		externalNativeBuild {
 			cmake {
+				//noinspection ChromeOsAbiSupport
+				abiFilters "armeabi-v7a", "arm64-v8a"
 				cppFlags ""
 				arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
 			}
-		}
-		ndk {
-			// Vanilla only supports arm, so only build natives for arm.
-			//noinspection ChromeOsAbiSupport
-			abiFilters "armeabi-v7a", "arm64-v8a"
 		}
 	}
 
@@ -64,6 +61,22 @@ android {
 			signingConfig = signingConfigs.release
 			debuggable true
 			minifyEnabled false
+		}
+
+		debug32 {
+			initWith debug
+
+			externalNativeBuild {
+				cmake {
+					//noinspection ChromeOsAbiSupport
+					abiFilters 'armeabi-v7a'
+				}
+			}
+
+			ndk {
+				//noinspection ChromeOsAbiSupport
+				abiFilters 'armeabi-v7a'
+			}
 		}
 	}
 
@@ -118,6 +131,12 @@ android {
 
 dependencies {
 	implementation files('libs/renderer.jar')
+}
+
+androidComponents {
+	onVariants(selector().withBuildType("debug32")) {
+		packaging.jniLibs.excludes.add("/lib/arm64-v8a/*.so")
+	}
 }
 
 tasks.register("copyGlossHook") {
