@@ -11,7 +11,7 @@ bool allow_network_access = true;
 
 #define netHook(func, ret, params, call)            \
 STATIC_DL_HOOK_ADDR(h##func, func, ret, params) {   \
-    if(allowNetwork)                                \
+    if(allow_network_access)                        \
         return orig_h##func call;                   \
     errno = EACCES;                                 \
     return -1;                                      \
