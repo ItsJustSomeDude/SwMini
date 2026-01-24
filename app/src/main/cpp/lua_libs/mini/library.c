@@ -17,7 +17,7 @@ static int lua_coin_limit(lua_State *L) {
 	return 0;
 }
 
-const luaL_Reg minilib[] = {
+static const luaL_Reg mini_lib[] = {
 	{"SetControlsHidden", setControlsHidden},
 	{"GetProfileID",      getProfileID},
 	{"Arch",              get_arch},
@@ -38,7 +38,7 @@ const luaL_Reg minilib[] = {
 	{NULL, NULL}
 };
 
-LUALIB_API int open_mini(lua_State *L) {
+LUALIB_API int miniL_open_mini(lua_State *L) {
 	// TODO: Move to better location.
 	lni_bind_global(L, "copyToClipboard", 4, "Copy", "copy", "CopyToClipboard", "copyToClipboard");
 	lni_bind_global(L, "openUrl", 4, "openUrl", "openURL", "OpenUrl", "OpenURL");
@@ -46,7 +46,10 @@ LUALIB_API int open_mini(lua_State *L) {
 	lni_bind_global(L, "getSpeed", 2, "getSpeed", "GetSpeed");
 	lni_bind_global(L, "quit", 2, "Quit", "quit");
 
-	luaL_register(L, MINI_LIB_NAME, minilib);
+	luaL_register(L, MINI_LIB_NAME, mini_lib);
+
+	miniL_open_health(L);
+
 	return 1;
 }
 
@@ -56,4 +59,6 @@ void init_mini_lua_lib() {
 	init_scene_find_all();
 	init_lua_debug();
 	init_lua_recreate_hero();
+
+	init_lua_health();
 }

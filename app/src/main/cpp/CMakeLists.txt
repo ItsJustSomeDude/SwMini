@@ -6,11 +6,18 @@ add_library(mini SHARED
         assembly/thumb.c
         assembly/arm64.c
 
+        caver/caver.c
+        caver/component.c
+        caver/program_state.c
+
         lua/ltablib.c
         lua/lmathlib.c
         lua/ldblib.c
         lua/loslib.c
         lua/liolib.c
+        # lua/loadlib.c
+
+        lua_libs/lfs.c
 
         lua_libs/lni/register.c
         lua_libs/lni/execute.c
@@ -24,13 +31,16 @@ add_library(mini SHARED
         lua_libs/mini/debug.c
         lua_libs/mini/recreate_hero.c
 
+        lua_libs/mini/health/health.c
+
+        lua_libs/mini/sub_library.c
+
         # prober.c
         # network.c
 
         lua_core.c
         main.c
         hooks.c
-        #        lni.c
 
         log.c
 
@@ -55,8 +65,6 @@ add_library(mini SHARED
         luasocket/src/tcp.c
         luasocket/src/udp.c
         luasocket/src/options.c
-
-        lua_libs/lfs.c
 
         features/coin_limit.c
         features/lua_paths.c

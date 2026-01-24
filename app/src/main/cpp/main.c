@@ -42,23 +42,21 @@ void midLoad() {
 	setup_hooks();
 
 	// This sets up all the references for Lua's internals.
-	setup_lua_core();
+	init_lua();
+
+	init_caver();
 
 #ifdef __arm__
 	init_patch_32bit();
 #endif
-
-//    init_patch_network();
-
 	init_patch_assets();
-
 	init_patch_panic();
-
-	init_feature_cstrings();
+	init_patch_lua_libs();
+	// init_patch_network();
 
 	init_mini_lua_lib();
-	init_patch_lua_libs();
 
+	init_feature_cstrings();
 	init_feature_coin_limit();
 	init_feature_armor_models();
 }

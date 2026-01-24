@@ -33,7 +33,7 @@ STATIC_DL_HOOK_ADDR(openString, luaopen_string, void, (lua_State * L)) {
 		{LUA_DBLIBNAME,   luaopen_debug},
 
 		// Mini!
-		{MINI_LIB_NAME,   open_mini},
+		{MINI_LIB_NAME,   miniL_open_mini},
 
 		{NULL, NULL}
 	};

@@ -1,7 +1,7 @@
 #ifndef SWMINI_MAIN_H
 #define SWMINI_MAIN_H
 
-int setup_lua_core();
+int init_lua();
 
 void earlyLoad();
 void midLoad();

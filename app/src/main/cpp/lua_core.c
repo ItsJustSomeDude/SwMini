@@ -144,7 +144,7 @@ int (*luaopen_base)(lua_State *L);
 int (*luaopen_string)(lua_State *L);
 
 
-int setup_lua_core() {
+int init_lua() {
 	void *libsw_handle = dlopen("libswordigo.so", RTLD_NOLOAD);
 
 #define load(name, mangled)                                   \

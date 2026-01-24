@@ -6,8 +6,7 @@
 #include "lauxlib.h"
 
 #define MINI_LIB_NAME "Mini"
-extern const luaL_Reg minilib[];
-int open_mini(lua_State *L);
+int miniL_open_mini(lua_State *L);
 void init_mini_lua_lib();
 
 void init_setControlsHidden();
