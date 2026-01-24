@@ -16,6 +16,8 @@ public class NativeBridge {
 
 	public static native void setTooRichAmount(int amount);
 
+	public static native void addHiroModel(String itemName, String modelName);
+
 	public static native void setPaths(String files, String cache, String extFiles, String extCache);
 
 	public static native void midLoad();

@@ -5,6 +5,8 @@ import android.content.Context;
 import com.touchfoo.swordigo.GameTime;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class ModProperties {
@@ -24,6 +26,9 @@ public class ModProperties {
 
 	public static int defaultCoinLimit = 999;
 	public static int tooRichAmount = 999;
+
+	public static Map<String, String> hiroModels = new HashMap<>();
+	public static String hiroModelDefault = "hiro";
 
 	public static void loadDefaultPropertiesFile(Context ctx) {
 		Properties props = new Properties();
@@ -46,7 +51,6 @@ public class ModProperties {
 		googleVisible = getBoolean(props, "google.visible", googleVisible);
 		googleAction = props.getProperty("google.action", googleAction);
 
-
 		modName = props.getProperty("mod.name", modName);
 		modVersion = props.getProperty("mod.version", modVersion);
 		modAuthors = props.getProperty("mod.authors", modAuthors);
@@ -61,6 +65,14 @@ public class ModProperties {
 
 		tooRichAmount = getInt(props, "options.tooRichAmount", tooRichAmount);
 		NativeBridge.setTooRichAmount(tooRichAmount);
+
+		hiroModelDefault = props.getProperty("hiroModel", hiroModelDefault);
+		NativeBridge.addHiroModel(null, hiroModelDefault);
+
+		getStringMap(props, "hiroModel", hiroModels);
+		for (Map.Entry<String, String> test : hiroModels.entrySet()) {
+			NativeBridge.addHiroModel(test.getKey(), test.getValue());
+		}
 	}
 
 	private static int getInt(Properties props, String key, int defaultVal) {
@@ -90,5 +102,21 @@ public class ModProperties {
 		if ("true".equalsIgnoreCase(v)) return true;
 		else if ("false".equalsIgnoreCase(v)) return false;
 		else return defaultVal;
+	}
+
+	private static void getStringMap(
+		Properties props, String prefix, Map<String, String> map
+	) {
+		String pfx = prefix + ".";
+		for (String k : props.stringPropertyNames()) {
+			if (!k.startsWith(pfx)) continue;
+
+			String[] split = k.split("\\.", 2);
+			if (split.length < 2 || split[1].isBlank()) continue;
+			String key = split[1];
+			String val = props.getProperty(k);
+
+			map.put(key, val);
+		}
 	}
 }

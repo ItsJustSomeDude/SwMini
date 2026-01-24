@@ -60,6 +60,7 @@ void midLoad() {
 	init_patch_lua_libs();
 
 	init_feature_coin_limit();
+	init_feature_armor_models();
 }
 
 /** This is called after libsw has been initialized from Java. */

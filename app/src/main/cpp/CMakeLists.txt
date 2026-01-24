@@ -60,6 +60,7 @@ add_library(mini SHARED
 
         features/coin_limit.c
         features/lua_paths.c
+        features/armor_models.c
 
         features/cstrings/workarounds.c
         features/cstrings/register.c
@@ -81,16 +82,12 @@ set_target_properties(
 )
 
 target_include_directories(mini
+        PUBLIC ${CMAKE_SOURCE_DIR}
         PUBLIC ${CMAKE_SOURCE_DIR}/lua
         #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib
         #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib/stl
         #        PUBLIC ${CMAKE_SOURCE_DIR}/gabi++/include
 )
-#target_include_directories(mini PUBLIC ${CMAKE_SOURCE_DIR}/stdlib)
-
-#target_include_directories(mini SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/stdlib)
-
-#include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/stdlib)
 
 find_library(log-lib log)
 

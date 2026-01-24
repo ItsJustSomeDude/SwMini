@@ -24,20 +24,20 @@ DL_FUNCTION_OFFSET(
 )
 
 STATIC_DL_HOOK_OFFSET(
-	createBasicString,
-	archSplit(0x37bc60, 0x566bb8),
-	void, (size_t * *destinationPointer, const char *strDataPointer)
+	create_basic_string,
+	CREATE_BASIC_STRING_OFFSET,
+	void, (CppString * *destinationPointer, const char *strDataPointer)
 ) {
 	if (strDataPointer == NULL || *strDataPointer == '\0') {
-		orig_createBasicString(destinationPointer, strDataPointer);
+		orig_create_basic_string(destinationPointer, strDataPointer);
 		return;
 	}
 
 	const char *replacement = cstrings_get_replacement(strDataPointer);
 	if (replacement) {
-		orig_createBasicString(destinationPointer, replacement);
+		orig_create_basic_string(destinationPointer, replacement);
 	} else {
-		orig_createBasicString(destinationPointer, strDataPointer);
+		orig_create_basic_string(destinationPointer, strDataPointer);
 	}
 }
 
@@ -47,46 +47,45 @@ STATIC_DL_HOOK_OFFSET(
 // The body will look kinda like the `create_basic_string` one.
 
 STATIC_DL_HOOK_OFFSET(
-	appendBasicString,
+	append_basic_string,
 	archSplit(0x379988, 0x567254),
-	void, (size_t * *destinationPointer, const char *strDataPointer, unsigned long length)
+	void, (CppString * *destinationPointer, const char *strDataPointer, unsigned long length)
 ) {
 	if (strDataPointer == NULL || *strDataPointer == '\0') {
-		orig_appendBasicString(destinationPointer, strDataPointer, length);
+		orig_append_basic_string(destinationPointer, strDataPointer, length);
 		return;
 	}
 
 	const char *replacement = cstrings_get_replacement(strDataPointer);
 	if (replacement) {
-		orig_appendBasicString(destinationPointer, replacement, strlen(replacement));
+		orig_append_basic_string(destinationPointer, replacement, strlen(replacement));
 	} else {
-		orig_appendBasicString(destinationPointer, strDataPointer, length);
+		orig_append_basic_string(destinationPointer, strDataPointer, length);
 	}
 }
 
-// To find the Append function, head to Caver::ConfigureOverlayView::InitWithGameState, and find
+// To find the Assign function, head to Caver::ConfigureOverlayView::InitWithGameState, and find
 // the call using the "Target Info" string. Click into this function.
 // The body will look kinda like the `create_basic_string` one.
 
 #define ASSIGN_BASIC_STRING_OFFSET archSplit(0x37aa1c, 0x56918c)
 STATIC_DL_HOOK_OFFSET(
-	assignBasicString,
+	assign_basic_string,
 	ASSIGN_BASIC_STRING_OFFSET,
-	void, (size_t * *destinationPointer, const char *strDataPointer, unsigned long length)
+	void, (CppString * *destinationPointer, const char *strDataPointer, unsigned long length)
 ) {
 	if (strDataPointer == NULL || *strDataPointer == '\0') {
-		orig_assignBasicString(destinationPointer, strDataPointer, length);
+		orig_assign_basic_string(destinationPointer, strDataPointer, length);
 		return;
 	}
 
 	const char *replacement = cstrings_get_replacement(strDataPointer);
 	if (replacement) {
-		orig_assignBasicString(destinationPointer, replacement, strlen(replacement));
+		orig_assign_basic_string(destinationPointer, replacement, strlen(replacement));
 	} else {
-		orig_assignBasicString(destinationPointer, strDataPointer, length);
+		orig_assign_basic_string(destinationPointer, strDataPointer, length);
 	}
 }
-
 
 void init_feature_cstrings() {
 	LOGD("Applying CString Replacement patch");
@@ -95,7 +94,12 @@ void init_feature_cstrings() {
 //	cstrings_add_replacement("Attack", "Thwack!!");
 //	cstrings_add_replacement("Health", "Your Life");
 
-	hook_createBasicString();
-	hook_appendBasicString();
-	hook_assignBasicString();
+	hook_create_basic_string();
+	hook_append_basic_string();
+	hook_assign_basic_string();
+
+	// Make create_basic_string available to the rest of Mini.
+	// Using dlsym crashes 32bit for some reason, so use the original I guess...
+	// The only affect this has is that mod-defined replacements won't apply.
+	create_basic_string = orig_create_basic_string;
 }
