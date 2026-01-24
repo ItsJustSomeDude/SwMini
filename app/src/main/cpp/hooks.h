@@ -62,7 +62,7 @@ inline void* dlsym_##name();
 type_##name *name;                                      \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = symbol_offset(symbol);                       \
+    return name = symbol_address(symbol);               \
 }
 
 /**
@@ -89,10 +89,10 @@ void* dlsym_##name() {                                  \
  * @param params Parameters of function, (in parenthesis)
  */
 #define STATIC_DL_FUNCTION_SYMBOL(name, sym, ret, params) \
-ret (*name) params;                                     \
-inline __attribute__((always_inline))                   \
-void* dlsym_##name() {                                  \
-    return name = symbol_address(sym);                          \
+static ret (*name) params;                                \
+inline __attribute__((always_inline))                     \
+static void* dlsym_##name() {                             \
+    return name = symbol_address(sym);                    \
 }
 
 
@@ -106,9 +106,9 @@ void* dlsym_##name() {                                  \
  * @param params Parameters of function, (in parenthesis)
  */
 #define STATIC_DL_FUNCTION_OFFSET(name, offset, ret, params) \
-ret (*name) params;                                     \
-inline __attribute__((always_inline))                   \
-void* dlsym_##name() {                                  \
+static ret (*name) params;                                   \
+inline __attribute__((always_inline))                        \
+static void* dlsym_##name() {                                \
     return name = offset_address(offset);                    \
 }
 
