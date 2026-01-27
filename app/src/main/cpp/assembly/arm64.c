@@ -72,4 +72,14 @@ uint32_t emit_nop() {
 	return opc;
 }
 
+uint32_t emit_ret(uint8_t rn) {
+	uint32_t opc = 0;
+
+	opc |= 0b1101011001011111000000 << 10;
+	opc |= rn << 5;
+	// opc |= 0b00000 << 0;
+
+	return opc;
+}
+
 #endif //__aarch64__

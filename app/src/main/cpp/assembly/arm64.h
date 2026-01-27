@@ -15,5 +15,7 @@ uint32_t emit_cmp_shifted_register(bool is64, uint8_t rn, uint8_t rm, uint8_t sh
 
 uint32_t emit_nop();
 
+uint32_t emit_ret(uint8_t rn);
+
 #endif //NEEDLE_ARM64_H
 #endif //__aarch64__

@@ -10,7 +10,7 @@ void *hook_offset(unsigned long offset, void *new_addr, void **orig_addr);
 void *symbol_address(const char *symbol);
 void *offset_address(unsigned int offset);
 
-void *redirect_within_library(long from, long to, bool use4byte);
+void *redirect_within_library(long from, long to, bool use_small_instruction);
 
 void write_in_library(long offset, void *data, size_t size);
 

@@ -1,6 +1,7 @@
 #ifdef __arm__
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "thumb.h"
 #include "utils.h"
 
@@ -56,5 +57,73 @@ uint32_t emit_movw_t3(uint8_t rd, uint16_t imm16) {
 	//return arrange_4byte_instruction(opc);
 }
 
+uint16_t emit_b_t2(int16_t target) {
+	// target must be even, in range -2048..+2046 (inclusive)
+	// i.e. multiple of 2, within ±2048 bytes from current PC
+
+	if (target < -2048 || target > 2046 || (target & 1) != 0) {
+		return 0;           // invalid → return 0 or handle error as needed
+	}
+
+	uint16_t imm11 = (uint16_t) (target >> 1);   // divide by 2 → 11-bit value
+
+	uint16_t opc = 0;
+	opc |= 0b11100u << 11;                      // opcode prefix
+	opc |= imm11 & 0x07FF;                      // bits 10:0 = imm11
+
+	return opc;
+}
+
+uint32_t emit_b_t4(int32_t target) {
+	// Must be halfword aligned
+	if (target & 1) {
+		// handle error (unaligned branch)
+		return 0;
+	}
+
+	// Range check: signed 25-bit immediate (shifted left by 1)
+	if (target < -16777216 || target > 16777214) {
+		// handle error (out of range)
+		return 0;
+	}
+
+	// Shift right to remove the implicit low zero bit
+	int32_t imm25 = target >> 1;
+
+	// Extract fields
+	uint32_t S = (imm25 >> 24) & 1;
+	uint32_t I1 = (imm25 >> 23) & 1;
+	uint32_t I2 = (imm25 >> 22) & 1;
+	uint32_t imm10 = (imm25 >> 12) & 0x3FF;
+	uint32_t imm11 = imm25 & 0x7FF;
+
+	// Encode J bits (this is the critical XOR logic)
+	uint32_t J1 = (~(I1 ^ S)) & 1;
+	uint32_t J2 = (~(I2 ^ S)) & 1;
+
+	uint32_t opc = 0;
+
+	// Fixed bits
+	opc |= 0b11110u << 27;   // bits 31:27
+	opc |= S << 26;         // bit 26
+	opc |= imm10 << 16;     // bits 25:16
+	opc |= 0b10u << 14;     // bits 15:14
+	opc |= J1 << 13;        // bit 13
+	opc |= 1u << 12;        // bit 12 (always 1)
+	opc |= J2 << 11;        // bit 11
+	opc |= imm11;           // bits 10:0
+
+	return arrange_thumb_4byte(opc);
+}
+
+uint16_t emit_bx_t1(uint8_t rm) {
+	uint16_t opc = 0;
+
+	opc |= 0b010001110 << 7;
+	opc |= rm << 3;
+	// opc |= 0b000 << 0;
+
+	return opc;
+}
 
 #endif //__arm__
