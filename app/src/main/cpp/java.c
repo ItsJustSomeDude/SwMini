@@ -11,7 +11,8 @@ jmethodID g_PrintWriter_init;
 jclass g_Arrays;
 jmethodID g_Arrays_copyOfRange;
 
-jclass g_LuaNativeInterface;
+jclass g_Achievements;
+jmethodID g_Achievements_registerAll;
 
 /** Create references to all the Java classes and Methods we're going to need. */
 void cache_classes() {
@@ -37,10 +38,10 @@ void cache_classes() {
 		"([Ljava/lang/Object;II)[Ljava/lang/Object;"
 	);
 
-	g_LuaNativeInterface = (*env)->NewGlobalRef(
-		env,
-		(*env)->FindClass(env, "net/itsjustsomedude/swrdg/LuaNativeInterface")
+	g_Achievements = (*env)->NewGlobalRef(
+		env, (*env)->FindClass(env, "net/itsjustsomedude/swrdg/Achievements")
 	);
-
-
+	g_Achievements_registerAll = (*env)->GetStaticMethodID(
+		env, g_Achievements, "registerAll", "()V"
+	);
 }

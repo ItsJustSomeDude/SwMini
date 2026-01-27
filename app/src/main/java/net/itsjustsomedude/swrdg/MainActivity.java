@@ -231,6 +231,7 @@ public class MainActivity extends Activity implements Runnable {
 		Native.handleApplicationLaunch();
 
 		NativeBridge.lateLoad();
+		Achievements.readDefaultFile(this);
 
 		this.gameView = new GameView(this);
 		this.gameView.setEGLConfigChooser(5, 6, 5, 0, 16, 0);

@@ -74,8 +74,12 @@ add_library(mini SHARED
         features/cstrings/register.c
         features/cstrings/hooks.c
 
-        #        stdlib/gabi++/include/new
-        #        stdlib/stdlib/new
+        features/achievements/achievements.c
+        features/achievements/ach64.c
+        features/achievements/ach32.c
+
+        # stdlib/gabi++/include/new
+        # stdlib/stdlib/new
         iterate.cpp
 )
 

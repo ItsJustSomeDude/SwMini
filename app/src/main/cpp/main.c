@@ -12,6 +12,7 @@
 #include "features/cstrings/cstrings.h"
 #include "caver/caver.h"
 #include "features/armor_models.h"
+#include "features/achievements/achievements.h"
 
 #define LOG_TAG "MiniNativeMain"
 
@@ -59,6 +60,7 @@ void midLoad() {
 	init_feature_cstrings();
 	init_feature_coin_limit();
 	init_feature_armor_models();
+	init_feature_achievements();
 }
 
 /** This is called after libsw has been initialized from Java. */

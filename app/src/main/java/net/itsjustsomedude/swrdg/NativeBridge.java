@@ -18,6 +18,8 @@ public class NativeBridge {
 
 	public static native void addHiroModel(String itemName, String modelName);
 
+	public static native void createAchievement(String id, String name, String description, int points, String counter, int threshold);
+
 	public static native void setPaths(String files, String cache, String extFiles, String extCache);
 
 	public static native void midLoad();
