@@ -1,6 +1,8 @@
 package net.itsjustsomedude.swrdg;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -17,6 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.window.OnBackInvokedDispatcher;
 
 import com.touchfoo.swordigo.Debug;
 import com.touchfoo.swordigo.GameRenderer;
@@ -171,12 +174,20 @@ public class MainActivity extends Activity implements Runnable {
 		super.onActivityResult(var1, var2, var3);
 	}
 
+	// Deprecation suppressed because it's still used on versions before T.
+	@SuppressLint("GestureBackNavigation")
+	@SuppressWarnings({"deprecation", "RedundantSuppression"})
 	public void onBackPressed() {
+		// T+, already handled at the end of onCreate.
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return;
+
+		Debug.Log("Back pressed (method)");
+		this.handleBack();
+	}
+
+	private void handleBack() {
 		if (this.gameView != null) {
-			this.gameView.queueEvent(() -> {
-				Debug.Log("onBackPressed");
-				Native.handleBackButtonPress();
-			});
+			this.gameView.queueEvent(Native::handleBackButtonPress);
 		}
 	}
 
@@ -241,12 +252,33 @@ public class MainActivity extends Activity implements Runnable {
 		this.addContentView(this.gameView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		this.connectStoreControllerWithDelay();
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			getOnBackInvokedDispatcher()
+				.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+		}
+
 		MiniOverlay.mainActivityRef = new WeakReference<>(this);
 		MiniOverlay.init(this, this.mainViewLayout);
 
 //		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
 //		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
 //		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
+
+		for (String abi : Build.SUPPORTED_ABIS) {
+			// Find the first matching supported ABI
+			if (abi.equals("arm64-v8a")) {
+				break;
+			} else if (abi.equals("armeabi-v7a") && !Native.getBooleanFromSP("Mini_32bitAck")) {
+				new AlertDialog.Builder(this)
+					.setTitle(R.string.title_32bit_warning)
+					.setMessage(R.string.body_32bit_warning)
+					.setPositiveButton(R.string.btn_32bit_warning, (dialog, which) -> {
+						Native.saveBooleanInSP("Mini_32bitAck", true);
+					})
+					.show();
+				break;
+			}
+		}
 	}
 
 	protected void onDestroy() {
@@ -306,7 +338,9 @@ public class MainActivity extends Activity implements Runnable {
 
 	protected void onResume() {
 		super.onResume();
-		this.gameView.setLowProfileUI();
+		if (this.gameView != null)
+			this.gameView.setLowProfileUI();
+
 		if (this.inactive) {
 			this.inactive = false;
 			if (this.gameView != null) {
@@ -330,7 +364,6 @@ public class MainActivity extends Activity implements Runnable {
 
 	protected void onStart() {
 		super.onStart();
-		this.persistentState.startMeasuringAppForegroundTime();
 		if (this.inBackground) {
 			this.inBackground = false;
 //            this.gameServices.adsHelper.onEnterForeground();
@@ -359,6 +392,9 @@ public class MainActivity extends Activity implements Runnable {
 //                }
 //        }, 200L);
 
+		if (this.persistentState == null) return;
+
+		this.persistentState.startMeasuringAppForegroundTime();
 		long var1 = Math.max(this.persistentState.getDelayMillisToReviewFlow(), 3600000L);
 		long var3 = this.persistentState.getTotalForegroundMillisForReviewFlow();
 		Debug.Log("Delay to review flow: " + var1 / 1000L +
