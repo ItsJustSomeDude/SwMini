@@ -1,9 +1,12 @@
 <resources>
-    <string name="app_name">SwordigoMini</string>
-    <string name="keyboard_input">Keyboard Input</string>
-    <string name="powered_by">Powered by SwordigoMini</string>
-    <string name="version_powered_by">%s - Powered by SwordigoMini</string>
-    <string name="close">Close</string>
-    <string name="mod_settings">Mod Settings</string>
-    <string name="logs">Logs</string>
+	<string name="app_name">SwordigoMini</string>
+
+	<string name="powered_by">%1$sPowered by %2$s</string>
+	<string name="close">Close</string>
+	<string name="mod_settings">Mod Settings</string>
+	<string name="logs">Logs</string>
+
+	<string name="title_32bit_warning">32Bit Mode</string>
+	<string name="body_32bit_warning">You are running a 32bit device. While every effort is made to support these devices, they usually undergo significantly less testing, and thus some issues may be present.  If you\'re reporting any bugs, make sure to include this information!</string>
+	<string name="btn_32bit_warning">I understand</string>
 </resources>
