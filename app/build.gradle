@@ -1,4 +1,4 @@
-import com.android.build.gradle.tasks.MergeSourceSetFolders
+import com.android.build.gradle.tasks.ExternalNativeBuildJsonTask
 
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -171,10 +171,19 @@ afterEvaluate {
 		options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
 	}
 
-	tasks.withType(MergeSourceSetFolders).tap {
+	tasks.withType(ExternalNativeBuildJsonTask).tap {
 		configureEach {
 			it.dependsOn copyGlossHook
-			it.dependsOn copyReadme
+			it.dependsOn copyVanillaLibs
+
+			// This should be before Assets, but this is fine for now.
+			it.dependsOn extractVanilla
+		}
+	}
+
+	tasks.withType(JavaCompile).tap {
+		configureEach {
+			it.dependsOn copyVanillaClasses
 		}
 	}
 }
@@ -199,8 +208,9 @@ if (localProperties.containsKey('KEYSTORE_PASSWORD')) {
 		storePassword localProperties['KEYSTORE_PASSWORD']
 		keyAlias localProperties['KEY_ALIAS']
 		keyPassword localProperties['KEY_PASSWORD']
-		v1SigningEnabled true
-		v2SigningEnabled true
+		enableV1Signing = true
+		enableV2Signing = true
+		enableV3Signing = true
 	}
 }
 
