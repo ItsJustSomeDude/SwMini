@@ -109,6 +109,13 @@ void *redirect_within_library(long from, long to, bool use_small_instruction) {
 
 void setup_hooks() {
 	libSwHandle = dlopen("libswordigo.so", RTLD_NOLOAD);
-	libSwBase = (void *) GlossFindLibMapping("libswordigo.so", -1, libSwPath, &libSwLength);
+
+	// Fetch the Library Base Offset by capturing a symbol, getting the Symbol Info, and reading the base from there.
+	// GlossHook's method is broken with MinSDK past 22.
+	void *test = dlsym(libSwHandle, "__bss_start");
+	Dl_info info;
+	dladdr(test, &info);
+	libSwBase = info.dli_fbase;
+
 	LOGD("LibSw Load Bias: %p", libSwBase);
 }

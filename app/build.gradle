@@ -10,6 +10,7 @@ plugins {
 android {
 	namespace = 'net.itsjustsomedude.swrdg'
 	compileSdk = 35
+	ndkVersion = "29.0.14206865"
 
 	buildFeatures {
 		prefab = true
@@ -17,7 +18,7 @@ android {
 
 	defaultConfig {
 		applicationId 'net.itsjustsomedude.swrdg'
-		minSdk = 21
+		minSdk = 24
 		targetSdk = 35
 		versionCode 46
 		versionName '1.4.10'
