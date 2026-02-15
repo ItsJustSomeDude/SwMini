@@ -33,19 +33,19 @@ import java.util.concurrent.CountDownLatch;
 public class MainActivity extends Activity implements Runnable {
 	public PersistentState persistentState;
 	AudioManager.OnAudioFocusChangeListener afChangeListener;
-	//    public Analytics analytics;
 	AudioManager audioManager;
-	//    public GameServices gameServices;
 	GameView gameView = null;
-	//    public GamesSignIn gamesSignIn;
-//    EditText hiddenEditText = null;
 	boolean textboxInit = false;
 	boolean inBackground = false;
 	boolean inactive = false;
 	RelativeLayout mainViewLayout = null;
-	//    public IStoreController storeController;
 	int ticks = 0;
 	private Timer myTimer;
+
+	// public IStoreController storeController;
+	// public GamesSignIn gamesSignIn;
+	// public GameServices gameServices;
+	// public Analytics analytics;
 
 	private void TimerMethod() {
 		this.runOnUiThread(this);
@@ -107,7 +107,6 @@ public class MainActivity extends Activity implements Runnable {
 			((InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(tb, 0);
 			tb.setSelection(var1.length());
 		}
-
 	}
 
 	public void StopGettingTextInput() {
@@ -125,44 +124,15 @@ public class MainActivity extends Activity implements Runnable {
 	}
 
 	void connectStoreControllerWithDelay() {
-//        (new Handler()).postDelayed(new Runnable(this) {
-//            final MainActivity this$0;
-//
-//            {
-//                this.this$0 = var1;
-//            }
-//
-//            public void run() {
-//                if (this.this$0.gameView != null) {
-//                    this.this$0.gameView.queueEvent(new Runnable(this) {
-//                        final <undefinedtype> this$1;
-//
-//                        {
-//                            this.this$1 = var1;
-//                        }
-//
-//                        public void run() {
-//                            this.this$1.this$0.runOnUiThread(
-//                                    new Runnable(this) {
-//                                final <undefinedtype> this$2;
-//
-//                                {
-//                                    this.this$2 = var1;
-//                                }
-//
-//                                public void run() {
-//                                    if (this.this$2.this$1.this$0.storeController != null) {
-//                                        this.this$2.this$1.this$0.storeController.connect();
-//                                    }
-//
-//                                }
-//                            });
-//                        }
-//                    });
-//                }
-//
-//            }
-//        }, 200L);
+//		new Handler().postDelayed(() -> {
+//			if (this.gameView == null) return;
+//			this.gameView.queueEvent(() -> {
+//				this.runOnUiThread(() -> {
+//					if (this.storeController == null) return;
+//					this.storeController.connect();
+//				});
+//			});
+//		}, 200L);
 	}
 
 	public boolean isInBackground() {
@@ -179,7 +149,10 @@ public class MainActivity extends Activity implements Runnable {
 	@SuppressWarnings({"deprecation", "RedundantSuppression"})
 	public void onBackPressed() {
 		// T+, already handled at the end of onCreate.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//			super.onBackPressed();
+			return;
+		}
 
 		Debug.Log("Back pressed (method)");
 		this.handleBack();
@@ -212,7 +185,7 @@ public class MainActivity extends Activity implements Runnable {
 		ModProperties.loadDefaultPropertiesFile(this);
 
 		Debug.Log("onCreate");
-//        RemoteConfig.createInstance(this);
+		// RemoteConfig.createInstance(this);
 		this.persistentState = new PersistentState(this);
 		this.audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
 		this.afChangeListener = change -> {
@@ -240,9 +213,9 @@ public class MainActivity extends Activity implements Runnable {
 
 		this.setContentView(R.layout.main_activity);
 		this.mainViewLayout = this.findViewById(R.id.mainViewLayout);
-//        this.analytics = new Analytics(this);
-//        this.setupGameServices();
-//        this.setupStoreController();
+		// this.analytics = new Analytics(this);
+		// this.setupGameServices();
+		// this.setupStoreController();
 		Native.handleApplicationLaunch();
 
 		NativeBridge.lateLoad();
@@ -346,23 +319,23 @@ public class MainActivity extends Activity implements Runnable {
 
 		if (this.inactive) {
 			this.inactive = false;
-			if (this.gameView != null) {
-				this.gameView.onResume();
-				this.gameView.queueEvent(() -> {
-					Debug.Log("didBecomeActive");
-					Native.applicationDidBecomeActive();
 
-//                    this.runOnUiThread(() -> {
-//                        new Handler().postDelayed(() -> {
-//                            if(!this.inBackground && this.storeController != null && this.storeController.isConnected()) {
-//                                this.storeController.queryPurchases();
-//                            }
-//                        }, 1000L);
-//                    });
-				});
-			}
+			if (this.gameView == null) return;
+
+			this.gameView.onResume();
+			this.gameView.queueEvent(() -> {
+				Debug.Log("didBecomeActive");
+				Native.applicationDidBecomeActive();
+
+//				this.runOnUiThread(() -> {
+//					new Handler().postDelayed(() -> {
+//						if (!this.inBackground && this.storeController != null && this.storeController.isConnected()) {
+//							this.storeController.queryPurchases();
+//						}
+//					}, 1000L);
+//				});
+			});
 		}
-
 	}
 
 	protected void onStart() {
@@ -398,46 +371,30 @@ public class MainActivity extends Activity implements Runnable {
 		if (this.persistentState == null) return;
 
 		this.persistentState.startMeasuringAppForegroundTime();
-		long var1 = Math.max(this.persistentState.getDelayMillisToReviewFlow(), 3600000L);
-		long var3 = this.persistentState.getTotalForegroundMillisForReviewFlow();
-		Debug.Log("Delay to review flow: " + var1 / 1000L +
-			" seconds, elapsed foreground time: " +
-			var3 / 1000L +
-			" seconds");
-//        if (var3 >= var1) {
-//            this.persistentState.setTotalForegroundMillisForReviewFlow(0L);
-//            this.persistentState.setDelayMillisToReviewFlow(var1 * 2L);
-//            var8.postDelayed(new Runnable(this) {
-//                final MainActivity this$0;
+//		long var1 = Math.max(this.persistentState.getDelayMillisToReviewFlow(), 3600000L);
+//		long var3 = this.persistentState.getTotalForegroundMillisForReviewFlow();
+//		Debug.Log(
+//			"Delay to review flow: " + var1 / 1000L +
+//				" seconds, elapsed foreground time: " + var3 / 1000L +
+//				" seconds"
+//		);
+//		if (var3 >= var1) {
+//			this.persistentState.setTotalForegroundMillisForReviewFlow(0L);
+//			this.persistentState.setDelayMillisToReviewFlow(var1 * 2L);
 //
-//                {
-//                    this.this$0 = var1;
-//                }
+//			new Handler().postDelayed(() -> {
+//				if (!this.inBackground) {
+//					this.gameServices.startReviewFlow();
+//				}
+//			}, 2000L);
+//		} else {
 //
-//                public void run() {
-//                    if (!this.this$0.inBackground) {
-//                        this.this$0.gameServices.startReviewFlow();
-//                    }
-//
-//                }
-//            }, 2000L);
-//        } else {
-//            var8.postDelayed(new Runnable(this) {
-//                final MainActivity this$0;
-//
-//                {
-//                    this.this$0 = var1;
-//                }
-//
-//                public void run() {
-//                    if (!this.this$0.inBackground) {
-//                        this.this$0.gameServices.adsHelper.showAppOpenAdIfAppropriate();
-//                    }
-//
-//                }
-//            }, 10L);
-//        }
-
+//			new Handler().postDelayed(() -> {
+//				if (!this.inBackground) {
+//					this.gameServices.adsHelper.showAppOpenAdIfAppropriate();
+//				}
+//			}, 10L);
+//		}
 	}
 
 	protected void onStop() {
@@ -456,7 +413,6 @@ public class MainActivity extends Activity implements Runnable {
 //            this.storeController.dispose();
 //            this.storeController = null;
 //        }
-
 	}
 
 	public void onWindowFocusChanged(boolean var1) {

@@ -19,6 +19,19 @@ Place a breakpoint at a Symbol offset. Crashes 32bit.
 Show disassembly, in case IDE is showing Arm/Arm64 instead of Thumb instructions
 `disassemble --arch thumbv7`
 
+## Helpful ARM docs
+
+64bit
+https://developer.arm.com/documentation/100069/0609/A64-General-Instructions/A64-instructions-in-alphabetical-order?lang=en
+https://developer.arm.com/documentation/111182/2025-09_ASL1/Base-Instructions
+
+32bit
+https://developer.arm.com/documentation/ddi0597/2025-09/Base-Instructions?lang=en
+
+https://onlinetoolz.net/unsigned-signed#base=16
+https://ret.futo.org/arm32/?thumb
+https://armconverter.com/
+
 ## 64bit
 
 ### Assembly

@@ -31,7 +31,6 @@ public class Native {
 
 	public static MainActivity getActivity() {
 		if (mainActivityRef == null) return null;
-
 		return mainActivityRef.get();
 	}
 
@@ -96,6 +95,7 @@ public class Native {
 		return "";
 	}
 
+	// NOT called from native!
 	public static boolean getBooleanFromSP(String var0) {
 		MainActivity mainActivity = getActivity();
 		if (mainActivity == null) return false;
@@ -103,6 +103,7 @@ public class Native {
 		return mainActivity.getApplicationContext().getSharedPreferences("SwordigoPreferences", 0).getBoolean(var0, false);
 	}
 
+	// NOT called from native!
 	public static int getIntFromSP(String var0) {
 		MainActivity mainActivity = getActivity();
 		if (mainActivity == null) return 0;
@@ -171,7 +172,6 @@ public class Native {
 //                if (Native.mainActivity.gamesSignIn != null) {
 //                    Native.mainActivity.gamesSignIn.beginInteractiveSignIn();
 //                }
-//
 //            }
 //        });
 	}
@@ -199,51 +199,19 @@ public class Native {
 	}
 
 	public static void loadInterstitialAd() {
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                Debug.Log("Sync: loadInterstitialAd() called from native");
-//                if (Native.mainActivity.gameServices != null && Native.mainActivity.gameServices.adsHelper != null) {
-//                    Native.mainActivity.gameServices.adsHelper.loadInterstitialIfNecessary();
-//                }
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
 //
-//            }
-//        });
+//		mainActivity.runOnUiThread(() -> {
+//			Debug.Log("Sync: loadInterstitialAd() called from native");
+//			if (mainActivity.gameServices != null && mainActivity.gameServices.adsHelper != null) {
+//				mainActivity.gameServices.adsHelper.loadInterstitialIfNecessary();
+//			}
+//		});
 	}
 
 	public static void loadSnapshot(String var0, double var1) {
-//        mainActivity.runOnUiThread(new Runnable(var0, var1) {
-//            final double val$delay;
-//            final String val$name;
-//
-//            {
-//                this.val$name = var1;
-//                this.val$delay = var2;
-//            }
-//
-//            public void run() {
-//                StringBuilder var1 = new StringBuilder("Sync: loadSnapshot called from native: ");
-//                var1.append(this.val$name);
-//                var1.append(", ");
-//                var1.append(this.val$delay);
-//                Debug.Log(var1.toString());
-//                (new Handler()).postDelayed(new Runnable(this) {
-//                    final <undefinedtype> this$0;
-//
-//                    {
-//                        this.this$0 = var1;
-//                    }
-//
-//                    public void run() {
-//                        if (this.this$0.val$name != null && this.this$0.val$name.length() != 0) {
-//                            Native.mainActivity.gameServices.loadSnapshot(this.this$0.val$name);
-//                        } else {
-//                            Native.mainActivity.gameServices.loadAllSnapshots();
-//                        }
-//
-//                    }
-//                }, (long)((int)(this.val$delay * 1000.0)));
-//            }
-//        });
+		GameActions.loadSnapshot(var0, var1);
 	}
 
 	public static void openURL(String url) {
@@ -268,46 +236,38 @@ public class Native {
 	}
 
 	public static void processStoreQueue() {
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                Native.mainActivity.storeController.processQueue();
-//            }
-//        });
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
+//
+//		mainActivity.runOnUiThread(() -> {
+//			mainActivity.storeController.processQueue();
+//		});
 	}
 
 	public static native void productPurchaseFailed(String var0, String var1);
 
 	public static native void productPurchased(String var0);
 
-	public static void purchaseStoreProduct(String var0) {
-//        mainActivity.runOnUiThread(new Runnable(var0) {
-//            final String val$identifier;
+	public static void purchaseStoreProduct(String identifier) {
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
 //
-//            {
-//                this.val$identifier = var1;
-//            }
-//
-//            public void run() {
-//                Native.mainActivity.storeController.purchaseProduct(Native.mainActivity, this.val$identifier);
-//            }
-//        });
+//		mainActivity.runOnUiThread(() -> {
+//			mainActivity.storeController.purchaseProduct(mainActivity, identifier);
+//		});
 	}
 
-	public static void queueStoreProductFetch(String var0) {
+	public static void queueStoreProductFetch(String identifier) {
+		// Unsure if I added the debug call or that's vanilla...
 		Debug.Log("Store Product Fetch called!");
 		debugFunction();
 
-//        mainActivity.runOnUiThread(new Runnable(var0) {
-//            final String val$identifier;
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
 //
-//            {
-//                this.val$identifier = var1;
-//            }
-//
-//            public void run() {
-//                Native.mainActivity.storeController.queueProductFetch(this.val$identifier);
-//            }
-//        });
+//		mainActivity.runOnUiThread(() -> {
+//			mainActivity.storeController.queueProductFetch(identifier);
+//		});
 	}
 
 	public static void quitApplication() {
@@ -326,41 +286,25 @@ public class Native {
 		if (var0) {
 			saveBooleanInSP("explicitConsent", true);
 		}
-
 	}
 
 	public static native void reloadContext();
 
-	public static void reportAchievementProgress(String var0, int var1, boolean var2) {
+	public static void reportAchievementProgress(String identifier, int stepsCompleted, boolean isIncremental) {
 		Debug.Log("Report Achievements called!");
 
-//        mainActivity.runOnUiThread(new Runnable(var0, var1, var2) {
-//            final String val$identifier;
-//            final boolean val$isIncremental;
-//            final int val$stepsCompleted;
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
 //
-//            {
-//                this.val$identifier = var1;
-//                this.val$stepsCompleted = var2;
-//                this.val$isIncremental = var3;
-//            }
-//
-//            public void run() {
-//                StringBuilder var1 = new StringBuilder("reportAchievementProgress(");
-//                var1.append(this.val$identifier);
-//                var1.append(", ");
-//                var1.append(this.val$stepsCompleted);
-//                var1.append(", ");
-//                var1.append(this.val$isIncremental);
-//                var1.append(") called from native");
-//                Debug.Log(var1.toString());
-//                Native.mainActivity.gameServices.reportAchievementProgress(this.val$identifier, this.val$stepsCompleted, this.val$isIncremental);
-//            }
-//        });
+//		mainActivity.runOnUiThread(() -> {
+//			Debug.Log("reportAchievementProgress(" + identifier + ", " + stepsCompleted + ", " + isIncremental + ") called from native");
+//			mainActivity.gameServices.reportAchievementProgress(identifier, stepsCompleted, isIncremental);
+//		});
 	}
 
 	public static native void reviewFlowCompleted();
 
+	// NOT called from native!
 	public static void saveBooleanInSP(String var0, boolean var1) {
 		MainActivity mainActivity = getActivity();
 		if (mainActivity == null) return;
@@ -370,6 +314,7 @@ public class Native {
 		var2.apply();
 	}
 
+	// NOT called from native!
 	public static void saveIntInSP(String var0, int var1) {
 		MainActivity mainActivity = getActivity();
 		if (mainActivity == null) return;
@@ -379,38 +324,10 @@ public class Native {
 		var2.apply();
 	}
 
-	public static void saveSnapshot(String var0, byte[] var1, String var2, long var3, long var5) {
+	public static void saveSnapshot(String name, byte[] data, String description, long timePlayedMillis, long progressValue) {
 		Debug.Log("Save Snapshot called!");
-//        mainActivity.runOnUiThread(new Runnable(var0, var1, var2, var3, var5) {
-//            final byte[] val$data;
-//            final String val$description;
-//            final String val$name;
-//            final long val$progressValue;
-//            final long val$timePlayedMillis;
-//
-//            {
-//                this.val$name = var1;
-//                this.val$data = var2;
-//                this.val$description = var3;
-//                this.val$timePlayedMillis = var4;
-//                this.val$progressValue = var6;
-//            }
-//
-//            public void run() {
-//                StringBuilder var1 = new StringBuilder("Sync: saveSnapshot called from native: ");
-//                var1.append(this.val$name);
-//                var1.append(", ");
-//                var1.append(this.val$data.length);
-//                var1.append(", ");
-//                var1.append(this.val$description);
-//                var1.append(", ");
-//                var1.append(this.val$timePlayedMillis);
-//                var1.append(", ");
-//                var1.append(this.val$progressValue);
-//                Debug.Log(var1.toString());
-//                Native.mainActivity.gameServices.saveSnapshot(this.val$name, this.val$data, this.val$description, this.val$timePlayedMillis, this.val$progressValue);
-//            }
-//        });
+
+		GameActions.saveSnapshot(name, data, description, timePlayedMillis, progressValue);
 	}
 
 	public static native void setApplicationViewSize(int var0, int var1, boolean var2);
@@ -430,103 +347,97 @@ public class Native {
 
 	public static void showAchievements() {
 		Debug.Log("Achievements called!");
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                Debug.Log("showAchievements called from native");
-//                Native.mainActivity.gameServices.showAchievements();
-//            }
-//        });
+
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
+//
+//		mainActivity.runOnUiThread(() -> {
+//			Debug.Log("showAchievements called from native");
+//			mainActivity.gameServices.showAchievements();
+//		});
 	}
 
 	public static void showAnalyticsIdPopup() {
 		Debug.Log("Analytics called!");
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                Native.mainActivity.analytics.showAppInstanceIdPopup();
-//            }
-//        });
+
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
+//
+//		mainActivity.runOnUiThread(() -> {
+//			Debug.Log("showAchievements called from native");
+//			mainActivity.analytics.showAppInstanceIdPopup();
+//		});
 	}
 
-	public static boolean showInterstitialAd(double var0) {
-//        if (mainActivity.gameServices != null && mainActivity.gameServices.adsHelper != null) {
-//            if (!mainActivity.gameServices.adsHelper.canShowInterstitial()) {
-//                Debug.Log("Native.showInterstitialAd no ad ready");
-//                return false;
-//            } else {
-//                mainActivity.runOnUiThread(new Runnable(var0) {
-//                    final double val$delay;
-//
-//                    {
-//                        this.val$delay = var1;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Native.showInterstitialAd(");
-//                        var1.append(this.val$delay);
-//                        var1.append(") called from native");
-//                        Debug.Log(var1.toString());
-//                        (new Handler()).postDelayed(new Runnable(this) {
-//                            final <undefinedtype> this$0;
-//
-//                            {
-//                                this.this$0 = var1;
-//                            }
-//
-//                            public void run() {
-//                                if (Native.mainActivity.gameServices != null && Native.mainActivity.gameServices.adsHelper != null) {
-//                                    Native.mainActivity.gameServices.adsHelper.displayInterstitial();
-//                                }
-//
-//                            }
-//                        }, (long)((int)(this.val$delay * 1000.0)));
-//                    }
-//                });
-//                return true;
-//            }
-//        } else {
-//            return false;
-//        }
+	public static boolean showInterstitialAd(double delay) {
 		return false;
+
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return false;
+//
+//		if (mainActivity.gameServices == null || mainActivity.gameServices.adsHelper == null)
+//			return false;
+//
+//		if (!mainActivity.gameServices.adsHelper.canShowInterstitial()) {
+//			Debug.Log("Native.showInterstitialAd no ad ready");
+//			return false;
+//		}
+//
+//		mainActivity.runOnUiThread(() -> {
+//			Debug.Log("Native.showInterstitialAd(" + delay + ") called from native");
+//
+//			(new Handler()).postDelayed(() -> {
+//				if (mainActivity.gameServices == null || mainActivity.gameServices.adsHelper == null)
+//					return;
+//				mainActivity.gameServices.adsHelper.displayInterstitial();
+//			}, delay * 1000.0);
+//		});
+//
+//		return true;
 	}
 
+	// NOT called from native!
 	public static void showLeaderboards() {
 	}
 
 	public static void showPlatformConsentOptions() {
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                Native.mainActivity.gameServices.adsHelper.showConsentForm();
-//            }
-//        });
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
+//
+//		mainActivity.runOnUiThread(() -> {
+//			mainActivity.gameServices.adsHelper.showConsentForm();
+//		});
 	}
 
 	public static native void snapshotLoaded(String var0, byte[] var1);
 
 	public static void startAdsAndAnalytics() {
-//        mainActivity.runOnUiThread(new Runnable() {
-//            public void run() {
-//                label17: {
-//                    if (!Native.isAgeOfConsent()) {
-//                        Debug.Log("Native.startAdsAndAnalytics: not starting analytics because underage");
-//                    } else {
-//                        if (Native.mainActivity.gameServices.adsHelper.getCurrentConsentStatus() == ConsentStatus.NotRequired) {
-//                            Debug.Log("Native.startAdsAndAnalytics: starting analytics");
-//                            Native.mainActivity.analytics.start();
-//                            break label17;
-//                        }
+//		MainActivity mainActivity = getActivity();
+//		if (mainActivity == null) return;
 //
-//                        Debug.Log("Native.startAdsAndAnalytics: not starting analytics because platform consent required");
-//                    }
+//		mainActivity.runOnUiThread(() -> {
+//			label17:
+//			{
+//				if (!Native.isAgeOfConsent()) {
+//					Debug.Log("Native.startAdsAndAnalytics: not starting analytics because underage");
+//				} else {
+//					if (mainActivity.gameServices.adsHelper.getCurrentConsentStatus() == ConsentStatus.NotRequired) {
+//						Debug.Log("Native.startAdsAndAnalytics: starting analytics");
+//						mainActivity.analytics.start();
+//						break label17;
+//					}
 //
-//                    if (Native.isAgeOfConsent()) {
-//                        RemoteConfig.getInstance().startRemote();
-//                    }
-//                }
+//					Debug.Log("Native.startAdsAndAnalytics: not starting analytics because platform consent required");
+//				}
 //
-//                Debug.Log("Native.startAdsAndAnalytics: starting ads");
-//                Native.mainActivity.gameServices.adsHelper.start();
-//            }
-//        });
+//				if (Native.isAgeOfConsent()) {
+//					RemoteConfig.getInstance().startRemote();
+//				}
+//			}
+//
+//			Debug.Log("Native.startAdsAndAnalytics: starting ads");
+//			mainActivity.gameServices.adsHelper.start();
+//		});
 	}
 
 	public static boolean startReviewFlow() {
