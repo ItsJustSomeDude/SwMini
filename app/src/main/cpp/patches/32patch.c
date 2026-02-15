@@ -81,7 +81,7 @@ STATIC_DL_HOOK_SYMBOL(
 void init_patch_32bit() {
 	LOGD("Applying 32bit Program::Bytes patch");
 
-	default_proto_string = offset_address(0x464710);
+	default_proto_string = engine_bss_offset_ptr(0x180);
 
 	hook_codedStream();
 }

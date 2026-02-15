@@ -43,7 +43,7 @@ void create_achievement(
 		&cpp_counter, threshold
 	);
 
-	void *target_func = offset_address(0x289ef6);
+	void *target_func = engine_offset_ptr(0x289ef6);
 
 	// Stack Frame size (hardcoded in asm to save a register): #0x3c0
 
@@ -153,7 +153,7 @@ void init_feature_achievements() {
 	hook_achievement_manager_init();
 
 	// Skip over vanilla achievement initialization.
-	redirect_within_library(0x2891aa, 0x28a0ac, false);
+	branch_within_engine(0x2891aa, 0x28a0ac, false);
 
 	// Add a `bx r7` instruction to the end of the `while` loop body.
 	uint16_t inst1 = emit_bx_t1(7);

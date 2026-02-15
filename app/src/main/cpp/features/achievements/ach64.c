@@ -395,7 +395,9 @@ void create_achievement(
 
 		: // No outputs...
 		: "r"(manager), "r"(cpp_name), "r"(cpp_id), "r"(cpp_counter),
-	"r"(&input_achievement), "r"(offset_address(0x7072f8 - 24)),
+	"r"(&input_achievement),
+	/* Empty Basic String pointer in BSS. Cannot be a local variable due to stack destruction. */
+	"r"(engine_bss_offset_ptr(0x14880)),
 	"r"(target_func)
 		: "x19", "x0", "x1", "x2", "x22", "r24", "r21", "x27", "x20", "x23", "x28", "memory"
 		);
@@ -431,7 +433,7 @@ void init_feature_achievements() {
 	hook_achievement_manager_init();
 
 	// Skip over vanilla achievement initialization.
-	redirect_within_library(0x376088, 0x377ba8, false);
+	branch_within_engine(0x376088, 0x377ba8, false);
 
 	// Add a `ret x28` instruction to the end of the `while` loop body.
 	uint32_t ret = emit_ret(28);

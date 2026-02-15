@@ -4,13 +4,20 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+extern void *engine_dl_handle;
+extern void *engine_load_bias;
+extern void *engine_bss_start;
+
+__attribute__((unused))
 void *hook_symbol(const char *symName, void *newAddr, void **origAddr);
 void *hook_address(void *func_addr, void *new_addr, void **orig_addr);
-void *hook_offset(unsigned long offset, void *new_addr, void **orig_addr);
-void *symbol_address(const char *symbol);
-void *offset_address(unsigned int offset);
+__attribute__((unused))
+void *hook_engine_offset(unsigned long offset, void *new_addr, void **orig_addr);
+void *engine_symbol_ptr(const char *symbol);
+void *engine_offset_ptr(unsigned int offset);
+void *engine_bss_offset_ptr(unsigned int offset);
 
-void *redirect_within_library(long from, long to, bool use_small_instruction);
+void *branch_within_engine(long from, long to, bool use_small_instruction);
 
 void write_in_library(long offset, void *data, size_t size);
 
@@ -62,7 +69,7 @@ inline void* dlsym_##name();
 type_##name *name;                                      \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = symbol_address(symbol);               \
+    return name = engine_symbol_ptr(symbol);            \
 }
 
 /**
@@ -76,7 +83,7 @@ void* dlsym_##name() {                                  \
 type_##name *name;                                      \
 inline __attribute__((always_inline))                   \
 void* dlsym_##name() {                                  \
-    return name = offset_address(offset);                    \
+    return name = engine_offset_ptr(offset);            \
 }
 
 /**
@@ -92,7 +99,7 @@ void* dlsym_##name() {                                  \
 static ret (*name) params;                                \
 inline __attribute__((always_inline))                     \
 static void* dlsym_##name() {                             \
-    return name = symbol_address(sym);                    \
+    return name = engine_symbol_ptr(sym);                 \
 }
 
 
@@ -109,7 +116,7 @@ static void* dlsym_##name() {                             \
 static ret (*name) params;                                   \
 inline __attribute__((always_inline))                        \
 static void* dlsym_##name() {                                \
-    return name = offset_address(offset);                    \
+    return name = engine_offset_ptr(offset);                 \
 }
 
 /**
@@ -188,7 +195,7 @@ static ret hooked_##name params
  * @param params Params of the function, (in parenthesis).
  */
 #define DL_HOOK_OFFSET(name, offset, ret, params)       \
-    _define_hook(name, ret, params, hook_offset, offset)
+    _define_hook(name, ret, params, hook_engine_offset, offset)
 
 /**
  * Create a function hook from an address.
@@ -223,7 +230,7 @@ static ret hooked_##name params
  * @param params Params of the function, (in parenthesis).
  */
 #define STATIC_DL_HOOK_OFFSET(name, offset, ret, params)    \
-    _define_static_hook(name, ret, params, hook_offset, offset)
+    _define_static_hook(name, ret, params, hook_engine_offset, offset)
 
 /**
  * Create a function hook from a runtime address, standalone in one file.

@@ -154,7 +154,7 @@ void init_patch_panic() {
 	// This redirect skips over the logic that the hook does.
 	// It prevents the timer from ticking down twice.
 	// TODO: Make this use an offset from the start of the symbol, instead of full library offsets.
-	redirect_within_library(0x4c164c, 0x4c1684, false);
+	branch_within_engine(0x4c164c, 0x4c1684, false);
 #endif
 	// On 32bit, ProgramState::Update calls ProgramState::Resume, while on 64 bit the resume was inlined.
 	// That's why we only place the hook on 64bit builds.
