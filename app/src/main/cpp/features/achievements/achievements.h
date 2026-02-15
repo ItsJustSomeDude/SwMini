@@ -22,16 +22,13 @@ H_DL_FUNCTION(
 		CppString * *description, int points, CppString **counter, int counter_required)
 )
 
-extern void *shared_achievement_manager;
-
 void create_achievement(
-	void *manager,
 	const char *id, const char *name,
 	const char *desc, int points,
 	const char *counter, int threshold
 );
 
-void ach_register_all();
+void miniACH_register();
 
 void init_feature_achievements();
 

@@ -1,0 +1,66 @@
+# SwordigoMini Custom Properties
+# Created by ItsJustSomeDude
+
+# Mod Info for Overlay
+[mod_overlay]
+name = "SwordigoMini"
+authors = ["ItsJustSomeDude"]
+version = "1.5"
+
+# You may use simple HTML tags in this string to define the Readme portion of the overlay.
+# Allowed:
+# <b>Bold!</b>
+# <i>Italics</i>
+# <u>Underlined</u>
+# <h1-6>Header</h1-6>
+# <a href="https://google.com/">Click here!</a>
+readme = """
+<h1>Welcome to SwMini!</h1>
+
+SwMini is a mod loader with the goal of adding more abilities for modders to use, and polishing some
+rough edges from Vanilla.
+
+If you've downloaded SwMini for the purpose of creating a mod, then welcome! I hope you enjoy your
+stay! There's some documentation at <a href="https://github.com/ItsJustSomeDude/SwMini">Mini's GitHub</a>
+if you run into problems. Feel free to reach out to me (ItsJustSomeDude) on Discord if you still need help.
+
+If you downloaded a mod and are seeing this... tell the modder to replace this text! :-D
+"""
+
+
+# Control the destinations of the links on the title screen.
+# You can also use `overlay:[page]` to open the Mod Overlay.
+# Valid Pages are `info`, `options`,
+[links]
+facebook = 'https://files.itsjustsomedu.de/'
+twitter = 'https://discord.com/invite/3FhQvTUKA4'
+privacy = 'overlay:'
+google = 'https://google.com/'
+
+# Various options to change various engine features.
+[options]
+# Visibility of the Google Signin and its text on the title screen.
+show_google_button = true
+
+# Show a popup on first run on 32bit devices. (Use String Resources to edit text.)
+32bit_popup = true
+
+# Pause on Lost Focus (app enters background)
+# Note that this only affects the music and seeing the "Tap to continue" screen,
+# the engine will freeze regardless of this setting.
+pauseOnLostFocus = true
+
+too_rich_threshold = 1000
+
+# These values can be changed in-game with Lua scripts, but the defaults can be changed here.
+coin_limit = 1000
+# Engine Speed (Frame rate + Physics + Timers)
+engine_speed = 1
+
+
+# Map storing Armor Item IDs to Model names. Uncomment only if adding or replacing models.
+# Empty String key defines the default model (no item equipped).
+[armor_models]
+#"" = "hiro"
+#"platearmor" = "hiro_plated"
+#"magicarmor" = "hiro_magicplated"

@@ -80,25 +80,25 @@ public class MiniOverlay {
 
 		TextView poweredBy = ctx.findViewById(R.id.txtPoweredBy);
 		TextView modName = ctx.findViewById(R.id.txtModName);
-		
-		String version = (ModProperties.modVersion == null || ModProperties.modVersion.isEmpty()) ? null
-			: ModProperties.modVersion;
+
+		String version = (ModProperties.overlayModVersion == null || ModProperties.overlayModVersion.isEmpty()) ? null
+			: ModProperties.overlayModVersion;
 
 		if (
-			ModProperties.modName == null ||
-				ModProperties.modName.isEmpty() ||
-				ModProperties.modName.equals("SwordigoMini")
+			ModProperties.overlayModName == null ||
+				ModProperties.overlayModName.isEmpty() ||
+				ModProperties.overlayModName.equals("SwordigoMini")
 		) {
 			// No name or Unmodified. Show Mini and bare version number.
 			modName.setText("SwordigoMini");
 			poweredBy.setText(version);
 		} else if (version == null) {
 			// Name set, no version. Show "Name" and bare "Powered By"
-			modName.setText(ModProperties.modName);
+			modName.setText(ModProperties.overlayModName);
 			poweredBy.setText(ctx.getString(R.string.powered_by, "", "SwordigoMini"));
 		} else {
 			// Name and version set. Show "Name" and "Version - Powered By Mini"
-			modName.setText(ModProperties.modName);
+			modName.setText(ModProperties.overlayModName);
 			poweredBy.setText(ctx.getString(R.string.powered_by, version + " - ", "SwordigoMini"));
 		}
 

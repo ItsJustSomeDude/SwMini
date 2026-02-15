@@ -127,6 +127,7 @@ android {
 
 dependencies {
 	implementation files('libs/renderer.jar')
+	implementation 'io.github.wasabithumb:jtoml:1.4.2'
 }
 
 androidComponents {

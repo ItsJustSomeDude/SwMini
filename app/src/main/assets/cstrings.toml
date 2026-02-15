@@ -1,0 +1,24 @@
+# SwordigoMini Custom C Strings
+# Created by ItsJustSomeDude
+
+# Use this file to replace C strings in game, used for Translations and modifying the title screen and other UIs.
+# Format:
+# "Source" = "Replacement"
+
+# Spaces around = are optional.
+# "Source"="Replacement"
+
+# Spaces and Special Characters are allowed in both Source and Replacement strings within the quotes:
+# "Character Level: " = "Your level: "
+
+# Use `\xHH` with two Hex-digits within a string to add a special character code.
+# Note that Mini uses TOML 1.1, so your editor might say "\xHH" is invalid, in which case you can use "\u00HH".
+# "Source" = "Replace\x0Ame"
+
+# Use """Triple quotes""" for multi-line strings: (Values Only!)
+# "Earn achievements\nand enable cloud sync:" = """
+# A very Long
+# and Fancy String"""
+
+"Privacy Policy" = "Mod\u00FFOptions"
+"Saved Games" = "Hooks are working."

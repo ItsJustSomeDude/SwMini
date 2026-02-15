@@ -13,11 +13,16 @@ unsigned short current_coin_limit = 999;
 
 unsigned short current_too_rich = 999;
 
-void reset_coin_limit() {
-	set_coin_limit(default_coin_limit);
+void miniCL_set_default(unsigned short limit) {
+	default_coin_limit = limit;
+	miniCL_set(limit);
 }
 
-void set_coin_limit(unsigned short limit) {
+void miniCL_reset() {
+	miniCL_set(default_coin_limit);
+}
+
+void miniCL_set(unsigned short limit) {
 	if (current_coin_limit == limit) return;
 	current_coin_limit = limit;
 
@@ -76,7 +81,7 @@ void set_coin_limit(unsigned short limit) {
 	LOGD("Set coin limit to %i", limit);
 }
 
-void set_too_rich_amount(unsigned short amount) {
+void miniCL_set_too_rich(unsigned short amount) {
 	if (current_too_rich == amount) return;
 	current_too_rich = amount;
 
@@ -132,28 +137,6 @@ void set_too_rich_amount(unsigned short amount) {
 	LOGD("TooRich amount set to %i", amount);
 }
 
-JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_setDefaultCoinLimit(
-	JNIEnv *env, jclass clazz, jint limit
-) {
-	// Use the bottom 16 bits of the Java int.
-	unsigned short a = limit & 0xFFFF;
-
-	default_coin_limit = a;
-	set_coin_limit(a);
-}
-
-JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_setTooRichAmount(
-	JNIEnv *env, jclass clazz, jint amount
-) {
-	// Use the bottom 16 bits of the Java int.
-	unsigned short a = amount & 0xFFFF;
-
-	// Use the bottom 16 bits of the Java int.
-	set_too_rich_amount(a);
-}
-
-void init_feature_coin_limit() {
+void initF_coin_limit() {
 	//
 }

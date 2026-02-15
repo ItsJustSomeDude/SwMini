@@ -13,6 +13,7 @@
 #include "caver/caver.h"
 #include "features/armor_models.h"
 #include "features/achievements/achievements.h"
+#include "features/mini_config.h"
 
 #define LOG_TAG "MiniNativeMain"
 
@@ -58,9 +59,12 @@ void midLoad() {
 	init_mini_lua_lib();
 
 	init_feature_cstrings();
-	init_feature_coin_limit();
-	init_feature_armor_models();
+	initF_coin_limit();
+	initF_armor_models();
 	init_feature_achievements();
+	init_feature_state_tracking();
+
+	read_mini_config_asset();
 }
 
 /** This is called after libsw has been initialized from Java. */

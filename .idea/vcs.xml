@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/GlossHook" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/src/main/cpp/libs/toml" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/src/main/cpp/luasocket" vcs="Git" />
   </component>
 </project>

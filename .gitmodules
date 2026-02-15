@@ -4,3 +4,6 @@
 [submodule "app/src/main/cpp/luasocket"]
 	path = app/src/main/cpp/luasocket
 	url = https://github.com/lunarmodules/luasocket
+[submodule "app/src/main/cpp/libs/toml"]
+	path = app/src/main/cpp/libs/toml
+	url = https://github.com/arp242/toml-c

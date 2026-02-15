@@ -3,14 +3,11 @@ package com.touchfoo.swordigo;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
-import android.net.Uri;
 
-import net.itsjustsomedude.swrdg.LNIString;
+import net.itsjustsomedude.swrdg.GameActions;
 import net.itsjustsomedude.swrdg.MainActivity;
-import net.itsjustsomedude.swrdg.MiniOverlay;
 import net.itsjustsomedude.swrdg.ModProperties;
 
 import java.lang.ref.WeakReference;
@@ -69,20 +66,7 @@ public class Native {
 	public static native void debugFunction();
 
 	public static void deleteSnapshot(String var0) {
-//        mainActivity.runOnUiThread(new Runnable(var0) {
-//            final String val$name;
-//
-//            {
-//                this.val$name = var1;
-//            }
-//
-//            public void run() {
-//                StringBuilder var1 = new StringBuilder("Sync: deleteSnapshot called from native: ");
-//                var1.append(this.val$name);
-//                Debug.Log(var1.toString());
-//                Native.mainActivity.gameServices.deleteSnapshot(this.val$name);
-//            }
-//        });
+		GameActions.deleteSnapshot(var0);
 	}
 
 	public static native void drawApplication();
@@ -178,7 +162,9 @@ public class Native {
 	}
 
 	public static void initiateGoogleSignIn() {
-		LNIString.execute(ModProperties.googleAction);
+		GameActions.openURL(
+			ModProperties.links.getOrDefault("google", "overlay:")
+		);
 //        mainActivity.runOnUiThread(new Runnable() {
 //            public void run() {
 //                Debug.Log("initiateGoogleSignIn called from native");
@@ -263,23 +249,18 @@ public class Native {
 	public static void openURL(String url) {
 		Debug.Log("Open URL: " + url);
 
-		if (Objects.equals(url, "http://www.twitter.com/touch_foo")) {
-			LNIString.execute(ModProperties.twitterLink);
-		} else if (Objects.equals(url, "http://www.facebook.com/144881932264830")) {
-			LNIString.execute(ModProperties.facebookLink);
-		} else if (Objects.equals(url, "http://privacy.touchfoo.com/")) {
-//            LuaNativeInterface.processCommand(ModProperties.privacyLink);
-			MainActivity a = mainActivityRef.get();
-			if (a == null) return;
-			a.runOnUiThread(MiniOverlay::show);
+		final String twitter = "http://www.twitter.com/touch_foo";
+		final String facebook = "http://www.facebook.com/144881932264830";
+		final String privacy = "http://privacy.touchfoo.com/";
+
+		if (Objects.equals(url, twitter)) {
+			GameActions.openURL(ModProperties.links.getOrDefault("twitter", twitter));
+		} else if (Objects.equals(url, facebook)) {
+			GameActions.openURL(ModProperties.links.getOrDefault("facebook", facebook));
+		} else if (Objects.equals(url, privacy)) {
+			GameActions.openURL(ModProperties.links.getOrDefault("privacy", privacy));
 		} else {
-			// TODO: Fix infinite loop when trying to load a real touchfoo link.
-			Intent var1 = new Intent("android.intent.action.VIEW", Uri.parse(url));
-
-			MainActivity mainActivity = getActivity();
-			if (mainActivity == null) return;
-
-			mainActivity.startActivity(var1);
+			GameActions.openURL(url);
 		}
 	}
 

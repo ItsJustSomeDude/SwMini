@@ -1,60 +1,20 @@
 package net.itsjustsomedude.swrdg;
 
 import android.content.Context;
-
-import com.touchfoo.swordigo.Debug;
+import android.content.res.AssetManager;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Properties;
 
 public class NativeBridge {
-
-	public static native void addStringReplacement(String source, String replacement);
-
-	public static native void setDefaultCoinLimit(int limit);
-
-	public static native void setTooRichAmount(int amount);
-
-	public static native void addHiroModel(String itemName, String modelName);
-
-	public static native void createAchievement(String id, String name, String description, int points, String counter, int threshold);
+	private static final String LOG_TAG = "MiniNativeBridge";
 
 	public static native void setPaths(String files, String cache, String extFiles, String extCache);
+
+	public static native void setMiniAssetManager(AssetManager manager);
 
 	public static native void midLoad();
 
 	public static native void lateLoad();
-
-
-	public static String processInJava(String input) {
-		return "Java processed: " + input;
-	}
-
-	public static void setupCStringHooks(Context ctx) {
-		Debug.Log("Setting up CStrings.");
-
-		Properties props = new Properties();
-		try {
-			InputStream inputStream = ctx.getAssets().open("cstrings.properties");
-			props.load(inputStream);
-			inputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-
-		for (String key : props.stringPropertyNames()) {
-			String unescapedKey = key
-				.replaceAll("\\\\_", "\255")
-				.replaceAll("_", " ")
-				.replaceAll("\255", "_");
-
-			String value = props.getProperty(key);
-			addStringReplacement(unescapedKey, value);
-			Debug.Log("Setup Replacement: '" + unescapedKey + "' ('" + key + "') -> '" + value + "'");
-		}
-	}
 
 	public static void setupFilePaths(Context ctx) {
 		File ext = ctx.getExternalFilesDir(null);
@@ -74,16 +34,10 @@ public class NativeBridge {
 		);
 	}
 
-	public static void processLni(String message) {
-		Debug.Log("Received LNI from C");
-		try {
-			LNIString.execute(message);
-		} catch (Exception e) {
-			Debug.Log("LNI Failure:", e);
-		}
-	}
-
 	public static void loadLibraries(Context context) {
+		// TODO: This is Broken. The folder cannot be enumerated anymore. Must use a list defined in
+		// mini.properties and try loading each one, catching UnsatisfiedLinkError if it's invalid.
+
 		File libDir = new File(context.getApplicationInfo().nativeLibraryDir);
 		File[] files = libDir.listFiles();
 		if (files == null) return;

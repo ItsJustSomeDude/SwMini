@@ -67,25 +67,11 @@ STATIC_DL_HOOK_SYMBOL(
 	_return;
 }
 
-void add_model(const char *item_name, const char *model_name) {
+void miniAM_add_model(const char *_Nonnull item_name, const char *_Nonnull model_name) {
 	if (models == NULL)
 		models = kh_init_str();
 
-	if (item_name == NULL) {
-		// Set the default.
-		LOGD("Set default player model to '%s'", model_name);
-
-		// Remove old default for safety.
-		if (default_model != NULL) {
-			if (strcmp(model_name, default_model) == 0)
-				return; // Didn't change.
-
-			free((void *) default_model);
-		}
-
-		default_model = strdup(model_name);
-		return;
-	}
+	// TODO: This will probably leak memory if the same item is added multiple times.
 
 	int absent;
 	khint_t k = kh_put_str(models, strdup(item_name), &absent);
@@ -106,34 +92,25 @@ void add_model(const char *item_name, const char *model_name) {
 	}
 }
 
-JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_addHiroModel(
-	JNIEnv *env, jclass clazz, jstring jItem, jstring jModel
-) {
-	if (jModel == NULL) {
-		LOGE("Invalid Model Name!");
-		return;
+void miniAM_set_default_model(const char *_Nonnull model_name) {
+	LOGD("Setting default player model to '%s'", model_name);
+
+	// Remove old default for safety.
+	if (default_model != NULL) {
+		if (strcmp(model_name, default_model) == 0) {
+			return; // Didn't change.
+		}
+
+		free((void *) default_model);
 	}
 
-	const char *model_name = (*env)->GetStringUTFChars(env, jModel, 0);
-
-	if (jItem == NULL) {
-		add_model(NULL, model_name);
-		return;
-	}
-
-	const char *item_name = (*env)->GetStringUTFChars(env, jItem, 0);
-
-	add_model(item_name, model_name);
-
-	(*env)->ReleaseStringUTFChars(env, jItem, item_name);
-	(*env)->ReleaseStringUTFChars(env, jModel, model_name);
+	default_model = strdup(model_name);
 }
 
-void init_feature_armor_models() {
+void initF_armor_models() {
 	hook_mnfa();
 
-	add_model(NULL, "hiro");
-	add_model("platearmor", "hiro_plated");
-	add_model("magicarmor", "hiro_magicplated");
+	miniAM_set_default_model("hiro");
+	miniAM_add_model("platearmor", "hiro_plated");
+	miniAM_add_model("magicarmor", "hiro_magicplated");
 }

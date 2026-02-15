@@ -102,4 +102,6 @@ void init_feature_cstrings() {
 	// Using dlsym crashes 32bit for some reason, so use the original I guess...
 	// The only affect this has is that mod-defined replacements won't apply.
 	create_basic_string = orig_create_basic_string;
+
+	miniCStr_read_asset("cstrings.toml");
 }

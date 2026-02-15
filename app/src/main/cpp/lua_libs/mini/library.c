@@ -12,7 +12,7 @@ static int lua_coin_limit(lua_State *L) {
 		return luaL_error(L, "Coin Limit must be 0–65535");
 
 	unsigned short limit = (unsigned short) n;
-	set_coin_limit(limit);
+	miniCL_set(limit);
 
 	return 0;
 }

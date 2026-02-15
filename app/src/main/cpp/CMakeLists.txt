@@ -35,6 +35,8 @@ add_library(mini SHARED
 
         lua_libs/mini/sub_library.c
 
+        libs/toml/toml.c
+
         # prober.c
         # network.c
 
@@ -44,6 +46,9 @@ add_library(mini SHARED
 
         log.c
 
+        config.c
+        features/mini_config.c
+
         jni.c
         java.c
 
@@ -51,6 +56,9 @@ add_library(mini SHARED
         patches/assets.c
         patches/panic.c
         patches/lua_libs.c
+
+        patches/assets/index.c
+        patches/assets2.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c
@@ -69,10 +77,12 @@ add_library(mini SHARED
         features/coin_limit.c
         features/lua_paths.c
         features/armor_models.c
+        features/engine_strings.c
 
         features/cstrings/workarounds.c
         features/cstrings/register.c
         features/cstrings/hooks.c
+        features/cstrings/file.c
 
         features/achievements/achievements.c
         features/achievements/ach64.c
@@ -101,16 +111,14 @@ target_include_directories(mini
         #        PUBLIC ${CMAKE_SOURCE_DIR}/gabi++/include
 )
 
-find_library(log-lib log)
-
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DNDK_DEBUG)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 endif ()
 
-target_link_libraries(
-        mini
+target_link_libraries(mini
         GlossHook
-        ${log-lib}
+        log
+        android
 )

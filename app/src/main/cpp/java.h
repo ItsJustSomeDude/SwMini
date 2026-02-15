@@ -26,7 +26,4 @@ extern jmethodID g_PrintWriter_init;
 extern jclass g_Arrays;
 extern jmethodID g_Arrays_copyOfRange;
 
-extern jclass g_Achievements;
-extern jmethodID g_Achievements_registerAll;
-
 #endif //SWMINI_JAVA_H

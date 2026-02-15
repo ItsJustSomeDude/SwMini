@@ -1,0 +1,184 @@
+# SwordigoMini Achievements
+# Created by ItsJustSomeDude
+
+# Format of each achievement entry:
+# Required:
+# [id]
+# name = "Name"
+# description = "Long Description"
+# points = 10
+# Optional:
+# counter = "count"
+# threshold = 5
+
+# ID must be unique, and is used to find the Icon asset: "achicon_<id>_2x.pvr"
+# Name, Description, and Points are what appear in the list/notification in-game.
+# If a threshold is set, the counter must be incremented that many times to get the achievement.
+# If a counter name is set, use this in the `Game.IncCounter` call, otherwise use the ID.
+# When a counter name is set, using `Game.IncCounter("<id>")` will *not* trigger the achievement, only `Game.IncCounter("<counter name>")` will.
+
+# Some IDs/Counters have a special meaning in the engine, while all others can be triggered by Lua.
+#
+# treasures: Incremented automatically by Character.RegisterTreasureCollection calls.
+# beammeupscotty: Incremented automatically on using a portal.
+# blastabat: Triggered when an entity with ClassTitle "Bat" is killed by something with a "MagicBoltComponent"
+# bombabat: Triggered when an entity with ClassTitle "Bat" is killed by something with a "MagicExplosionComponent"
+# bushes: Incremented when an entity with a BushControllerComponent is destroyed.
+# recklessshooting: Triggered if an entity with a "HeroEntityComponent" is killed by an entity with a "MagicBoltComponent" that has the same Caster as the killed entity.
+# mishandlingexplosives: Triggered if an entity with a "HeroEntityComponent" is killed by an entity with a "MagicExplosionComponent" that has the same Caster as the killed entity.
+# toorich: Triggered upon reaching 999 coins. Threshold be customized in `mini.properties`.
+# takingtheshortcut: Incremented when picking up an item with the ID "key_yellow".
+# theexplorer: Triggered upon visiting every registered map node.
+
+# The strings set here *cannot* be modified with CStrings. Edit this file directly.
+
+[scavenger]
+name = "Scavenger"
+description = "Find a Treasure."
+points = 10
+counter = "treasures"
+
+[beammeupscotty]
+name = "Beam Me Up Scotty"
+description = "Travel through a portal."
+points = 10
+
+[angrybats]
+name = "Angry Bats"
+description = "Kill Szan The Angry."
+points = 20
+
+[blastabat]
+name = "Blast a Bat"
+description = "Kill a bat with a magic bolt."
+points = 20
+
+[golddigger]
+name = "Gold Digger"
+description = "Find 10 Treasures."
+points = 20
+threshold = 10
+counter = "treasures"
+
+[thedestroyer]
+name = "The Destroyer"
+description = "Smash 100 pots."
+points = 20
+threshold = 100
+counter = "pots"
+
+[thegardener]
+name = "The Gardener"
+description = "Cut down 100 bushes."
+points = 20
+threshold = 100
+counter = "bushes"
+
+[recklessshooting]
+name = "Reckless Shooting"
+description = "Get killed by your own magic bolt."
+points = 30
+
+[bombabat]
+name = "Bomb a Bat"
+description = "Kill a bat with a bomb."
+points = 20
+
+[mishandlingexplosives]
+name = "Mishandling Explosives"
+description = "Get killed by your own bomb."
+points = 30
+
+[pancaketime]
+name = "Pancake Time"
+description = "Get crushed to death."
+points = 30
+
+[animatedearth]
+name = "Animated Earth"
+description = "Kill Boulder The Golem."
+points = 30
+
+[lostsword]
+name = "Lost Sword"
+description = "Find The Needle."
+points = 30
+
+[theundead]
+name = "The Undead"
+description = "Find The Shadowtrinket."
+points = 30
+
+[lawandjustice]
+name = "Law and Justice"
+description = "Kill Zak The Bandit Leader."
+points = 30
+
+[likeaninja]
+name = "Like a Ninja"
+description = "Kill the boss in Florennum without taking any damage."
+points = 80
+
+[duel]
+name = "Duel"
+description = "Kill Jack The Ambusher."
+points = 30
+
+[anotherentrance]
+name = "Another Entrance"
+description = "Find The Thorn."
+points = 30
+
+[lordoftheundead]
+name = "Lord of The Undead"
+description = "Find The Magic Sword."
+points = 30
+
+[toofast]
+name = "Too Fast"
+description = "Kill Slick The Quick."
+points = 30
+
+[treasurehunter]
+name = "Treasure Hunter"
+description = "Find 40 Treasures."
+points = 30
+threshold = 40
+counter = "treasures"
+
+[deadlymage]
+name = "Deadly Mage"
+description = "Kill Edogani The Deadly."
+points = 30
+
+[toorich]
+name = "Too Rich"
+description = "Have 999 soul shards."
+points = 30
+
+[takingtheshortcut]
+name = "Open Sesame"
+description = "Find a Key."
+points = 30
+
+[indianajones]
+name = "Indiana Jones"
+description = "Find all the Treasures."
+points = 80
+threshold = 59
+counter = "treasures"
+
+[shatteredblade]
+name = "Shattered Blade"
+description = "Assemble the Mageblade."
+points = 40
+
+[theexplorer]
+name = "The Explorer"
+description = "Visit every place."
+points = 30
+
+[masteroforder]
+name = "Master of Order"
+description = "Kill The Master of Chaos."
+points = 80

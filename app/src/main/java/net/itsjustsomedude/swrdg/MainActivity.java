@@ -200,10 +200,13 @@ public class MainActivity extends Activity implements Runnable {
 
 		Debug.Log("All libraries loaded.");
 
-		NativeBridge.loadLibraries(this);
+		// This needs to be fixed... See TODO in function.
+		// NativeBridge.loadLibraries(this);
+
+
+		NativeBridge.setMiniAssetManager(this.getAssets());
 
 		NativeBridge.midLoad();
-		NativeBridge.setupCStringHooks(this);
 
 		// TODO: Unsure if this is the best place to do this.
 		ModProperties.loadDefaultPropertiesFile(this);
@@ -224,6 +227,7 @@ public class MainActivity extends Activity implements Runnable {
 		}
 
 		Native.mainActivityRef = new WeakReference<>(this);
+		GameActions.mainActivityRef = new WeakReference<>(this);
 
 		Native.setFilesDir(this.getApplicationContext().getFilesDir().toString());
 		Native.setCacheDir(this.getApplicationContext().getCacheDir().toString());
@@ -242,7 +246,6 @@ public class MainActivity extends Activity implements Runnable {
 		Native.handleApplicationLaunch();
 
 		NativeBridge.lateLoad();
-		Achievements.readDefaultFile(this);
 
 		this.gameView = new GameView(this);
 		this.gameView.setEGLConfigChooser(5, 6, 5, 0, 16, 0);

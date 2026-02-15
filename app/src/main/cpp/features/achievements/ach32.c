@@ -15,8 +15,9 @@ DL_FUNCTION_SYMBOL(
 		CppString * *description, int points, CppString **counter, int threshold)
 )
 
+static void *shared_achievement_manager = NULL;
+
 void create_achievement(
-	void *manager,
 	const char *id, const char *name,
 	const char *desc, int points,
 	const char *counter, int threshold
@@ -103,10 +104,10 @@ void create_achievement(
 		// Place the return address into r7, as it appears it is never used.
 		"adr r7, after_call\n\t"
 
-		#ifdef __thumb__
+#ifdef __thumb__
 		// If this ASM block is thumb, set the flag so we can jump back to it safely.
 		"orr r7, r7, #1\n\t"
-		#endif
+#endif
 
 		// Stack is ready! JUMP!
 		"blx r10\n\t"
@@ -115,8 +116,8 @@ void create_achievement(
 		// Remove the stack frame.
 		"add sp, sp, #0x3c0\n\t"
 
-		: // No outputs...
-		: "r"(manager), "r"(&input_achievement), "r"(target_func)
+		: // No outputs.
+		: "r"(shared_achievement_manager), "r"(&input_achievement), "r"(target_func)
 		: "r0", "r1", "r10", "r12", "r4", "r5", "r8", "r9", "r11", "r7", "memory"
 		);
 
@@ -124,8 +125,6 @@ void create_achievement(
 	// I'm just returning from here it should be ok.
 	// If I get crashes here, then more stuff will need to be added to the Clobbered list.
 }
-
-void *shared_achievement_manager = NULL;
 
 STATIC_DL_HOOK_SYMBOL(
 	achievement_manager_init,
@@ -138,7 +137,7 @@ STATIC_DL_HOOK_SYMBOL(
 	orig_achievement_manager_init(this);
 	shared_achievement_manager = this;
 
-	ach_register_all();
+	miniACH_register();
 
 //	create_achievement(this, "test1", "Test Achievement", "This is the achievement!", 10, NULL, 1);
 //	create_achievement(this, "test2", "A Second Test", "This is another one.", 5, "cc", 5);

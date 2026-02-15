@@ -24,7 +24,7 @@ STATIC_DL_HOOK_SYMBOL(
 	LOGD("Fetched new Profile ID: %s", latestProfileId);
 
 	// Since we're entering a new Save file, reset the Coin Limit in case it was modified from Lua.
-	reset_coin_limit();
+	miniCL_reset();
 
 	return orig_loadProfileId(this, p1, profile);
 }

@@ -315,8 +315,9 @@ __attribute__((unused)) struct Test {
 // ((struct Test*)$sp)->Counter
 // (Achievement**)$x2
 
+static void *shared_achievement_manager = NULL;
+
 void create_achievement(
-	void *manager,
 	const char *id, const char *name,
 	const char *desc, int points,
 	const char *counter, int threshold
@@ -344,7 +345,7 @@ void create_achievement(
 	);
 
 //	uintptr_t frame_size = 0x740;           // bytes, ≥ 0, multiple of 16
-	void *target_func = offset_address(0x377670);
+	void *target_func = engine_offset_ptr(0x377670);
 
 	asm volatile (
 		// Store all the things in registers, I'm about to clobber the whole stack!
@@ -394,7 +395,7 @@ void create_achievement(
 		"add sp, sp, #0x740\n\t"
 
 		: // No outputs...
-		: "r"(manager), "r"(cpp_name), "r"(cpp_id), "r"(cpp_counter),
+		: "r"(shared_achievement_manager), "r"(cpp_name), "r"(cpp_id), "r"(cpp_counter),
 	"r"(&input_achievement),
 	/* Empty Basic String pointer in BSS. Cannot be a local variable due to stack destruction. */
 	"r"(engine_bss_offset_ptr(0x14880)),
@@ -407,20 +408,17 @@ void create_achievement(
 	// If I get crashes here, then more registers will need to be added to the Clobbered list.
 }
 
-void *shared_achievement_manager = NULL;
-
 STATIC_DL_HOOK_SYMBOL(
 	achievement_manager_init,
 	"_ZN5Caver19AchievementsManagerC1Ev",
-	void,
-	(void *this)
+	void, (void *this)
 ) {
 	LOGD("Creating shared achievement manager at %p", this);
 
 	orig_achievement_manager_init(this);
 	shared_achievement_manager = this;
 
-	ach_register_all();
+	miniACH_register();
 
 //	create_achievement(this, "test1", "Test Achievement", "This is the achievement!", 10, NULL, 1);
 //	create_achievement(this, "test2", "A Second Test", "This is another one.", 5, "cc", 5);

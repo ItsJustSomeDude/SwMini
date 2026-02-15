@@ -21,4 +21,6 @@ bool cstrings_apply_workarounds(const char *source, const char *replacement);
 void cstrings_add_replacement(const char *source, const char *replacement);
 const char *cstrings_get_replacement(const char *source);
 
+void miniCStr_read_asset(const char *asset_path);
+
 #endif //NEEDLE_CSTRINGS_H
