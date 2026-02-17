@@ -17,8 +17,17 @@
 
 #define LOG_TAG "MiniNativeMain"
 
-/** This is called by JNI_Onload, which is the earliest in the startup process.
- * libsw is not loaded yet. */
+#ifdef NDK_DEBUG
+
+__attribute((constructor))
+void earliest_load() {
+	LOGD("LibMini has been loaded.");
+}
+
+#endif
+
+/** This is called by JNI_Onload, which is fairly early in the startup process.
+ * Engine Lib is not loaded yet. */
 void earlyLoad() {
 	LOGD("Performing Early-load");
 

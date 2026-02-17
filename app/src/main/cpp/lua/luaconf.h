@@ -760,7 +760,17 @@ union luai_Cast { double l_d; long l_l; };
 ** without modifying the main part of the file.
 */
 
+#ifdef __arm__
 
+/* ISO C definitions
+ *
+ * This is needed for the Rock Builder, as these functions don't appear to exist on 32bit.
+ */
+#define l_fseek(f, o, w)        fseek(f,o,w)
+#define l_ftell(f)        ftell(f)
+#define l_seeknum        long
+
+#endif
 
 #endif
 
