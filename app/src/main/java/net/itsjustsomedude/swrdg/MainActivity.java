@@ -468,241 +468,106 @@ public class MainActivity extends Activity implements Runnable {
 	}
 
 	void setupGameServices() {
-//        this.gamesSignIn = new GamesSignIn(this, new GamesSignIn.GamesSignInListener(this) {
-//            final MainActivity this$0;
+//		this.gamesSignIn = new GamesSignIn(this, new GamesSignIn.GamesSignInListener(this) {
+//			public void onGameServicesSignInCompleted() {
+//				Debug.Log("onSignInSucceeded");
+//				this.gameServices.loggedIn = true;
+//				(new Handler()).postDelayed(() -> {
+//					runOnGameThread(() -> {
+//						Debug.Log("Calling Native.googleSignInCompleted: true");
+//						Native.googleSignInCompleted(true);
 //
-//            {
-//                this.this$0 = var1;
-//            }
+//					});
+//				}, 100L);
+//			}
 //
-//            public void onGameServicesSignInCompleted() {
-//                Debug.Log("onSignInSucceeded");
-//                this.this$0.gameServices.loggedIn = true;
-//                (new Handler()).postDelayed(new Runnable(this) {
-//                    final <undefinedtype> this$1;
+//			public void onSignInFailed() {
+//				Debug.Log("onSignInFailed");
+//				this.gameServices.loggedIn = false;
+//				(new Handler()).postDelayed(() -> {
+//					runOnGameThread(() -> {
+//						Debug.Log("Calling Native.googleSignInCompleted: false");
+//						Native.googleSignInCompleted(false);
+//					});
+//				}, 100L);
+//			}
 //
-//                    {
-//                        this.this$1 = var1;
-//                    }
-//
-//                    public void run() {
-//                        this.this$1.this$0.runOnGameThread(new Runnable(this) {
-//                            final <undefinedtype> this$2;
-//
-//                            {
-//                                this.this$2 = var1;
-//                            }
-//
-//                            public void run() {
-//                                Debug.Log("Calling Native.googleSignInCompleted: true");
-//                                Native.googleSignInCompleted(true);
-//                            }
-//                        });
-//                    }
-//                }, 100L);
-//            }
-//
-//            public void onSignInFailed() {
-//                Debug.Log("onSignInFailed");
-//                this.this$0.gameServices.loggedIn = false;
-//                (new Handler()).postDelayed(new Runnable(this) {
-//                    final <undefinedtype> this$1;
-//
-//                    {
-//                        this.this$1 = var1;
-//                    }
-//
-//                    public void run() {
-//                        this.this$1.this$0.runOnGameThread(new Runnable(this) {
-//                            final <undefinedtype> this$2;
-//
-//                            {
-//                                this.this$2 = var1;
-//                            }
-//
-//                            public void run() {
-//                                Debug.Log("Calling Native.googleSignInCompleted: false");
-//                                Native.googleSignInCompleted(false);
-//                            }
-//                        });
-//                    }
-//                }, 100L);
-//            }
-//
-//            public void onSignInSucceeded() {
-//            }
-//        });
-//        this.gameServices = new GameServices(this, this.gamesSignIn);
+//			public void onSignInSucceeded() {
+//			}
+//		});
+//		this.gameServices = new GameServices(this, this.gamesSignIn);
 	}
 
 	void setupStoreController() {
-//        StoreController var1 = new StoreController(this);
-//        this.storeController = var1;
-//        var1.addEventListener(new IStoreController.EventListener(this) {
-//            final MainActivity this$0;
+//		StoreController var1 = new StoreController(this);
+//		this.storeController = var1;
+//		var1.addEventListener(new IStoreController.EventListener(this) {
+//			public void onConnected() {
+//				(new Handler()).postDelayed(() -> {
+//					if (this.storeController != null) {
+//						this.storeController.queryPurchases();
+//					}
+//				}, 100L);
+//			}
 //
-//            {
-//                this.this$0 = var1;
-//            }
+//			public void onFinishedRestoringPurchases(int var1) {
+//				Debug.Log("MainActivity.onFinishedRestoringPurchases, numberOfPurchasesRestored: " + var1);
+//				AdsHelper var4 = this.gameServices.adsHelper;
+//				boolean var2;
+//				var2 = var1 > 0;
 //
-//            public void onConnected() {
-//                (new Handler()).postDelayed(new Runnable(this) {
-//                    final <undefinedtype> this$1;
+//				var4.setAdsDisabledBecausePurchase(var2);
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.finishedRestoringPurchases");
+//					Native.finishedRestoringPurchases();
+//				});
+//			}
 //
-//                    {
-//                        this.this$1 = var1;
-//                    }
+//			public void onProductFetchFailed(String identifier, String var2) {
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.storeProductFetchFailed: " + identifier);
+//					Native.storeProductFetchFailed(identifier, this.storeController.fetchErrorMessage());
+//				});
+//			}
 //
-//                    public void run() {
-//                        if (this.this$1.this$0.storeController != null) {
-//                            this.this$1.this$0.storeController.queryPurchases();
-//                        }
+//			public void onProductFetched(StoreProduct product) {
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.storeProductFetched: " + product);
+//					Native.storeProductFetched(product.getProductId(), product.getDescription(), product.getPrice());
+//				});
+//			}
 //
-//                    }
-//                }, 100L);
-//            }
+//			public void onPurchaseFailed(String productId, String errorMessage) {
+//				runOnGameThread(() -> {
+//					String var1 = "Calling Native.productPurchaseFailed: " + productId +
+//						", " +
+//						errorMessage;
+//					Debug.Log(var1);
+//					Native.productPurchaseFailed(productId, errorMessage);
+//				});
+//			}
 //
-//            public void onFinishedRestoringPurchases(int var1) {
-//                StringBuilder var3 = new StringBuilder("MainActivity.onFinishedRestoringPurchases, numberOfPurchasesRestored: ");
-//                var3.append(var1);
-//                Debug.Log(var3.toString());
-//                AdsHelper var4 = this.this$0.gameServices.adsHelper;
-//                boolean var2;
-//                if (var1 > 0) {
-//                    var2 = true;
-//                } else {
-//                    var2 = false;
-//                }
+//			public void onPurchaseRestored(StorePurchase purchase) {
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.productPurchased: " + purchase.getProductId());
+//					Native.productPurchased(purchase.getProductId());
+//				});
+//			}
 //
-//                var4.setAdsDisabledBecausePurchase(var2);
-//                this.this$0.runOnGameThread(new Runnable(this) {
-//                    final <undefinedtype> this$1;
+//			public void onPurchaseSucceeded(StorePurchase purchase) {
+//				gameServices.adsHelper.setAdsDisabledBecausePurchase(true);
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.productPurchased: " + purchase.getProductId());
+//					Native.productPurchased(purchase.getProductId());
+//				});
+//			}
 //
-//                    {
-//                        this.this$1 = var1;
-//                    }
-//
-//                    public void run() {
-//                        Debug.Log("Calling Native.finishedRestoringPurchases");
-//                        Native.finishedRestoringPurchases();
-//                    }
-//                });
-//            }
-//
-//            public void onProductFetchFailed(String var1, String var2) {
-//                this.this$0.runOnGameThread(new Runnable(this, var1) {
-//                    final <undefinedtype> this$1;
-//                    final String val$identifier;
-//
-//                    {
-//                        this.this$1 = var1;
-//                        this.val$identifier = var2;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Calling Native.storeProductFetchFailed: ");
-//                        var1.append(this.val$identifier);
-//                        Debug.Log(var1.toString());
-//                        Native.storeProductFetchFailed(this.val$identifier, this.this$1.this$0.storeController.fetchErrorMessage());
-//                    }
-//                });
-//            }
-//
-//            public void onProductFetched(StoreProduct var1) {
-//                this.this$0.runOnGameThread(new Runnable(this, var1) {
-//                    final <undefinedtype> this$1;
-//                    final StoreProduct val$product;
-//
-//                    {
-//                        this.this$1 = var1;
-//                        this.val$product = var2;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Calling Native.storeProductFetched: ");
-//                        var1.append(this.val$product);
-//                        Debug.Log(var1.toString());
-//                        Native.storeProductFetched(this.val$product.getProductId(), this.val$product.getDescription(), this.val$product.getPrice());
-//                    }
-//                });
-//            }
-//
-//            public void onPurchaseFailed(String var1, String var2) {
-//                this.this$0.runOnGameThread(new Runnable(this, var1, var2) {
-//                    final <undefinedtype> this$1;
-//                    final String val$errorMessage;
-//                    final String val$productId;
-//
-//                    {
-//                        this.this$1 = var1;
-//                        this.val$productId = var2;
-//                        this.val$errorMessage = var3;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Calling Native.productPurchaseFailed: ");
-//                        var1.append(this.val$productId);
-//                        var1.append(", ");
-//                        var1.append(this.val$errorMessage);
-//                        Debug.Log(var1.toString());
-//                        Native.productPurchaseFailed(this.val$productId, this.val$errorMessage);
-//                    }
-//                });
-//            }
-//
-//            public void onPurchaseRestored(StorePurchase var1) {
-//                this.this$0.runOnGameThread(new Runnable(this, var1) {
-//                    final <undefinedtype> this$1;
-//                    final StorePurchase val$purchase;
-//
-//                    {
-//                        this.this$1 = var1;
-//                        this.val$purchase = var2;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Calling Native.productPurchased: ");
-//                        var1.append(this.val$purchase.getProductId());
-//                        Debug.Log(var1.toString());
-//                        Native.productPurchased(this.val$purchase.getProductId());
-//                    }
-//                });
-//            }
-//
-//            public void onPurchaseSucceeded(StorePurchase var1) {
-//                this.this$0.gameServices.adsHelper.setAdsDisabledBecausePurchase(true);
-//                this.this$0.runOnGameThread(new Runnable(this, var1) {
-//                    final <undefinedtype> this$1;
-//                    final StorePurchase val$purchase;
-//
-//                    {
-//                        this.this$1 = var1;
-//                        this.val$purchase = var2;
-//                    }
-//
-//                    public void run() {
-//                        StringBuilder var1 = new StringBuilder("Calling Native.productPurchased: ");
-//                        var1.append(this.val$purchase.getProductId());
-//                        Debug.Log(var1.toString());
-//                        Native.productPurchased(this.val$purchase.getProductId());
-//                    }
-//                });
-//            }
-//
-//            public void onStartedRestoringPurchases() {
-//                this.this$0.runOnGameThread(new Runnable(this) {
-//                    final <undefinedtype> this$1;
-//
-//                    {
-//                        this.this$1 = var1;
-//                    }
-//
-//                    public void run() {
-//                        Debug.Log("Calling Native.startedRestoringPurchases");
-//                        Native.startedRestoringPurchases();
-//                    }
-//                });
-//            }
-//        });
+//			public void onStartedRestoringPurchases() {
+//				runOnGameThread(() -> {
+//					Debug.Log("Calling Native.startedRestoringPurchases");
+//					Native.startedRestoringPurchases();
+//				});
+//			}
+//		});
 	}
 }
