@@ -17,6 +17,9 @@ extern const char *cachePath;
 #define EXTERNAL_CACHE_BASE "/ExternalCache/"
 #define CACHE_BASE "/Cache/"
 
+const char *from_mini_path(char *out, size_t out_size, const char *path);
+const char *to_mini_path(char *out, size_t out_size, const char *path);
+
 // Here are the functions that take MiniPaths.
 
 int mini_path_chdir(const char *_Nonnull path);
