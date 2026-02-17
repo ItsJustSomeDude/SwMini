@@ -2,6 +2,9 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "mini.h"
+#include "log.h"
+
+#define LOG_TAG "MiniSubLib"
 
 void miniL_register(lua_State *L, const char *lib_name, const luaL_Reg *functions) {
 	// Fetch or create Mini library table
@@ -34,4 +37,6 @@ void miniL_register(lua_State *L, const char *lib_name, const luaL_Reg *function
 		lua_pushcclosure(L, functions->func, 0);
 		lua_setfield(L, -2, functions->name);
 	}
+
+	lua_pop(L, 1);
 }

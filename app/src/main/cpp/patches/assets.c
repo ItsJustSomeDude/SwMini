@@ -63,14 +63,11 @@ void *bufferFromPath(char *path, int *length) {
 		return NULL;
 	}
 
-	LOGD("Asset %s: loaded with length %d", path, fileSize);
-
 	return buffer;
 }
 
 void *tryBufferFromPath(char *path, int *length) {
 	if (pathReadable(path)) {
-		LOGD("AssetTry %s: Loaded", path);
 		return bufferFromPath(path, length);
 	}
 	return NULL;
@@ -114,7 +111,6 @@ STATIC_DL_HOOK_SYMBOL(fileAtPath, "_ZN5Caver16FileExistsAtPathERKSs", bool, (cha
 	// Also use the original if it's not a resource.
 
 	bool isResource = strncmp(*assetPath, VanillaResPrefix, strlen(VanillaResPrefix)) == 0;
-	LOGD("FileExists: %s is resource? %d", *assetPath, isResource);
 
 	if (!isResource) return orig_fileAtPath(assetPath);
 
@@ -250,7 +246,6 @@ STATIC_DL_HOOK_SYMBOL(
 	}
 
 	void *ret = orig_openAsset(assetPath, outLength);
-	LOGD("%s: Using APK asset, length %d", *assetPath, *outLength);
 	return ret;
 }
 

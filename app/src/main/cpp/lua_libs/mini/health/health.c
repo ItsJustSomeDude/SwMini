@@ -55,8 +55,9 @@ static int current_mana_percent(lua_State *L) {
 
 #define MINI_HEALTH_LIB_NAME "Health"
 static const luaL_Reg health_lib[] = {
-	{"CurrentMana",        current_mana},
-	{"CurrentManaPercent", current_mana_percent}
+	{"CurrentMana", current_mana},
+	{"CurrentManaPercent", current_mana_percent},
+	{NULL, NULL}
 };
 
 void miniL_open_health(lua_State *L) {
