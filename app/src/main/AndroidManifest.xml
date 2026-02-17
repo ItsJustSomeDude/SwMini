@@ -29,6 +29,12 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<provider
+			android:name=".LogProvider"
+			android:authorities="net.itsjustsomedude.swrdg.LogProvider"
+			android:exported="false"
+			android:grantUriPermissions="true" />
 	</application>
 
 </manifest>

@@ -8,7 +8,7 @@
 //AAssetManager *asset_manager;
 
 JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_setMiniAssetManager(
+Java_net_itsjustsomedude_swrdg_LibraryManager_setMiniAssetManager(
 	JNIEnv *env, jclass clazz, jobject manager
 ) {
 	jobject gbl = (*env)->NewGlobalRef(env, manager);

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
@@ -31,6 +32,7 @@ import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 
 public class MainActivity extends Activity implements Runnable {
+	private static final String TAG = "MiniGameActivity";
 	public PersistentState persistentState;
 	AudioManager.OnAudioFocusChangeListener afChangeListener;
 	AudioManager audioManager;
@@ -139,9 +141,15 @@ public class MainActivity extends Activity implements Runnable {
 		return this.inBackground;
 	}
 
-	protected void onActivityResult(int var1, int var2, Intent var3) {
-		Debug.Log("onActivityResult(" + var1 + "," + var2 + "," + var3);
-		super.onActivityResult(var1, var2, var3);
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Debug.Log("onActivityResult(" + requestCode + "," + resultCode + "," + data);
+
+		// Log share finished, launch game.
+		if (requestCode == 1000) {
+			this.createGame();
+		}
+
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	// Deprecation suppressed because it's still used on versions before T.
@@ -164,10 +172,9 @@ public class MainActivity extends Activity implements Runnable {
 		}
 	}
 
-	protected void onCreate(Bundle bundle) {
-		super.onCreate(bundle);
+	private void createGame() {
+		LibraryManager.loadMini(this);
 
-		System.loadLibrary("mini");
 		System.loadLibrary("openal-soft");
 		System.loadLibrary("swordigo");
 
@@ -175,9 +182,6 @@ public class MainActivity extends Activity implements Runnable {
 
 		// This needs to be fixed... See TODO in function.
 		// NativeBridge.loadLibraries(this);
-
-
-		NativeBridge.setMiniAssetManager(this.getAssets());
 
 		NativeBridge.midLoad();
 
@@ -205,8 +209,6 @@ public class MainActivity extends Activity implements Runnable {
 		Native.setFilesDir(this.getApplicationContext().getFilesDir().toString());
 		Native.setCacheDir(this.getApplicationContext().getCacheDir().toString());
 		Native.setAssetManager(this.getAssets());
-
-		NativeBridge.setupFilePaths(this);
 
 		LNIFunctions.register();
 		LuaNativeInterface.init();
@@ -236,9 +238,39 @@ public class MainActivity extends Activity implements Runnable {
 		MiniOverlay.mainActivityRef = new WeakReference<>(this);
 		MiniOverlay.init(this, this.mainViewLayout);
 
+		ButtonController.init(this, this.mainViewLayout);
+		ButtonController.addButton("Test lol");
+
 //		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
 //		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
 //		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
+	}
+
+	protected void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+
+		if (CrashHandler.lastRunCrashed(this)) {
+			// Show crash dialog BEFORE launching engine, in case of startup crashes.
+
+			String logFile = CrashHandler.dumpLogs(this);
+
+			new AlertDialog.Builder(this)
+				.setTitle(R.string.crash_report_title)
+				.setMessage(R.string.crash_report_body)
+				.setPositiveButton(R.string.report_logs, (DialogInterface dialog, int which) -> {
+					Intent intent = CrashHandler.createLogShareIntent(this, logFile);
+					startActivityForResult(intent, 1000);
+				})
+				.setNegativeButton(R.string.report_cancel, (DialogInterface dialog, int which) -> this.createGame())
+//				.setNeutralButton(R.string.report_export, (DialogInterface dialog, int which) -> {
+//				})
+				.setOnCancelListener((DialogInterface dialog) -> this.createGame())
+				.show();
+			return;
+		}
+
+		// Normal startup.
+		this.createGame();
 
 		for (String abi : Build.SUPPORTED_ABIS) {
 			// Find the first matching supported ABI
@@ -399,7 +431,10 @@ public class MainActivity extends Activity implements Runnable {
 
 	protected void onStop() {
 		super.onStop();
-		this.persistentState.finishMeasuringAppForegroundTime();
+
+		if (this.persistentState != null)
+			this.persistentState.finishMeasuringAppForegroundTime();
+
 		this.inBackground = true;
 //        this.gameServices.adsHelper.onEnterBackground();
 		if (this.gameView != null) {
@@ -417,7 +452,7 @@ public class MainActivity extends Activity implements Runnable {
 
 	public void onWindowFocusChanged(boolean var1) {
 		super.onWindowFocusChanged(var1);
-		if (var1) {
+		if (var1 && this.gameView != null) {
 			this.gameView.setImmersiveMode();
 		}
 	}

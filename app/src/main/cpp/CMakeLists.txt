@@ -56,6 +56,7 @@ add_library(mini SHARED
         patches/assets.c
         patches/panic.c
         patches/lua_libs.c
+        patches/crash_handler.c
 
         patches/assets/index.c
         patches/assets2.c

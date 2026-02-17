@@ -21,7 +21,7 @@ const char *to_c_string(JNIEnv *env, jstring js) {
 }
 
 JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_setPaths(
+Java_net_itsjustsomedude_swrdg_LibraryManager_setMiniFilePaths(
 	JNIEnv *env, jclass clazz,
 	jstring files, jstring cache, jstring ext_files, jstring ext_cache) {
 

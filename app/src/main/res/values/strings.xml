@@ -9,4 +9,15 @@
 	<string name="title_32bit_warning">32Bit Mode</string>
 	<string name="body_32bit_warning">You are running a 32bit device. While every effort is made to support these devices, they usually undergo significantly less testing, and thus some issues may be present.  If you\'re reporting any bugs, make sure to include this information!</string>
 	<string name="btn_32bit_warning">I understand</string>
+
+
+	<string name="crash_report_title">Uh oh!</string>
+	<string name="crash_report_body">It appears the mod crashed last time. Do you want the log files to send to the developers? Use \"Full Export\" if specifically requested by the developers.</string>
+
+	<string name="report_title">See a Problem?</string>
+	<string name="report_body">Found a problem? You can share logs to help the developers.</string>
+
+	<string name="report_logs">Share Log</string>
+	<string name="report_export">Share Full Export</string>
+	<string name="report_cancel">Cancel</string>
 </resources>
