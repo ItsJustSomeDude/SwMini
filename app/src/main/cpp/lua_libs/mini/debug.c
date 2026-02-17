@@ -29,11 +29,48 @@ int tdb(lua_State *L) {
 
 	toggle_debug_info(gameSceneView);
 
-	LOGD("Enabled debug overlay maybe.");
+	void *debug_overlay = *$(void*, gameSceneView, 0xd4, 0x110);
+
+	*$(int, debug_overlay, 0x10c, 0x164) = 1;
+	
+	LOGD("Enabled debug overlay maybe. %p", debug_overlay);
+
 
 	return 0;
 }
 
+STATIC_DL_HOOK_SYMBOL(
+	overlay_toggle,
+	"_ZN5Caver16DebugInfoOverlay6ToggleEv",
+	void, (void* this)
+) {
+	LOGD("The actual toggle function WAS called, this = %p", this);
+
+	orig_overlay_toggle(this);
+
+	LOGD("Done.");
+}
+
+STATIC_DL_HOOK_SYMBOL(
+	overlay_update,
+	"_ZN5Caver16DebugInfoOverlay6UpdateEf",
+	void, (void* this, float delta)
+) {
+//	LOGD("Update called successfully: %p %f", this, delta);
+	orig_overlay_update(this, delta);
+}
+
+STATIC_DL_FUNCTION_SYMBOL(
+	overlay_update,
+	"_ZN5Caver16DebugInfoOverlay6UpdateEf",
+	void, (void* this, float delta)
+)
+
+
 void init_lua_debug() {
 	dlsym_toggle_debug_info();
+
+	hook_overlay_toggle();
+//	hook_overlay_update();
+	dlsym_overlay_update();
 }

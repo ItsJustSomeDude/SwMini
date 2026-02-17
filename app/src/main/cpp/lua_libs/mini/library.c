@@ -24,9 +24,9 @@ static const luaL_Reg mini_lib[] = {
 	{"ExecuteLNI",        lni_execute},
 	{"BindLNI",           lni_bind},
 
-	{"SceneFindAll",      scene_find_all},
+//	{"SceneFindAll",      scene_find_all},
 
-	{"ToggleDebug",       tdb},
+//	{"ToggleDebug",       tdb},
 
 	{"SetCoinLimit",      lua_coin_limit},
 
