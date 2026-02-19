@@ -1,10 +1,17 @@
-#include <stddef.h>
-#include <jni.h>
-#include <string.h>
-#include <stdio.h>
-#include <linux/limits.h>
-#include "log.h"
 #include "lua_paths.h"
+
+#include "global.h"
+#include "log.h"
+
+#include <bits/strcasecmp.h>
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <utime.h>
+
+struct utimbuf;
 
 #define LOG_TAG "MiniLuaPaths"
 

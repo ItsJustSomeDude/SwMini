@@ -1,9 +1,13 @@
-#include <string.h>
-#include <stdlib.h>
+/* clang-format off */
+#include "mini.h" /* clang-format on */
+
+#include "features/coin_limit.h"
 #include "hooks.h"
 #include "log.h"
 #include "lua.h"
-#include "features/coin_limit.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #define LOG_TAG "MiniLuaProfile"
 

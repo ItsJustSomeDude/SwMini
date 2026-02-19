@@ -1,4 +1,5 @@
 #include "java.h"
+
 #include "jni.h"
 
 jclass g_StringWriter;

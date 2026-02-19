@@ -1,7 +1,9 @@
+/* clang-format off */
+#include "mini.h" /* clang-format on */
 
 #include "hooks.h"
-#include "lua.h"
 #include "log.h"
+#include "lua.h"
 
 #define LOG_TAG "MiniLuaDebug"
 
@@ -32,7 +34,7 @@ int tdb(lua_State *L) {
 	void *debug_overlay = *$(void*, gameSceneView, 0xd4, 0x110);
 
 	*$(int, debug_overlay, 0x10c, 0x164) = 1;
-	
+
 	LOGD("Enabled debug overlay maybe. %p", debug_overlay);
 
 

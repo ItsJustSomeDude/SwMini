@@ -1,9 +1,13 @@
-#include <stddef.h>
-#include <string.h>
-#include <jni.h>
-#include "cstrings.h"
+/* clang-format off */
+#include "cstrings.h" /* clang-format on */
+
 #include "libs/khash.h"
 #include "log.h"
+
+#include <jni.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define LOG_TAG "MiniCStringRegister"
 

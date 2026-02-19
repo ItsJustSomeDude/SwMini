@@ -1,8 +1,9 @@
-#include "sublib.h"
-#include "lua.h"
+/* clang-format off */
+#include "sublib.h" /* clang-format on */
+
 #include "lauxlib.h"
+#include "lua.h"
 #include "mini.h"
-#include "log.h"
 
 #define LOG_TAG "MiniSubLib"
 

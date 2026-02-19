@@ -1,7 +1,8 @@
+#include "lauxlib.h"
 #include "lni.h"
 #include "lua.h"
-#include "lauxlib.h"
-#include "log.h"
+
+#include <stdarg.h>
 
 #define LOG_TAG "MiniLNIBind"
 
@@ -31,22 +32,6 @@ static int bind_inner(lua_State *L) {
 	int ret = lua_gettop(L) - nargs;
 
 	return ret;
-
-//	LOGD("Stack height after call and return: %i", );
-//
-//	return lua_gettop(L);
-
-
-//	// Use pcall to safely forward multiple returns
-//	if (lua_pcall(L, nargs + 1, LUA_MULTRET, 0) != 0) {
-//		// On error, propagate it (original error message is on top)
-//		return lua_error(L);
-//	}
-//
-//
-//
-//	// Return all results from ExecuteLNI
-//	return lua_gettop(L);
 }
 
 int lni_bind(lua_State *L) {

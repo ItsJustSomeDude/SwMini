@@ -1,6 +1,8 @@
 #ifndef NEEDLE_ENGINE_STRINGS_H
 #define NEEDLE_ENGINE_STRINGS_H
 
+#include <stddef.h>
+
 /**
  * Convert a string from UTF8 (with up to 2 byte chars) to a byte sequence, in place.
  *

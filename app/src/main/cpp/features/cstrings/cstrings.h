@@ -1,9 +1,9 @@
-
 #ifndef NEEDLE_CSTRINGS_H
 #define NEEDLE_CSTRINGS_H
 
-#include <stdbool.h>
 #include "hooks.h"
+
+#include <stdbool.h>
 
 typedef char CppString;
 

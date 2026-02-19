@@ -1,8 +1,9 @@
 #ifndef SWMINI_LUA_LNI_H
 #define SWMINI_LUA_LNI_H
 
-#include <jni.h>
 #include "lualib.h"
+
+#include <jni.h>
 
 // See the LuaNativeInterface::getLNIType method.
 #define LNI_TYPE_VOID 0

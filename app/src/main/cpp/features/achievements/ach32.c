@@ -1,9 +1,9 @@
 #ifdef __arm__
 
 #include "achievements.h"
+#include "assembly/thumb.h"
 #include "hooks.h"
 #include "log.h"
-#include "assembly/thumb.h"
 
 #define LOG_TAG "MiniAchievements"
 
@@ -104,10 +104,10 @@ void create_achievement(
 		// Place the return address into r7, as it appears it is never used.
 		"adr r7, after_call\n\t"
 
-#ifdef __thumb__
+		#ifdef __thumb__
 		// If this ASM block is thumb, set the flag so we can jump back to it safely.
 		"orr r7, r7, #1\n\t"
-#endif
+		#endif
 
 		// Stack is ready! JUMP!
 		"blx r10\n\t"

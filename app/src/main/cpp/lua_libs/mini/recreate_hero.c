@@ -1,6 +1,13 @@
-#include "mini.h"
-#include "log.h"
+/* clang-format off */
+#include "mini.h" /* clang-format on */
+
 #include "caver/component.h"
+#include "hooks.h"
+#include "lauxlib.h"
+#include "log.h"
+#include "lua.h"
+
+#include <stdbool.h>
 
 #define LOG_TAG "MiniRecreateHero"
 

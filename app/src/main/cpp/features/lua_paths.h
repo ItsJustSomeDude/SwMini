@@ -1,16 +1,15 @@
 #ifndef NEEDLE_LUA_PATHS_H
 #define NEEDLE_LUA_PATHS_H
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <dirent.h>
-#include <utime.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <utime.h>
 
-extern const char *externalFilesPath;
-extern const char *externalCachePath;
-extern const char *filesPath;
-extern const char *cachePath;
+struct stat;
+struct utimbuf;
 
 #define EXTERNAL_FILES_BASE "/ExternalFiles/"
 #define FILES_BASE "/Files/"

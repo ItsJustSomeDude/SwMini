@@ -1,7 +1,9 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
 #include "log.h"
+
+#include <pthread.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define LOG_TAG "LogThreads"
 

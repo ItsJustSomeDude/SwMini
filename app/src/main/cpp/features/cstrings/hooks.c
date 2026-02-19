@@ -1,7 +1,9 @@
-#include <string.h>
-#include "cstrings.h"
 #include "hooks.h"
+
+#include "cstrings.h"
 #include "log.h"
+
+#include <string.h>
 
 #define LOG_TAG "MiniCStringHooks"
 

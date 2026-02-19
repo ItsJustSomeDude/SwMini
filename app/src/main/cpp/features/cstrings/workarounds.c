@@ -1,8 +1,11 @@
-#include "cstrings.h"
+/* clang-format off */
+#include "cstrings.h" /* clang-format on */
+
+#include "assembly/arm64.h"
 #include "hooks.h"
 #include "log.h"
-#include "assembly/arm64.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 

@@ -1,13 +1,14 @@
-#include <jni.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include "mini_config.h"
+
+#include "armor_models.h"
+#include "coin_limit.h"
+#include "config.h"
 #include "java.h"
 #include "libs/toml/toml.h"
-#include "config.h"
-#include "coin_limit.h"
 #include "log.h"
-#include "armor_models.h"
+
+#include <jni.h>
+#include <stdlib.h>
 
 #define LOG_TAG "MiniConfig"
 

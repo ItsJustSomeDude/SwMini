@@ -1,9 +1,13 @@
-#include <jni.h>
-#include <fcntl.h>
-#include <asm-generic/siginfo.h>
-#include <unistd.h>
 #include "log.h"
-#include "sys/syscall.h"
+
+#include <asm/fcntl.h>
+#include <asm/signal.h>
+#include <bits/signal_types.h>
+#include <fcntl.h>
+#include <jni.h>
+#include <signal.h>
+#include <stddef.h>
+#include <unistd.h>
 
 #define LOG_TAG "MiniCrashHandler"
 

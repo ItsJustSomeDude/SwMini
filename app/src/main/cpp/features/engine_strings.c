@@ -1,6 +1,8 @@
-#include <string.h>
 #include "engine_strings.h"
+
 #include "log.h"
+
+#include <string.h>
 
 #define LOG_TAG "MiniES"
 

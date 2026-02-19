@@ -1,9 +1,11 @@
-#include <malloc.h>
-#include "lni.h"
-#include "jni.h"
-#include "log.h"
 #include "java.h"
+#include "jni.h"
 #include "lauxlib.h"
+#include "lni.h"
+#include "log.h"
+#include "lua.h"
+
+#include <stdlib.h>
 
 #define LOG_TAG "MiniLuaLNIExecute"
 

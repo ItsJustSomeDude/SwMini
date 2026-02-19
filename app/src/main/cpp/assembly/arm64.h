@@ -2,6 +2,9 @@
 #ifndef NEEDLE_ARM64_H
 #define NEEDLE_ARM64_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 // Needed for CString Workaround Patch
 uint32_t emit_add_immediate(bool is64, bool shift, uint16_t imm12, uint8_t rn, uint8_t rd);
 

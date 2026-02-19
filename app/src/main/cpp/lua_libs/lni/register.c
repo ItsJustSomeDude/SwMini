@@ -1,16 +1,12 @@
-#include <jni.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-#include <stdbool.h>
+/* clang-format off */
+#include "lni.h" /* clang-format on */
 
+#include "jni.h"
 #include "libs/khash.h"
-
-#include "jni.h"
-#include "lni.h"
 #include "log.h"
-#include "jni.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #define LOG_TAG "MiniLNICore"
 

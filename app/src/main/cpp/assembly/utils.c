@@ -1,6 +1,7 @@
+#include "utils.h"
+
 #include <stddef.h>
 #include <stdio.h>
-#include "utils.h"
 
 // Assumes little endian
 void printBits(int const size, void const *const ptr) {

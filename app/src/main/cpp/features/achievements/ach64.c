@@ -1,11 +1,14 @@
 #ifdef __aarch64__
 
-#include <malloc.h>
 #include "achievements.h"
-#include "hooks.h"
-#include "features/cstrings/cstrings.h"
-#include "log.h"
 #include "assembly/arm64.h"
+#include "features/cstrings/cstrings.h"
+#include "hooks.h"
+#include "log.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #define LOG_TAG "MiniAchievements"
 

@@ -1,10 +1,11 @@
 #ifndef NEEDLE_ASSETS_H
 #define NEEDLE_ASSETS_H
 
-#include <stddef.h>
+#include "libs/khash.h"
+
 #include <android/asset_manager.h>
 #include <linux/limits.h>
-#include "libs/khash.h"
+#include <stddef.h>
 
 extern AAssetManager *asset_manager;
 

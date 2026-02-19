@@ -1,9 +1,12 @@
 #include "armor_models.h"
-#include "hooks.h"
-#include "log.h"
+
 #include "features/cstrings/cstrings.h"
+#include "hooks.h"
 #include "libs/khash.h"
-#include <jni.h>
+#include "log.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 #define LOG_TAG "MiniArmorModels"
 

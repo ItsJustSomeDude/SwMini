@@ -2,8 +2,8 @@
 #define SWMINI_MINI_LUA_LIBRARY_H
 
 #include "hooks.h"
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
 
 #define MINI_LIB_NAME "Mini"
 int miniL_open_mini(lua_State *L);

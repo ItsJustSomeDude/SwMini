@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project("SwMini Natives")
 
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        include-what-you-use;
+        -Xiwyu;--ignore_re=\/lua\/;
+        # -Xiwyu;--ignore_re=\/lua\/
+)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 add_library(mini SHARED
         assembly/thumb.c
         assembly/arm64.c

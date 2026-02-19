@@ -1,8 +1,10 @@
-#include "lua.h"
+#include "hooks.h"
 #include "lauxlib.h"
 #include "log.h"
-#include "hooks.h"
+#include "lua.h"
 #include "mini.h"
+
+#include <stdbool.h>
 
 #define LOG_TAG "MiniLuaControls"
 

@@ -1,13 +1,14 @@
-#include <stdbool.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-#include "log.h"
+#include "global.h"
 #include "hooks.h"
+#include "log.h"
 #include "lua_libs/mini/mini.h"
 #include "patches.h"
-#include "features/lua_paths.h"
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #define max(a, b) \
    ({ __typeof__ (a) _a = (a); \

@@ -1,9 +1,11 @@
 #ifdef __arm__
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "thumb.h"
+
 #include "utils.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 
 uint32_t arrange_4byte_instruction(uint32_t value) {
 	// Extract the first and second sets of 8 bits

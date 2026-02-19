@@ -1,9 +1,12 @@
-#include "mini.h"
-#include "lauxlib.h"
 #include "../lni/lni.h"
 #include "features/coin_limit.h"
-#include "sublib.h"
 #include "health/health.h"
+#include "lauxlib.h"
+#include "lua.h"
+#include "luaconf.h"
+#include "mini.h"
+
+#include <stddef.h>
 
 static int lua_coin_limit(lua_State *L) {
 	lua_Integer n = luaL_checkinteger(L, 1);

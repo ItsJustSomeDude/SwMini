@@ -1,11 +1,13 @@
 #include "health.h"
-#include "hooks.h"
-#include "lauxlib.h"
+
 #include "../sublib.h"
+#include "caver/component.h"
 #include "caver/program_state.h"
 #include "caver/scene_object.h"
-#include "caver/component.h"
-#include "log.h"
+#include "hooks.h"
+#include "lauxlib.h"
+
+#include <stddef.h>
 
 #define LOG_TAG "MiniLuaHealth"
 
@@ -55,7 +57,7 @@ static int current_mana_percent(lua_State *L) {
 
 #define MINI_HEALTH_LIB_NAME "Health"
 static const luaL_Reg health_lib[] = {
-	{"CurrentMana", current_mana},
+	{"CurrentMana",        current_mana},
 	{"CurrentManaPercent", current_mana_percent},
 	{NULL, NULL}
 };

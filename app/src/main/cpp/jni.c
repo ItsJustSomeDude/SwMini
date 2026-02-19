@@ -1,9 +1,9 @@
 #include "java.h"
-#include "log.h"
 #include "main.h"
 
-#include <pthread.h>  // For thread-local storage if needed
 #include <jni.h>
+#include <pthread.h> // For thread-local storage if needed
+#include <stddef.h>
 
 #define LOG_TAG "MiniJNI"
 

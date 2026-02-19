@@ -1,9 +1,10 @@
-#include <sys/socket.h>
+#include "hooks.h"
+#include "log.h"
+#include "patches.h"
+
 #include <errno.h>
 #include <stdbool.h>
-#include "hooks.h"
-#include "patches.h"
-#include "log.h"
+#include <sys/socket.h>
 
 #define LOG_TAG "MiniNetworkPatch"
 

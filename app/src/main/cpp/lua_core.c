@@ -1,10 +1,10 @@
-
 #ifndef ROCK_BUILDER
 
-#include <dlfcn.h>
-#include "main.h"
-#include "log.h"
 #include "hooks.h"
+#include "log.h"
+#include "main.h"
+
+#include <dlfcn.h>
 
 #define LOG_TAG "MiniLuaCore"
 #endif //ROCK_BUILDER
@@ -12,6 +12,9 @@
 #include "lua.h"
 #include "lua/lauxlib.h"
 #include "lua/lualib.h"
+
+#include <stdarg.h>
+#include <stddef.h>
 
 /**
  * This file defines the core fetching portion of SwMini Lua.

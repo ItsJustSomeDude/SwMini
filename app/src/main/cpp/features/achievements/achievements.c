@@ -1,12 +1,11 @@
 #include "achievements.h"
-#include "log.h"
-#include "java.h"
-#include "libs/toml/toml.h"
+
 #include "config.h"
 #include "features/engine_strings.h"
-#include <jni.h>
-#include <string.h>
-#include <ctype.h>
+#include "libs/toml/toml.h"
+#include "log.h"
+
+#include <bits/strcasecmp.h>
 #include <stdlib.h>
 
 #define LOG_TAG "MiniAchievements"

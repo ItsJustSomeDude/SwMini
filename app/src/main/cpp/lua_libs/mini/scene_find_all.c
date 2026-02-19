@@ -1,8 +1,11 @@
+/* clang-format off */
+#include "mini.h" /* clang-format on */
+
 #include "hooks.h"
-#include "lua.h"
-#include "log.h"
-#include "lauxlib.h"
 #include "iterate.h"
+#include "lauxlib.h"
+#include "log.h"
+#include "lua.h"
 
 #define LOG_TAG "MiniLuaFindAll"
 

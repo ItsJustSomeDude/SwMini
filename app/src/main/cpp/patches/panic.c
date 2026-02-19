@@ -1,12 +1,17 @@
 #include "hooks.h"
-#include "lua.h"
 #include "log.h"
+#include "lua.h"
 #include "patches.h"
+
+#include <stdbool.h>
+#include <stddef.h>
 
 #define LOG_TAG "MiniPanic"
 
-STATIC_DL_HOOK_SYMBOL(programExecute, "_ZN5Caver12ProgramState7ExecuteEi", void,
-                      (void* this, int stackIndex)) {
+STATIC_DL_HOOK_SYMBOL(
+	programExecute, "_ZN5Caver12ProgramState7ExecuteEi",
+	void, (void* this, int stackIndex)
+) {
 	lua_State *L = *(lua_State **) (this);
 
 	// this->field1_0x8 == NULL
@@ -49,11 +54,15 @@ STATIC_DL_HOOK_SYMBOL(programExecute, "_ZN5Caver12ProgramState7ExecuteEi", void,
 	}
 }
 
-STATIC_DL_FUNCTION_SYMBOL(getSpeedMultiplier, "_ZNK5Caver11SceneObject21updateSpeedMultiplierEv",
-                          float, (void* sceneObject))
+STATIC_DL_FUNCTION_SYMBOL(
+	getSpeedMultiplier, "_ZNK5Caver11SceneObject21updateSpeedMultiplierEv",
+	float, (void* sceneObject)
+)
 
-STATIC_DL_HOOK_SYMBOL(programUpdate, "_ZN5Caver12ProgramState6UpdateEf", void,
-                      (void* this, float deltaTime)) {
+STATIC_DL_HOOK_SYMBOL(
+	programUpdate, "_ZN5Caver12ProgramState6UpdateEf",
+	void, (void* this, float deltaTime)
+) {
 	bool condition1 = *$(bool, this, 0x2d, 0x51);
 	bool paused = *$(bool, this, 0x2e, 0x52);
 
@@ -117,8 +126,10 @@ STATIC_DL_HOOK_SYMBOL(programUpdate, "_ZN5Caver12ProgramState6UpdateEf", void,
 	orig_programUpdate(this, deltaTime);
 }
 
-STATIC_DL_HOOK_SYMBOL(programResume, "_ZN5Caver12ProgramState6ResumeEi", void,
-                      (void* this, int stackIndex)) {
+STATIC_DL_HOOK_SYMBOL(
+	programResume, "_ZN5Caver12ProgramState6ResumeEi",
+	void, (void* this, int stackIndex)
+) {
 //    LOGD("ProgramState Resume");
 	lua_State *L = *(lua_State **) (this);
 

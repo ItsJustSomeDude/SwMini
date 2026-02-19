@@ -1,14 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <android/log.h>
-#include <jni.h>
-#include <dlfcn.h>
-
 #include "hooks.h"
+
+#include "assembly/arm64.h"
+#include "assembly/thumb.h"
 #include "libs/Gloss.h"
 #include "log.h"
-#include "hooks.h"
-#include "assembly/thumb.h"
+
+#include <dlfcn.h>
 
 #define LOG_TAG "MiniHookCore"
 

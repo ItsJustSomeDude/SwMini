@@ -1,10 +1,11 @@
 #include "coin_limit.h"
 
-#include "log.h"
+#include "assembly/arm64.h"
 #include "assembly/thumb.h"
 #include "hooks.h"
-#include "assembly/arm64.h"
-#include <jni.h>
+#include "log.h"
+
+#include <stdint.h>
 
 #define LOG_TAG "MiniCoinLimit"
 

@@ -1,6 +1,8 @@
 #include "iterate.h"
-#include "new"
+
 #include "map"
+
+#include <stdio.h>
 
 //template<typename A, typename B>
 void iterate_map(void *mapPointer /*, void (*exec)(A key, B value) */) {

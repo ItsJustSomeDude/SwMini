@@ -1,12 +1,13 @@
-#include <stdbool.h>
-#include <stddef.h>
 #include "prober.h"
+
 #include "log.h"
 
+#include <linux/limits.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <linux/limits.h>
 
 #define LOG_TAG "MiniProber"
 

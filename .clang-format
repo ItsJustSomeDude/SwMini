@@ -1,0 +1,20 @@
+SortIncludes:
+    Enabled: true
+    IgnoreCase: true
+
+IncludeBlocks: Regroup
+
+# Disable Formatting on all lines that do not start with #
+# This way, #includes will be sorted but formatting can still be handled by IntelliJ.
+# Read this regex as: Turn Formatting off on lines that the first char is not #
+OneLineFormatOffRegex: "^[^#]"
+
+# Set these options, so Clang is less likely to think stuff should be different.
+ColumnLimit: 999
+UseTab: Always
+TabWidth: 4
+IndentWidth: 4
+KeepEmptyLines:
+    AtEndOfFile: true
+MaxEmptyLinesToKeep: 999
+PenaltyIndentedWhitespace: 999

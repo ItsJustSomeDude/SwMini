@@ -1,19 +1,20 @@
 #include "main.h"
 
-#include "log.h"
-#include "java.h"
-#include "libs/Gloss.h"
-
-#include "hooks.h"
-
-#include "patches/patches.h"
-#include "lua_libs/mini/mini.h"
+#include "caver/caver.h"
+#include "features/achievements/achievements.h"
+#include "features/armor_models.h"
 #include "features/coin_limit.h"
 #include "features/cstrings/cstrings.h"
-#include "caver/caver.h"
-#include "features/armor_models.h"
-#include "features/achievements/achievements.h"
 #include "features/mini_config.h"
+#include "features/state_tracking/state_tracking.h"
+#include "hooks.h"
+#include "java.h"
+#include "libs/Gloss.h"
+#include "log.h"
+#include "lua_libs/mini/mini.h"
+#include "patches/patches.h"
+
+#include <stdbool.h>
 
 #define LOG_TAG "MiniNativeMain"
 
