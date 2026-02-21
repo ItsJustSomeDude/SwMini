@@ -18,8 +18,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "features/use_lua_paths.h"
-
+#include "features/mini_files/use_patched_functions.h"
 
 #define IO_INPUT    1
 #define IO_OUTPUT    2

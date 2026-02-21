@@ -1,5 +1,5 @@
-#ifndef NEEDLE_LUA_PATHS_H
-#define NEEDLE_LUA_PATHS_H
+#ifndef NEEDLE_PATCHED_FUNCTIONS_H
+#define NEEDLE_PATCHED_FUNCTIONS_H
 
 #include <dirent.h>
 #include <stdio.h>
@@ -7,17 +7,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
+#include <stdbool.h>
 
 struct stat;
 struct utimbuf;
-
-#define EXTERNAL_FILES_BASE "/ExternalFiles/"
-#define FILES_BASE "/Files/"
-#define EXTERNAL_CACHE_BASE "/ExternalCache/"
-#define CACHE_BASE "/Cache/"
-
-const char *from_mini_path(char *out, size_t out_size, const char *path);
-const char *to_mini_path(char *out, size_t out_size, const char *path);
 
 // Here are the functions that take MiniPaths.
 
@@ -52,4 +45,4 @@ int mini_path_stat(const char *_Nonnull path, struct stat *_Nonnull buf);
 // TODO: Must be hooked: Lua's loadFile
 // doFile is a macro so doesn't need to change.
 
-#endif //NEEDLE_LUA_PATHS_H
+#endif //NEEDLE_PATCHED_FUNCTIONS_H

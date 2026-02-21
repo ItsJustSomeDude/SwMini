@@ -1,7 +1,9 @@
 //#ifndef NEEDLE_USE_LUA_PATHS_H
 //#define NEEDLE_USE_LUA_PATHS_H
 
-#include "./lua_paths.h"
+#include "patched_functions.h"
+
+/* This file defines Macros that overwrite the regular C functions with patched ones from Mini. */
 
 #define chdir mini_path_chdir
 #define getcwd mini_path_getcwd

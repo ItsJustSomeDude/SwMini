@@ -14,7 +14,6 @@ int setControlsHidden(lua_State *L);
 
 void init_profileId();
 int getProfileID(lua_State *L);
-extern const char *latestProfileId;
 
 int scene_find_all(lua_State *L);
 void init_scene_find_all();

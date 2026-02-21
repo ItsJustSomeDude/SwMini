@@ -3,6 +3,9 @@
 #include "log.h"
 #include "lua_libs/mini/mini.h"
 #include "patches.h"
+#include "features/mini_files/patched_functions.h"
+#include "tools/files.h"
+#include "features/mini_files/mini_files.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,85 +13,215 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define max(a, b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a > _b ? _a : _b; })
-
 #define LOG_TAG "MiniAssetsPatch"
 
-#define ExtAssetsBase "assets/"
 #define VanillaResPrefix "resources/"
 
-bool pathReadable(char *path) {
-	struct stat fileStat;
-	if (stat(path, &fileStat) == 0) {
-		// File Exists
-		if (fileStat.st_mode & S_IRUSR) {
-			// Readable
-			return true;
-		}
-	}
-	return false;
-}
-
-void *bufferFromPath(char *path, int *length) {
-	FILE *file = fopen(path, "rb"); // Open the file in binary mode
-	if (!file) {
-		perror("Failed to open file");
-		return NULL;
+/* Reads asset into buffer and returns it. Writes length to `*out_len`. Returns NULL on error. */
+static void *buffer_from_asset(const char *path, int *out_len) {
+	AAsset *asset = AAssetManager_open(g_asset_mgr, path, AASSET_MODE_STREAMING);
+	if (asset == NULL) {
+		/* This should never happen, because to get to this point we already verified it exists. */
+		LOGE("Error while opening asset '%s'", path);
+		goto error;
 	}
 
-	// Move the file pointer to the end to determine the file size
-	fseek(file, 0, SEEK_END);
-	int fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET); // Move back to the beginning of the file
+	off_t len = AAsset_getLength(asset);
 
-	// Store the file length to the passed pointer.
-	*length = fileSize;
-
-	// Allocate memory for the buffer
-	unsigned char *buffer = malloc(fileSize);
+	void *buffer = malloc(len);
 	if (buffer == NULL) {
-		perror("Failed to allocate memory");
-		fclose(file);
-		return NULL;
+		LOGE("Out of memory while loading asset '%s'", path);
+		AAsset_close(asset);
+		goto error;
 	}
 
-	// Read the file content into the buffer
-	size_t bytesRead = fread(buffer, 1, fileSize, file);
-	if (bytesRead != fileSize) {
-		perror("Failed to read the complete file");
+	/* TODO: Better to read in smaller increments? */
+	int read_bytes = AAsset_read(asset, buffer, len);
+	if (read_bytes != len) {
+		LOGE("Failed to read asset '%s': expected %li, got %i", path, len, read_bytes);
+		AAsset_close(asset);
 		free(buffer);
-		fclose(file);
-		return NULL;
+		goto error;
 	}
 
+	char sz[32];
+	format_bytes(sz, sizeof(sz), len);
+	LOGD("%s Asset loaded: '%s'", sz, path);
+
+	AAsset_close(asset);
+	*out_len = read_bytes;
 	return buffer;
-}
 
-void *tryBufferFromPath(char *path, int *length) {
-	if (pathReadable(path)) {
-		return bufferFromPath(path, length);
-	}
+	error:
+	*out_len = 0;
 	return NULL;
 }
 
-//STATIC_DL_HOOK_SYMBOL(tst1, "_ZN5Caver19IsAndroidAssetsPathERKSs", bool, (char** path)) {
-//    // This appears to do a basic String comparison, and if it starts with resources/ then in returns true.
-//    // I don't think this requires any patches, at least for now?
-//
-//    bool ret = orig_tst1(path);
-//    LOGD("'%s' asset: %s", *path, ret ? "true" : "false");
-//    return ret;
-//}
+/* Reads file into buffer and returns it. Writes length to `*out_len`. Returns NULL on error. */
+void *buffer_from_file(const char *path, int *out_len) {
+	FILE *file = fopen(path, "rb"); // Open the file in binary mode
+	if (file == NULL) {
+		LOGE("Error while opening resource '%s'", path);
+		goto error;
+	}
+
+	/* Move the file pointer to the end to determine the file size */
+	fseek(file, 0, SEEK_END);
+	size_t len = ftell(file);
+	fseek(file, 0, SEEK_SET); /* Move back to the beginning of the file */
+
+	void *buffer = malloc(len);
+	if (buffer == NULL) {
+		LOGE("Out of memory while loading resource '%s'", path);
+		fclose(file);
+		goto error;
+	}
+
+	/* TODO: Better to read in smaller increments? */
+	size_t read_bytes = fread(buffer, 1, len, file);
+	if (read_bytes != len) {
+		LOGE("Failed to read asset '%s': expected %li, got %li", path, len, read_bytes);
+		fclose(file);
+		free(buffer);
+		goto error;
+	}
+
+	char sz[32];
+	format_bytes(sz, sizeof(sz), len);
+	LOGD("%s Resource loaded: '%s'", sz, path);
+
+	fclose(file);
+	*out_len = (int) read_bytes;
+	return buffer;
+
+	error:
+	*out_len = 0;
+	return NULL;
+}
+
+
+STATIC_DL_HOOK_SYMBOL(
+	fileAtPath,
+	"_ZN5Caver16FileExistsAtPathERKSs",
+	bool, (char** assetPath)
+) {
+	const char *path = *assetPath;
+	/*
+	 * Given a path, check if a file exists and is readable at that path.
+	 *
+	 * It can either be a 'resources/', or a full absolute path. If it's absolute, just check for
+	 * readability. If it's `resources/`, parse it as a Mini path, run `find_resource`, and return
+	 * if it exists.
+	 */
+
+	bool is_resource = strncmp(path, VanillaResPrefix, strlen(VanillaResPrefix)) == 0;
+	if (!is_resource) {
+		/* Engine sent an absolute path, check it as a file. */
+		struct stat fileStat;
+		if (stat(path, &fileStat) != 0)
+			return false; /* Nonexistent */
+
+		if (!(fileStat.st_mode & S_IRUSR)) {
+			LOGW("Engine queried unreadable file '%s'", path);
+			return false;
+		}
+		return true;
+	}
+	/* File starts with `resources/...`. Parse it as a Mini Path, then check if there's a real resource. */
+
+	MiniPath p;
+	parse_mini_path(&p, path);
+	if (p.type != RESOURCE) {
+		/* The engine tried to query for a non-resource file! That shouldn't happen... */
+		LOGW("Engine queried non-resource file '%s'", path);
+		return false;
+	}
+
+	char tmp[PATH_MAX];
+	MiniPathType res = find_resource(tmp, sizeof(tmp), p.path);
+	if (res == ERROR) {
+		/* Does not exist. */
+//		LOGW("Engine queried non-existent resource '%s'", p.path);
+		return false;
+	}
+
+//	LOGD("Engine found resource '%s' at '%s'", path, p.path);
+	return true;
+}
+
+STATIC_DL_HOOK_SYMBOL(
+	openAsset,
+	"_ZN5Caver29NewByteBufferFromAndroidAssetERKSsPj",
+	void*,
+	(char **asset_path, int* out_len)
+) {
+	const char *path = *asset_path;
+	/* Given a resource path, opens resource and reads it into a buffer.
+	 * Returns said buffer. Sets `out_len` to buffer size.
+	 *
+	 * Modified version should read path as MiniPath, and try it as a resource.
+	 */
+
+	MiniPath p;
+	parse_mini_path(&p, path);
+	if (p.type != RESOURCE) {
+		LOGW("Engine tried loading non-resource file '%s'", path);
+		goto error;
+	}
+
+	char res_path[PATH_MAX];
+	MiniPathType res_type = find_resource(res_path, sizeof(res_path), p.path);
+
+	if (res_type == ERROR) {
+		LOGW("Engine tried loading non-existent resource '%s'", p.path);
+		goto error;
+
+	} else if (res_type == ASSET) {
+		return buffer_from_asset(res_path, out_len);
+
+	} else if (res_type == REAL) {
+		return buffer_from_file(res_path, out_len);
+
+	}
+
+	error:
+	*out_len = 0;
+	return NULL;
+}
+
+void init_patch_assets() {
+	LOGD("Applying External Assets patch");
+
+	hook_openAsset();
+	hook_fileAtPath();
+}
+
+/*
+ * A handy list of vanilla functions that deal with Files directly:
+ *
+ * Must be able to handle `resources`:
+ * bool Caver::FileExistsAtPath(const char **file_path);
+ * Caver::GetAudioFileData(const char **file_path, Caver::AudioBuffer::BufferFormat*, void**, int*, int*);
+ * void* Caver::NewByteBufferFromAndroidAsset(const char **path, unsigned int* out_len);
+ * int Caver::OpenAAssetFileDescriptor(const char **path);
+ *
+ * Real files only:
+ * Caver::CreateDirectoryAtPath(const char **dir_path, bool create_parents);
+ * Caver::DeleteFileAtPath(const char **file_path);
+ * void* Caver::NewByteBufferFromFile(char **file_path, unsigned int* out_len);
+ * undefined4 Caver::SaveByteBufferToFile(unsigned char const*, unsigned int, std::string const&)
+ * void Caver::GetFilesWithExtension(std::string const&, std::string const&, std::vector<std::string,
+   std::allocator<std::string > >*)
+ *
+ * Unused?
+ * Caver::LoadContentsOfFile(const char **file_path, std::string*)
+ * */
 
 //STATIC_DL_HOOK_SYMBOL(
 //        gfwe,
 //        "_ZN5Caver21GetFilesWithExtensionERKSsS1_PSt6vectorISsSaISsEE",
 //        void*,
-//        (void **param_1, char **path, void *vector, long param_4,
-//                long param_5, long param_6, long param_7, long param_8)
+//        (void **param_1, char **path, void *vector)
 //) {
 //    // This lists all files in the folder `path` with the extension in param... uh... I'm not sure.
 //    // I think they get stored to `vector`?
@@ -98,161 +231,3 @@ void *tryBufferFromPath(char *path, int *length) {
 //    // LOGD("FilesWithExtension: %p %p %p %ld %ld %ld %ld %ld", param_1, path, vector, param_4, param_5, param_6, param_7, param_8);
 //    return orig_gfwe(param_1, path, vector, param_4, param_5, param_6, param_7, param_8);
 //}
-
-
-STATIC_DL_HOOK_SYMBOL(fileAtPath, "_ZN5Caver16FileExistsAtPathERKSs", bool, (char** assetPath)) {
-	// This checks if a file exists, and _maybe_ if it's readable.
-	// If it starts with `resources/` it tries to open it from the Asset Manager.
-	// If that succeeds it closes the asset and returns true.
-	// If it's not a "resource", it uses `stat` and returns success if that works.
-
-	// Patched version:
-	// If it starts with "resources/", try the 4 external paths.
-	// If that fails, fall back to the original.
-	// Also use the original if it's not a resource.
-
-	bool isResource = strncmp(*assetPath, VanillaResPrefix, strlen(VanillaResPrefix)) == 0;
-
-	if (!isResource) return orig_fileAtPath(assetPath);
-
-	// Try all 4 externals...
-
-	bool validProfile = latestProfileId != NULL;
-	size_t profileIdLen = validProfile ? strlen(latestProfileId) : 0;
-
-	long maxPathLen =
-		// Longest base path
-		max(strlen(externalFilesPath), strlen(filesPath))
-		+ strlen(*assetPath)
-		+ profileIdLen
-		// Length of static path segment(s)
-		+ strlen(ExtAssetsBase)
-		// One extra for Terminator, One extra for added /, One extra because I probably forgot something.
-		+ 3;
-	char *absFilePath = malloc(maxPathLen);
-	if (absFilePath == NULL) {
-		LOGE("Out of memory for patched asset checking!");
-		return NULL;
-	}
-
-	if (validProfile && externalFilesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s/%s", externalFilesPath, ExtAssetsBase, latestProfileId,
-		        *assetPath);
-		if (pathReadable(absFilePath)) {
-			free(absFilePath);
-			return true;
-		}
-	}
-
-	if (filesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s/%s", filesPath, ExtAssetsBase, latestProfileId, *assetPath);
-		if (pathReadable(absFilePath)) {
-			free(absFilePath);
-			return true;
-		}
-	}
-
-	if (externalFilesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s", externalFilesPath, ExtAssetsBase, *assetPath);
-		if (pathReadable(absFilePath)) {
-			free(absFilePath);
-			return true;
-		}
-	}
-
-	if (filesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s", filesPath, ExtAssetsBase, *assetPath);
-		if (pathReadable(absFilePath)) {
-			free(absFilePath);
-			return true;
-		}
-	}
-
-	// Fall back to original for Assets check.
-	return orig_fileAtPath(assetPath);
-}
-
-STATIC_DL_HOOK_SYMBOL(
-	openAsset,
-	"_ZN5Caver29NewByteBufferFromAndroidAssetERKSsPj",
-	void*,
-	(char **assetPath, int* outLength)
-) {
-	// So... This takes a path and a pointer where the Length will be stored. (I think).
-	// It opens the asset at the path, fetches the length, creates a buffer of that size, and reads the asset into it.
-	// The asset is then closed.
-	// Then it returns a pointer to the start of that new buffer.
-
-	// Modified version:
-	// (resources/... is already part of the path.)
-	// If <latestProfile> is not null, try to open from /ExternalFiles/assets/<latestProfile>/<path>
-	// If <latestProfile> is not null, try to open from /Files/assets/<latestProfile>/<path>
-	// Try to open from /ExternalFiles/assets/<path>
-	// Try to open from /Files/assets/<path>
-	// Failing that, use Original function.
-
-	bool validProfile = latestProfileId != NULL;
-	size_t profileIdLen = validProfile ? strlen(latestProfileId) : 0;
-
-	long maxPathLen =
-		// Longest base path
-		max(strlen(externalFilesPath), strlen(filesPath))
-		+ strlen(*assetPath)
-		+ profileIdLen
-		// Length of static path segment(s)
-		+ sizeof(ExtAssetsBase)
-		// One extra for Terminator, One extra for added /, One extra because I probably forgot something.
-		+ 3;
-	char *absFilePath = malloc(maxPathLen);
-	if (absFilePath == NULL) {
-		LOGE("Out of memory for patched asset loading!");
-		return NULL;
-	}
-
-	if (validProfile && externalFilesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s/%s", externalFilesPath, ExtAssetsBase, latestProfileId,
-		        *assetPath);
-		void *buf = tryBufferFromPath(absFilePath, outLength);
-		if (buf != NULL) {
-			free(absFilePath);
-			return buf;
-		}
-	}
-
-	if (validProfile && filesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s/%s", filesPath, ExtAssetsBase, latestProfileId, *assetPath);
-		void *buf = tryBufferFromPath(absFilePath, outLength);
-		if (buf != NULL) {
-			free(absFilePath);
-			return buf;
-		}
-	}
-
-	if (externalFilesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s", externalFilesPath, ExtAssetsBase, *assetPath);
-		void *buf = tryBufferFromPath(absFilePath, outLength);
-		if (buf != NULL) {
-			free(absFilePath);
-			return buf;
-		}
-	}
-
-	if (filesPath != NULL) {
-		sprintf(absFilePath, "%s%s%s", filesPath, ExtAssetsBase, *assetPath);
-		void *buf = tryBufferFromPath(absFilePath, outLength);
-		if (buf != NULL) {
-			free(absFilePath);
-			return buf;
-		}
-	}
-
-	void *ret = orig_openAsset(assetPath, outLength);
-	return ret;
-}
-
-void init_patch_assets() {
-	LOGD("Applying External Assets patch");
-
-	hook_openAsset();
-	hook_fileAtPath();
-}
