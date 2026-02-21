@@ -66,7 +66,7 @@ add_library(mini SHARED
         patches/lua_libs.c
         patches/crash_handler.c
 
-        patches/assets/index.c
+        # patches/assets/index.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c
