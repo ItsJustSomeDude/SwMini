@@ -81,6 +81,12 @@ android {
 		targetCompatibility JavaVersion.VERSION_11
 	}
 
+	packaging {
+		jniLibs {
+			useLegacyPackaging false
+		}
+	}
+
 	applicationVariants.configureEach { /* com.android.build.gradle.internal.api.ApplicationVariantImpl */ variant ->
 		variant.outputs.configureEach { output ->
 			if (variant.buildType.name == "release") {
