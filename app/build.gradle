@@ -121,12 +121,20 @@ android {
 				}
 			}
 
+			File miniResSrcDir = new File(outputDir, "mini_resources")
 			if (miniResSrcDir.exists()) {
 				delete(miniResSrcDir)
 			}
 
 			if (compiledRes.exists()) {
 				delete(compiledRes)
+			}
+
+			// Delete the .gitignore from the Rocks folder.
+			File rocksFolder = new File(outputDir, "rocks")
+			File rocksIgnore = new File(rocksFolder, ".gitignore")
+			if (rocksIgnore.exists()) {
+				delete(rocksIgnore)
 			}
 		}
 	}

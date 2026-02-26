@@ -1,0 +1,5 @@
+# This is the `rocks` folder. It is the search folder for Lua `require`, laid out just like a Rocks Tree.
+# The folder and README are included in git, while the contents are not.
+*
+!.gitignore
+!README

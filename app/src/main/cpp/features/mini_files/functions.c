@@ -522,20 +522,8 @@ MiniDIR *_Nullable miniP_opendir(MiniPath *path) {
 
 struct dirent *_Nullable miniP_readdir(MiniDIR *_Nonnull dir) {
 	if (dir->type == REAL) {
-		struct dirent *dir_entry = readdir(dir->dir);
-		if (!dir_entry)
-			/* errno was already set by readdir, or left untouched if it's just the end. */
-			return NULL;
-
-		/* TODO: This probably has lots of problems... */
-		const size_t out_size = sizeof(dir_entry->d_name);
-		char out[out_size];
-		real_to_mini_path(out, sizeof(out), dir_entry->d_name);
-
-		LOGD("Mini Readdir says: %p %s -> %s", dir_entry->d_name, dir_entry->d_name, out);
-		strncpy(dir_entry->d_name, out, out_size);
-
-		return dir_entry;
+		/* These entries are dir-local, not absolute paths. No conversion needed. */
+		return readdir(dir->dir);
 	} else if (dir->type == ASSET) {
 		const char *name = AAssetDir_getNextFileName(dir->asset_dir);
 		if (name == NULL) {

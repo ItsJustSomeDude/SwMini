@@ -22,7 +22,7 @@ add_library(mini SHARED
         lua/ldblib.c
         lua/loslib.c
         lua/liolib.c
-        # lua/loadlib.c
+        lua/loadlib.c
 
         lua_libs/lfs.c
 
@@ -67,7 +67,7 @@ add_library(mini SHARED
         patches/crash_handler.c
         patches/lua_load_file.c
 
-        patches/assets/index.c
+        # patches/assets/index.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c

@@ -8,19 +8,31 @@
 ** implementation for Windows, and a stub for other systems.
 */
 
-
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-
 
 #define loadlib_c
 #define LUA_LIB
 
-#include "lua.h"
-
 #include "lauxlib.h"
+#include "lua.h"
 #include "lualib.h"
+/* Mini */
+#include "features/mini_files/patched_functions.h"
+#include "log.h"
+#include "luaconf.h"
 
+#define LOG_TAG "LuaM_loadlib"
+
+/* This is what Mini will always use as the Lua search path.
+ * Relative paths are not included, because CWD does not exist. */
+#define MINI_ROCKS_PATHS                                                                           \
+    "/ExternalFiles/rocks/?.lua;"                                                                  \
+    "/ExternalFiles/rocks/?/init.lua;"                                                             \
+    "/Files/rocks/?.lua;"                                                                          \
+    "/Files/rocks/?/init.lua;"                                                                     \
+    "/Assets/rocks/?.lua;"                                                                         \
+    "/Assets/rocks/?/init.lua"
 
 /* prefix for open functions in C libraries */
 #define LUA_POF        "luaopen_"
@@ -60,17 +72,19 @@ static lua_CFunction ll_sym(lua_State *L, void *lib, const char *sym);
 #include <dlfcn.h>
 
 static void ll_unloadlib(void *lib) {
-	dlclose(lib);
+	// Mini: dlclose is dangerous on Android, so don't call it.
+	LOGD("Rock handle %p is now inactive.", lib);
+	// dlclose(lib);
 }
 
-
+/** Calls dlopen, but pushes a string if it fails to load. */
 static void *ll_load(lua_State *L, const char *path) {
 	void *lib = dlopen(path, RTLD_NOW);
 	if (lib == NULL) lua_pushstring(L, dlerror());
 	return lib;
 }
 
-
+/** Calls dlsym using a handle and complete symbol. Pushes an error string if there's an error. */
 static lua_CFunction ll_sym(lua_State *L, void *lib, const char *sym) {
 	lua_CFunction f = (lua_CFunction) dlsym(lib, sym);
 	if (f == NULL) lua_pushstring(L, dlerror());
@@ -258,8 +272,16 @@ static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym) {
 //#endregion
 #endif
 
-
-/*  */
+/**
+ * Given a C library path, returns (C) a Userdata that will hold the dlopen handle.
+ * If there's already a registry entry, it returns it.
+ * Otherwise, it creates a userdata of size `sizeof (void*)`, sets the metatable to the _LOADLIB mt,
+ * stores it to the registry, and returns it.
+ *
+ * Since we're on Android, "absolute path" is just the library name: rock_<library>.so
+ *
+ * **Unmodified from vanilla.**
+ */
 static void **ll_register(lua_State *L, const char *path) {
 	void **plib;
 	lua_pushfstring(L, "%s%s", LIBPREFIX, path);
@@ -291,7 +313,8 @@ static int gctm(lua_State *L) {
 	return 0;
 }
 
-
+/** path is absolute, sym is exact symbol name.
+ * Since we're on Android, "absolute" .so paths are completely bare, just "lib.so". */
 static int ll_loadfunc(lua_State *L, const char *path, const char *sym) {
 	void **reg = ll_register(L, path);
 	if (*reg == NULL) *reg = ll_load(L, path);
@@ -306,7 +329,13 @@ static int ll_loadfunc(lua_State *L, const char *path, const char *sym) {
 	}
 }
 
-
+/**
+ * This is the builtin Lua "Raw .so Loader."
+ *
+ * `_G.package.loadlib(libname, funcname)`
+ *
+ * Libname must be absolute path, funcname must be exact name of symbol inside library.
+ */
 static int ll_loadlib(lua_State *L) {
 	const char *path = luaL_checkstring(L, 1);
 	const char *init = luaL_checkstring(L, 2);
@@ -328,7 +357,7 @@ static int ll_loadlib(lua_State *L) {
 ** =======================================================
 */
 
-
+/** This takes an *absolute* file path, and returns 1 if it's readable. */
 static int readable(const char *filename) {
 	FILE *f = fopen(filename, "r");  /* try to open file */
 	if (f == NULL) return 0;  /* open failed */
@@ -336,7 +365,10 @@ static int readable(const char *filename) {
 	return 1;
 }
 
-
+/** Given a C String with separators, it pushes the first one, and returns a pointer to the path
+ * string shifted to remove the one that was pushed.
+ * Input: "test;test2;test3"
+ * Pushes: "test", returns "test2;test3" */
 static const char *pushnexttemplate(lua_State *L, const char *path) {
 	const char *l;
 	while (*path == *LUA_PATHSEP) path++;  /* skip separators */
@@ -347,36 +379,59 @@ static const char *pushnexttemplate(lua_State *L, const char *path) {
 	return l;
 }
 
-
-static const char *findfile(lua_State *L, const char *name,
-                            const char *pname) {
+/** Takes a name, and a pname?
+ *
+ * Changes . in the name to /
+ * Looks in the C Environment ?, and finds a string pointed to by pname ?...
+ * 		path = Env[pname]; pname is only ever "path" or "cpath".
+ * If path is null, throw an error.
+ *
+ * It now loops through the Path (split by ;), and for each one it substitutes "?" for "name", and
+ * checks if it's a readable file.
+ *
+ * Triggers LongJmp if pname is invalid, returns the found file if found and readable.
+ * If file is not found in any of the Path/CPaths, it returns NULL, with a string on top of stack with ALL the error messages encountered.
+ */
+static const char *findfile(lua_State *L, const char *name, const char *pname) {
 	const char *path;
 	name = luaL_gsub(L, name, ".", LUA_DIRSEP);
-	lua_getfield(L, LUA_ENVIRONINDEX, pname);
+
+	/* Mini: Use static MINI_ROCKS_PATHS as `env.path` does not exist in Mini. */
+	/* lua_getfield(L, LUA_ENVIRONINDEX, pname); */
+	lua_pushliteral(L, MINI_ROCKS_PATHS);
+
 	path = lua_tostring(L, -1);
 	if (path == NULL)
-		luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
-	lua_pushliteral(L, "");  /* error accumulator */
+		/* luaL_error(L, LUA_QL("package.%s") " must be a string", pname); */
+		luaL_error(L, "Mini: Internal error during package loading!");
+
+	lua_pushliteral(L, ""); /* error accumulator */
 	while ((path = pushnexttemplate(L, path)) != NULL) {
 		const char *filename;
 		filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
-		lua_remove(L, -2);  /* remove path template */
-		if (readable(filename))  /* does file exist and is readable? */
-			return filename;  /* return that file name */
+		lua_remove(L, -2);      /* remove path template */
+		if (readable(filename)) /* does file exist and is readable? */
+			return filename;    /* return that file name */
 		lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
-		lua_remove(L, -2);  /* remove file name */
+		lua_remove(L, -2); /* remove file name */
 		lua_concat(L, 2);  /* add entry to possible error message */
 	}
-	return NULL;  /* not found */
+	return NULL; /* not found */
 }
 
-
+/** Throw an error about loading. Input Stack: 1 = Module Name, -1 (top) = error message.
+ * File name is probably absolute? */
 static void loaderror(lua_State *L, const char *filename) {
 	luaL_error(L, "error loading module " LUA_QS " from file " LUA_QS ":\n\t%s",
 	           lua_tostring(L, 1), filename, lua_tostring(L, -1));
 }
 
-
+/**
+ * Tries to find a Lua file (position 1 on stack) to load using "path".
+ * In case of unknown file, returns accumulated errors.
+ * In case of invalid Lua in file, LongJmp
+ * If all is well, return 1.
+ */
 static int loader_Lua(lua_State *L) {
 	const char *filename;
 	const char *name = luaL_checkstring(L, 1);
@@ -387,7 +442,8 @@ static int loader_Lua(lua_State *L) {
 	return 1;  /* library loaded successfully */
 }
 
-
+/** If the modname has a "-" in it, remove the text before the first one.
+ * Pushes and returns the modname after the first "-", with . replaced with /, with "luaopen_" prepended. */
 static const char *mkfuncname(lua_State *L, const char *modname) {
 	const char *funcname;
 	const char *mark = strchr(modname, *LUA_IGMARK);
@@ -398,40 +454,122 @@ static const char *mkfuncname(lua_State *L, const char *modname) {
 	return funcname;
 }
 
+/** Mini: Disable this function, use the custom C loader instead.
+ * Try to load a C library (position 1 in stack). */
+//static int loader_C(lua_State *L) {
+//	const char *funcname;
+//	const char *name = luaL_checkstring(L, 1);
+//	const char *filename = findfile(L, name, "cpath");
+//	if (filename == NULL) return 1;  /* library not found in this path */
+//	funcname = mkfuncname(L, name);
+//	if (ll_loadfunc(L, filename, funcname) != 0)
+//		loaderror(L, filename);
+//	return 1;  /* library loaded successfully */
+//}
 
-static int loader_C(lua_State *L) {
-	const char *funcname;
-	const char *name = luaL_checkstring(L, 1);
-	const char *filename = findfile(L, name, "cpath");
-	if (filename == NULL) return 1;  /* library not found in this path */
-	funcname = mkfuncname(L, name);
-	if (ll_loadfunc(L, filename, funcname) != 0)
-		loaderror(L, filename);
-	return 1;  /* library loaded successfully */
+/** Mini: Disable this function, use the custom CRoot loader instead. */
+//static int loader_Croot(lua_State *L) {
+//	const char *funcname;
+//	const char *filename;
+//	const char *name = luaL_checkstring(L, 1);
+//	const char *p = strchr(name, '.');
+//	int stat;
+//	if (p == NULL) return 0;  /* is root */
+//	lua_pushlstring(L, name, p - name);
+//	filename = findfile(L, lua_tostring(L, -1), "cpath");
+//	if (filename == NULL) return 1;  /* root not found */
+//	funcname = mkfuncname(L, name);
+//	if ((stat = ll_loadfunc(L, filename, funcname)) != 0) {
+//		if (stat != ERRFUNC) loaderror(L, filename);  /* real error */
+//		lua_pushfstring(L, "\n\tno module " LUA_QS " in file " LUA_QS,
+//		                name, filename);
+//		return 1;  /* function not found */
+//	}
+//	return 1;
+//}
+
+#define ROCK_PREFIX "rock_"
+#define ROCK_SUFFIX ".so"
+
+/**
+ * Attempts to load a native rock by name, returns handle on success.
+ * Returns NULL and pushes error string on failure.
+ *
+ * Also pushes the name of the .so file that was loaded to the buffer if not NULL.
+ * Caller is responsible for making sure it's large enough.
+ */
+static void *load_native_rock(
+	lua_State *L, const char *name, char *lib_name_buffer, size_t buf_size) {
+	snprintf(lib_name_buffer, buf_size, ROCK_PREFIX "%s" ROCK_SUFFIX, name);
+	LOGD("C Loader: Attempting to load Rock %s", lib_name_buffer);
+
+	void *handle = dlopen(lib_name_buffer, RTLD_GLOBAL | RTLD_NOW);
+	if (handle == NULL) {
+		/* dlopen reported error, either does not exist or is invalid. */
+		const char *err = dlerror();
+		if (err == NULL) {
+			lua_pushfstring(L, "\n\tMini: Loading " LUA_QS " failed silently", lib_name_buffer);
+		} else {
+			lua_pushfstring(L, "\n\tMini: Loading " LUA_QS " reported: %s", lib_name_buffer, err);
+		}
+		return NULL;
+	}
+	return handle;
 }
 
-
-static int loader_Croot(lua_State *L) {
+/** Special Loader for Mini. rock_<name>.so will be loaded from `libs` using dlopen, not a path.
+ * The input might have . in between stuff, which is actually ok, because that's how it's laid out
+ * in the APK's Libs folder. */
+static int loader_mini_C(lua_State *L) {
 	const char *funcname;
-	const char *filename;
-	const char *name = luaL_checkstring(L, 1);
-	const char *p = strchr(name, '.');
-	int stat;
-	if (p == NULL) return 0;  /* is root */
-	lua_pushlstring(L, name, p - name);
-	filename = findfile(L, lua_tostring(L, -1), "cpath");
-	if (filename == NULL) return 1;  /* root not found */
+	const char *name = luaL_checkstring(L, 1); /* Name of lib to load. */
+
+	char lib_name[PATH_MAX];
+
+	/* Try to load "rock_<name>.so" */
+	const void *handle = load_native_rock(L, name, lib_name, sizeof(lib_name));
+	if (handle == NULL) /* Error already pushed. */
+		return 1;
+
 	funcname = mkfuncname(L, name);
-	if ((stat = ll_loadfunc(L, filename, funcname)) != 0) {
-		if (stat != ERRFUNC) loaderror(L, filename);  /* real error */
-		lua_pushfstring(L, "\n\tno module " LUA_QS " in file " LUA_QS,
-		                name, filename);
-		return 1;  /* function not found */
-	}
+	if (ll_loadfunc(L, lib_name, funcname) != 0)
+		loaderror(L, lib_name);
 	return 1;
 }
 
+/**  */
+static int loader_mini_Croot(lua_State *L) {
+	const char *funcname;
+	/* Name is like root.thing.thing */
+	const char *name = luaL_checkstring(L, 1);
 
+	const char *p = strchr(name, '.');
+	int stat;
+	if (p == NULL) return 0; /* is root */
+
+	/* Push shortened (root) path to the stack? Add to root_name.
+	 * root_name is "root" if name is "root.thing.thing" */
+	lua_pushlstring(L, name, p - name);
+	const char *root_name = lua_tostring(L, -1);
+
+	char lib_name[PATH_MAX];
+
+	/* Try to load "rock_<root>.so" */
+	const void *handle = load_native_rock(L, root_name, lib_name, sizeof(lib_name));
+	if (handle == NULL) /* Error already pushed. */
+		return 1;
+
+	funcname = mkfuncname(L, name);
+	if ((stat = ll_loadfunc(L, lib_name, funcname)) != 0) {
+		if (stat != ERRFUNC)
+			loaderror(L, lib_name); /* real error */
+		lua_pushfstring(L, "\n\tMini: no module " LUA_QS " in rock " LUA_QS, name, lib_name);
+		return 1; /* function not found */
+	}
+	return 1; /* Success! */
+}
+
+/** Unmodified from Vanilla. */
 static int loader_preload(lua_State *L) {
 	const char *name = luaL_checkstring(L, 1);
 	lua_getfield(L, LUA_ENVIRONINDEX, "preload");
@@ -443,14 +581,36 @@ static int loader_preload(lua_State *L) {
 	return 1;
 }
 
-
 static const int sentinel_ = 0;
 #define sentinel    ((void *)&sentinel_)
 
+/**
+ * The modified Loaders list, needed for `require`. Changes Mini makes:
+ *
+ * - Preload is unchanged.
+ * -
+ */
+static const lua_CFunction loaders[] = {
+	loader_preload,
+	loader_Lua,
+	loader_mini_C,
+	loader_mini_Croot,
+	/* Last loader == NULL, meaning "Failed" */
+	NULL
+};
 
+/**
+ * This is the vanilla Lua `require` function. It uses the `package.loaders` table (although I'd prefer if it didn't...)
+ * _G.require("package name")
+ *
+ * Modified to use Loaders defined in C instead of being available to Lua.
+ */
 static int ll_require(lua_State *L) {
 	const char *name = luaL_checkstring(L, 1);
 	int i;
+
+	/* Start by checking in _LOADED (package.loaded). If it's there, return it. */
+
 	lua_settop(L, 1);  /* _LOADED table will be at index 2 */
 	lua_getfield(L, LUA_REGISTRYINDEX, "_LOADED");
 	lua_getfield(L, 2, name);
@@ -460,35 +620,37 @@ static int ll_require(lua_State *L) {
 		return 1;  /* package is already loaded */
 	}
 	/* else must load it; iterate over available loaders */
-	lua_getfield(L, LUA_ENVIRONINDEX, "loaders");
-	if (!lua_istable(L, -1))
-		luaL_error(L, LUA_QL("package.loaders") " must be a table");
-	lua_pushliteral(L, "");  /* error message accumulator */
-	for (i = 1;; i++) {
-		lua_rawgeti(L, -2, i);  /* get a loader */
-		if (lua_isnil(L, -1))
-			luaL_error(L, "module " LUA_QS " not found:%s",
-			           name, lua_tostring(L, -2));
+
+	lua_pushliteral(L, ""); /* error message accumulator */
+
+	/* Mini: Use static loaders instead of `package.loaders` */
+	for (i = 0; i < sizeof(loaders) / sizeof(loaders[0]); i++) {
+		if (loaders[i] == NULL) /* Last one indicates failure. */
+			/* Accumulator is on top of the stack because we have not pushed the C Function yet. */
+			luaL_error(L, "module " LUA_QS " not found:%s", name, lua_tostring(L, -1));
+
+		lua_pushcfunction(L, loaders[i]);
 		lua_pushstring(L, name);
-		lua_call(L, 1, 1);  /* call it */
-		if (lua_isfunction(L, -1))  /* did it find module? */
-			break;  /* module loaded successfully */
-		else if (lua_isstring(L, -1))  /* loader returned error message? */
-			lua_concat(L, 2);  /* accumulate it */
+		lua_call(L, 1, 1); /* call it */
+
+		if (lua_isfunction(L, -1))    /* did it find module? */
+			break;                    /* module loaded successfully */
+		else if (lua_isstring(L, -1)) /* loader returned error message? */
+			lua_concat(L, 2);         /* accumulate it */
 		else
 			lua_pop(L, 1);
 	}
 	lua_pushlightuserdata(L, sentinel);
-	lua_setfield(L, 2, name);  /* _LOADED[name] = sentinel */
-	lua_pushstring(L, name);  /* pass name as argument to module */
-	lua_call(L, 1, 1);  /* run loaded module */
-	if (!lua_isnil(L, -1))  /* non-nil return? */
-		lua_setfield(L, 2, name);  /* _LOADED[name] = returned value */
-	lua_getfield(L, 2, name);
-	if (lua_touserdata(L, -1) == sentinel) {   /* module did not set a value? */
-		lua_pushboolean(L, 1);  /* use true as result */
-		lua_pushvalue(L, -1);  /* extra copy to be returned */
-		lua_setfield(L, 2, name);  /* _LOADED[name] = true */
+	lua_setfield(L, 2, name);                /* _LOADED[name] = sentinel */
+	lua_pushstring(L, name);                 /* pass name as argument to module */
+	lua_call(L, 1, 1);                       /* run loaded module */
+	if (!lua_isnil(L, -1))                   /* non-nil return? */
+		lua_setfield(L, 2, name);            /* _LOADED[name] = returned value */
+	lua_getfield(L, 2, name);                /* Get just-set value, or sentinel. */
+	if (lua_touserdata(L, -1) == sentinel) { /* module did not set a value? */
+		lua_pushboolean(L, 1);               /* use true as result */
+		lua_pushvalue(L, -1);                /* extra copy to be returned */
+		lua_setfield(L, 2, name);            /* _LOADED[name] = true */
 	}
 	return 1;
 }
@@ -498,11 +660,13 @@ static int ll_require(lua_State *L) {
 
 
 /*
+ * Unmodified from Vanilla.
+ *
 ** {======================================================
 ** 'module' function
 ** =======================================================
 */
-
+//#region
 
 static void setfenv(lua_State *L) {
 	lua_Debug ar;
@@ -581,55 +745,51 @@ static int ll_seeall(lua_State *L) {
 	return 0;
 }
 
-
+//#endregion
 /* }====================================================== */
 
-
-
+/* Mini: Disable all this, Paths cannot be loaded from ENV or set from Lua. */
 /* auxiliary mark (for internal use) */
-#define AUXMARK        "\1"
+//#define AUXMARK        "\1"
+//
+//static void setpath(lua_State *L, const char *fieldname, const char *envname,
+//                    const char *def) {
+//	const char *path = getenv(envname);
+//	if (path == NULL)  /* no environment variable? */
+//		lua_pushstring(L, def);  /* use default */
+//	else {
+//		/* replace ";;" by ";AUXMARK;" and then AUXMARK by default path */
+//		path = luaL_gsub(L, path, LUA_PATHSEP LUA_PATHSEP,
+//		                 LUA_PATHSEP AUXMARK LUA_PATHSEP);
+//		luaL_gsub(L, path, AUXMARK, def);
+//		lua_remove(L, -2);
+//	}
+//	setprogdir(L);
+//	lua_setfield(L, -2, fieldname);
+//}
 
-static void setpath(lua_State *L, const char *fieldname, const char *envname,
-                    const char *def) {
-	const char *path = getenv(envname);
-	if (path == NULL)  /* no environment variable? */
-		lua_pushstring(L, def);  /* use default */
-	else {
-		/* replace ";;" by ";AUXMARK;" and then AUXMARK by default path */
-		path = luaL_gsub(L, path, LUA_PATHSEP LUA_PATHSEP,
-		                 LUA_PATHSEP AUXMARK LUA_PATHSEP);
-		luaL_gsub(L, path, AUXMARK, def);
-		lua_remove(L, -2);
-	}
-	setprogdir(L);
-	lua_setfield(L, -2, fieldname);
-}
-
-
+/** These are the functions that are added to the `_G.package` table. */
 static const luaL_Reg pk_funcs[] = {
 	{"loadlib", ll_loadlib},
 	{"seeall",  ll_seeall},
 	{NULL, NULL}
 };
 
-
+/** These are the functions that are added to the global scope. */
 static const luaL_Reg ll_funcs[] = {
 	{"module",  ll_module},
 	{"require", ll_require},
 	{NULL, NULL}
 };
 
-
-static const lua_CFunction loaders[] =
-	{loader_preload, loader_Lua, loader_C, loader_Croot, NULL};
-
-
 LUALIB_API int luaopen_package(lua_State *L) {
-	int i;
-	/* create new type _LOADLIB */
+	/* create new type _LOADLIB
+	 * This is the metatable for loaded C libraries, which has the __gc metamethod.
+	 * We don't actually `dlclose` them, but it still calls the method. */
 	luaL_newmetatable(L, "_LOADLIB");
 	lua_pushcfunction(L, gctm);
 	lua_setfield(L, -2, "__gc");
+
 	/* create `package' table */
 	luaL_register(L, LUA_LOADLIBNAME, pk_funcs);
 #if defined(LUA_COMPAT_LOADLIB)
@@ -638,26 +798,35 @@ LUALIB_API int luaopen_package(lua_State *L) {
 #endif
 	lua_pushvalue(L, -1);
 	lua_replace(L, LUA_ENVIRONINDEX);
-	/* create `loaders' table */
-	lua_createtable(L, sizeof(loaders) / sizeof(loaders[0]) - 1, 0);
-	/* fill it with pre-defined loaders */
-	for (i = 0; loaders[i] != NULL; i++) {
-		lua_pushcfunction(L, loaders[i]);
-		lua_rawseti(L, -2, i + 1);
-	}
-	lua_setfield(L, -2, "loaders");  /* put it in field `loaders' */
-	setpath(L, "path", LUA_PATH, LUA_PATH_DEFAULT);  /* set field `path' */
-	setpath(L, "cpath", LUA_CPATH, LUA_CPATH_DEFAULT); /* set field `cpath' */
-	/* store config information */
-	lua_pushliteral(L, LUA_DIRSEP "\n" LUA_PATHSEP "\n" LUA_PATH_MARK "\n"
-		LUA_EXECDIR "\n" LUA_IGMARK);
-	lua_setfield(L, -2, "config");
-	/* set field `loaded' */
+
+	/* Mini: Remove Loaders table for security. */
+	//	/* create `loaders' table */
+	//	lua_createtable(L, sizeof(loaders) / sizeof(loaders[0]) - 1, 0);
+	//	/* fill it with pre-defined loaders */
+	//	for (i = 0; loaders[i] != NULL; i++) {
+	//		lua_pushcfunction(L, loaders[i]);
+	//		lua_rawseti(L, -2, i + 1);
+	//	}
+	//	lua_setfield(L, -2, "loaders");  /* put it in field `loaders' */
+
+	/* Mini: CPath is completely unused (just uses `dlopen` linker path).
+	 * Path must not be changed by Lua code.
+	 * Config information is useless. */
+	//	setpath(L, "path", LUA_PATH, LUA_PATH_DEFAULT);  /* set field `path' */
+	//	setpath(L, "cpath", LUA_CPATH, LUA_CPATH_DEFAULT); /* set field `cpath' */
+	//	/* store config information */
+	//	lua_pushliteral(L, LUA_DIRSEP "\n" LUA_PATHSEP "\n" LUA_PATH_MARK "\n"
+	//		LUA_EXECDIR "\n" LUA_IGMARK);
+	//	lua_setfield(L, -2, "config");
+
+	/* set field `loaded'. `_G.package.loaded == debug.getregistry()._LOADED` */
 	luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 2);
 	lua_setfield(L, -2, "loaded");
+
 	/* set field `preload' */
 	lua_newtable(L);
 	lua_setfield(L, -2, "preload");
+
 	lua_pushvalue(L, LUA_GLOBALSINDEX);
 	luaL_register(L, NULL, ll_funcs);  /* open lib into global table */
 	lua_pop(L, 1);

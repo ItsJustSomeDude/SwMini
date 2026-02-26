@@ -1,0 +1,27 @@
+# LuaRocks
+
+Place LuaRocks in this folder, exactly how they are in the `lua/5.1/` folder of a Rocks Tree.
+Subfolders are allowed, exactly as in a regular Rocks Tree.
+
+Example:
+```
+/assets/rocks/
+├── README (this file)
+├── argparse.lua
+├── arock.lua
+├── socket
+│   ├── http.lua
+├── another_rock
+│   ├── init.lua
+```
+
+For compiled C rocks (.so files), they must be placed in `/libs/<arch>/` in the APK, and named
+`rock_<name>.so`. Dependencies such as `libssl.so` must be placed in the same folder.
+C Rocks will *only* work when compiled specifically for SwMini! Binary releases, including those
+built for Android or Termux, will not run properly!
+
+For mod development and testing, a `rocks` folder can be created in `/Files/rocks/` or
+`/ExternalFiles/rocks/`, and it will be used just like this folder. External rocks have precedence,
+just like regular resource loading.
+
+C rocks _must_ be in the APK, in the `/libs/<arch>/` folder, due to Android restrictions.
