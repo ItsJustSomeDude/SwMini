@@ -403,7 +403,9 @@ void create_achievement(
 	/* Empty Basic String pointer in BSS. Cannot be a local variable due to stack destruction. */
 	"r"(engine_bss_offset_ptr(0x14880)),
 	"r"(target_func)
-		: "x19", "x0", "x1", "x2", "x22", "r24", "r21", "x27", "x20", "x23", "x28", "memory"
+		: "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10",
+	"x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28",
+	"memory"
 		);
 
 	// Stack frame was cleaned up already. ALL registers should be considered clobbered, but since

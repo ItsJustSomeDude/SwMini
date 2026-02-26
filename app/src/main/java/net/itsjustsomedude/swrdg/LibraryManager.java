@@ -29,9 +29,10 @@ public class LibraryManager {
 		String files = ctx.getFilesDir().getAbsolutePath();
 		String cache = ctx.getCacheDir().getAbsolutePath();
 		setMiniFilePaths(files, cache, extFiles, extCache);
-		
-		// if (!BuildConfig.DEBUG)
-		CrashHandler.setupCrashHandler(ctx);
+
+		// Disable crash handler on Debug builds, because it muddies stack traces.
+		if (!BuildConfig.DEBUG)
+			CrashHandler.setupCrashHandler(ctx);
 	}
 }
 

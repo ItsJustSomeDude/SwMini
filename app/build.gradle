@@ -83,7 +83,8 @@ android {
 
 	packaging {
 		jniLibs {
-			useLegacyPackaging false
+			// Legacy Packaging completely breaks stack traces.
+			useLegacyPackaging true
 		}
 	}
 

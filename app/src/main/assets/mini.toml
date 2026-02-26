@@ -40,7 +40,7 @@ google = 'https://google.com/'
 # Various options to change various engine features.
 [options]
 # Visibility of the Google Signin and its text on the title screen.
-show_google_button = true
+show_google_button = false
 
 # Show a popup on first run on 32bit devices. (Use String Resources to edit text.)
 32bit_popup = true
@@ -50,10 +50,10 @@ show_google_button = true
 # the engine will freeze regardless of this setting.
 pauseOnLostFocus = true
 
-too_rich_threshold = 1000
+too_rich_threshold = 999
 
 # These values can be changed in-game with Lua scripts, but the defaults can be changed here.
-coin_limit = 1000
+coin_limit = 999
 # Engine Speed (Frame rate + Physics + Timers)
 engine_speed = 1
 

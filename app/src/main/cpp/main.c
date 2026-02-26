@@ -6,7 +6,6 @@
 #include "features/coin_limit.h"
 #include "features/cstrings/cstrings.h"
 #include "features/mini_config.h"
-#include "features/state_tracking/state_tracking.h"
 #include "hooks.h"
 #include "java.h"
 #include "libs/Gloss.h"
@@ -73,7 +72,6 @@ void midLoad() {
 	initF_coin_limit();
 	initF_armor_models();
 	init_feature_achievements();
-	init_feature_state_tracking();
 
 	read_mini_config_asset();
 }

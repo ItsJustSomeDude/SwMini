@@ -249,7 +249,7 @@ public class MainActivity extends Activity implements Runnable {
 	protected void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
 
-		if (CrashHandler.lastRunCrashed(this)) {
+		if (!BuildConfig.DEBUG && CrashHandler.lastRunCrashed(this)) {
 			// Show crash dialog BEFORE launching engine, in case of startup crashes.
 
 			String logFile = CrashHandler.dumpLogs(this);

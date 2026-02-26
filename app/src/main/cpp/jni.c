@@ -1,5 +1,6 @@
 #include "java.h"
 #include "main.h"
+#include "log.h"
 
 #include <jni.h>
 #include <pthread.h> // For thread-local storage if needed

@@ -194,6 +194,7 @@ public class Native {
 		return ModProperties.googleVisible;
 	}
 
+	// NOT called from native!
 	public static int knownAge() {
 		return getIntFromSP("knownAge");
 	}
