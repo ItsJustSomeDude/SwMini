@@ -15,5 +15,6 @@ void init_patch_network(void);
 void init_patch_panic();
 
 void init_patch_lua_libs();
+void initP_lua_load_file();
 
 #endif //SWMINI_PATCHES_H

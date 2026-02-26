@@ -64,6 +64,7 @@ void midLoad() {
 	init_patch_assets();
 	init_patch_panic();
 	init_patch_lua_libs();
+	initP_lua_load_file();
 	// init_patch_network();
 
 	init_mini_lua_lib();

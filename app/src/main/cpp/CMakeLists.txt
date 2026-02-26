@@ -54,6 +54,7 @@ add_library(mini SHARED
         log.c
 
         config.c
+        global.c
         features/mini_config.c
 
         jni.c
@@ -64,9 +65,9 @@ add_library(mini SHARED
         patches/panic.c
         patches/lua_libs.c
         patches/crash_handler.c
+        patches/lua_load_file.c
 
         patches/assets/index.c
-        patches/assets2.c
 
         luasocket/src/luasocket.c
         luasocket/src/io.c
@@ -83,7 +84,6 @@ add_library(mini SHARED
         luasocket/src/options.c
 
         features/coin_limit.c
-        features/lua_paths.c
         features/armor_models.c
         features/engine_strings.c
 
@@ -95,6 +95,15 @@ add_library(mini SHARED
         features/achievements/achievements.c
         features/achievements/ach64.c
         features/achievements/ach32.c
+
+        features/mini_files/functions.c
+        features/mini_files/patched_functions.c
+        features/mini_files/patched_std.c
+        features/mini_files/resource_paths.c
+        features/mini_files/resources.c
+        features/mini_files/parser.c
+
+        tools/files.c
 
         # stdlib/gabi++/include/new
         # stdlib/stdlib/new

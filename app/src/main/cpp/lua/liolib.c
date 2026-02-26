@@ -18,8 +18,11 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "features/use_lua_paths.h"
+#include "features/mini_files/patched_functions.h"
+#include "features/mini_files/patched_std.h"
+#include "log.h"
 
+#define LOG_TAG "MiniLuaIOLib"
 
 #define IO_INPUT    1
 #define IO_OUTPUT    2
@@ -181,7 +184,9 @@ static int io_popen(lua_State *L) {
 
 static int io_tmpfile(lua_State *L) {
 	FILE **pf = newfile(L);
-	*pf = tmpfile();
+	/* Mini: Make this use the MiniFILE struct. */
+	(*pf)->file = tmpfile();
+	(*pf)->type = REAL;
 	return (*pf == NULL) ? pushresult(L, 0, NULL) : 1;
 }
 
@@ -269,9 +274,122 @@ static int io_lines(lua_State *L) {
 
 static int read_number(lua_State *L, FILE *f) {
 	lua_Number d;
-	if (fscanf(f, LUA_NUMBER_SCAN, &d) == 1) {
+
+	if (f->type == REAL && fscanf(f, LUA_NUMBER_SCAN, &d) == 1) {
 		lua_pushnumber(L, d);
 		return 1;
+	} else if (f->type == ASSET) {
+		const size_t grow_amount = 8;
+
+		/* 1 extra for NULL terminator. */
+		size_t buffer_size = grow_amount + 1;
+		size_t buffer_pos = 0;
+		char *buffer = NULL;
+
+		double parsed_number = 0;
+		char *endptr = NULL;
+		size_t consumed_bytes = 0;
+		size_t leftover = 0;
+		bool out_of_range = false;
+		bool match_found = false;
+
+		size_t initial_position = ftell(f);
+
+		/* TODO: This grows the buffer by 8 every time, even if fewer than 8 bytes were read.
+		 * It could be made more efficient, only growing 8 - read_bytes. */
+
+		while (true) {
+			char *new_buffer = realloc(buffer, buffer_size);
+			if (new_buffer == NULL) {
+				/* Mem allocation error: Just return nil. */
+				LOGE("OOM while reading number.");
+				goto fail;
+			}
+			buffer = new_buffer;
+
+			size_t bytes_read = fread(buffer + buffer_pos, 1, grow_amount, f);
+			if (bytes_read < 0 || (bytes_read == 0 && buffer_pos == 0)) {
+				/* Read Error: Just return nil.
+				 * Nothing read, no bytes in buffer: Just return nil. */
+				goto fail;
+			}
+
+			/* Terminate string, but leave write pointer on NULL byte so it gets overwritten next read.
+			 * This safely terminates the string, even if 0 bytes were read! */
+			buffer_pos += bytes_read;
+			buffer[buffer_pos] = '\0';
+
+			/* Attempt parsing, check if a number was found. */
+			errno = 0;
+			parsed_number = strtod(buffer, &endptr);
+			match_found = endptr != buffer;
+			out_of_range = errno == ERANGE;
+			/* Bytes that contributed to match. */
+			consumed_bytes = (size_t) (endptr - buffer);
+			/* Bytes after match that did not contribute. */
+			leftover = buffer_pos - consumed_bytes;
+
+			if (bytes_read == 0 && !match_found) {
+				/* Nothing read, no match in buffer: Rewind to initial position, return nil. */
+				fseek(f, initial_position, SEEK_SET);
+				goto fail;
+			} else if (match_found && (bytes_read == 0 || leftover >= 3)) {
+				/* Either nothing read, or we read enough leftover bytes to be sure the number is done.
+				 * Rewind to exactly number of used bytes, Return number. */
+				fseek(f, -leftover, SEEK_CUR);
+				goto success_return_parsed;
+			} else if (!match_found ||
+			           (match_found && (leftover == 0 || leftover == 1 || leftover == 2))
+				) {
+				/* Read, no match in buffer: Read more!
+				 * Read, match in buffer, no leftover bytes: Read more!
+				 * Read, match in buffer, 1-2 leftover bytes: Read more, because there might be "e+" at the end.
+				 */
+				LOGW(
+					"Number parser growing and trying again. "
+					"Last parse: %lf; buffer: '%s' (size: %li, leftover: %li); "
+					"Most recent pass: consumed %li, leftover: %li; "
+					"Out of range? %b, Match found? %b",
+					parsed_number, buffer, buffer_size, leftover,
+					consumed_bytes, leftover,
+					out_of_range, match_found
+				);
+				buffer_size += grow_amount;
+
+				continue;
+			} else {
+				LOGE(
+					"Number parser in unknown state! "
+					"Last parse: %lf; buffer: '%s' (size: %li, leftover: %li); "
+					"Most recent pass: consumed %li, leftover: %li; "
+					"Out of range? %b, Match found? %b",
+					parsed_number, buffer, buffer_size, leftover,
+					consumed_bytes, leftover,
+					out_of_range, match_found
+				);
+				goto fail;
+			}
+		}
+
+		success_return_parsed:
+		LOGD(
+			"Number parsed: %lf "
+			"buffer: '%s' (size: %li, leftover: %li); "
+			"Most recent pass: consumed %li, leftover: %li; "
+			"Out of range? %b, Match found? %b",
+			parsed_number, buffer, buffer_size, leftover,
+			consumed_bytes, leftover,
+			out_of_range, match_found
+		);
+		free(buffer);
+		lua_pushnumber(L, parsed_number);
+		return 1;
+
+		fail:
+		free(buffer);
+		lua_pushnil(L);
+		return 0;
+
 	} else {
 		lua_pushnil(L);  /* "result" to be removed */
 		return 0;  /* read fails */
@@ -281,7 +399,8 @@ static int read_number(lua_State *L, FILE *f) {
 
 static int test_eof(lua_State *L, FILE *f) {
 	int c = getc(f);
-	ungetc(c, f);
+	// ungetc(c, f);
+	if (c != EOF) fseek(f, -1, SEEK_CUR);
 	lua_pushlstring(L, NULL, 0);
 	return (c != EOF);
 }

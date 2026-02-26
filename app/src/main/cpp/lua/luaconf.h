@@ -191,8 +191,8 @@
 #define LUAI_DATA    LUAI_FUNC
 
 #else
-#define LUAI_FUNC	extern
-#define LUAI_DATA	extern
+#define LUAI_FUNC    extern
+#define LUAI_DATA    extern
 #endif
 
 
@@ -392,7 +392,7 @@
 */
 /* avoid overflows in comparison */
 #if INT_MAX - 20 < 32760
-#define LUAI_BITSINT	16
+#define LUAI_BITSINT    16
 #elif INT_MAX > 2147483640L
 /* int has at least 32 bits */
 #define LUAI_BITSINT    32
@@ -421,11 +421,11 @@
 #define LUAI_MEM    ptrdiff_t
 #else
 /* 16-bit ints */
-#define LUAI_UINT32	unsigned long
-#define LUAI_INT32	long
-#define LUAI_MAXINT32	LONG_MAX
-#define LUAI_UMEM	unsigned long
-#define LUAI_MEM	long
+#define LUAI_UINT32    unsigned long
+#define LUAI_INT32    long
+#define LUAI_MAXINT32    LONG_MAX
+#define LUAI_UMEM    unsigned long
+#define LUAI_MEM    long
 #endif
 
 
@@ -644,22 +644,25 @@ union luai_Cast { double l_d; long l_l; };
 ** insecure) or if you want the original tmpnam anyway.  By default, Lua
 ** uses tmpnam except when POSIX is available, where it uses mkstemp.
 */
-#if defined(loslib_c) || defined(luaall_c)
-
 #if defined(LUA_USE_MKSTEMP)
+
 #include <unistd.h>
-#define LUA_TMPNAMBUFSIZE	32
-#define lua_tmpnam(b,e)	{ \
-	strcpy(b, "/tmp/lua_XXXXXX"); \
-	e = mkstemp(b); \
-	if (e != -1) close(e); \
-	e = (e == -1); }
+#include "global.h"
+#include "features/mini_files/mini_files.h"
+
+#define LUA_TMPNAMBUFSIZE    PATH_MAX
+#define lua_tmpnam(b, e)    { \
+    char real_path[LUA_TMPNAMBUFSIZE]; \
+    snprintf(real_path, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", g_cache_path); \
+    e = mkstemp(real_path);   \
+    /* real_path now has the full absolute path. */ \
+    real_to_mini_path(b, LUA_TMPNAMBUFSIZE, real_path); \
+    if (e != -1) close(e); \
+    e = (e == -1); }
 
 #else
 #define LUA_TMPNAMBUFSIZE	L_tmpnam
 #define lua_tmpnam(b,e)		{ e = (tmpnam(b) == NULL); }
-#endif
-
 #endif
 
 

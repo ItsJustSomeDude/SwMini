@@ -5,13 +5,12 @@
 #include "hooks.h"
 #include "log.h"
 #include "lua.h"
+#include "global.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 #define LOG_TAG "MiniLuaProfile"
-
-const char *latestProfileId;
 
 STATIC_DL_HOOK_SYMBOL(
 	loadProfileId,
@@ -20,26 +19,18 @@ STATIC_DL_HOOK_SYMBOL(
 	(void *this, void* p1, void** profile)
 ) {
 	const char *profileId = *$(char*, *profile, (3 * sizeof(void *)), (3 * sizeof(void *)));
-	if (latestProfileId != NULL) {
-		// Free the old string copy.
-		free((void *) latestProfileId);
-	}
-	latestProfileId = strdup(profileId);
-	LOGD("Fetched new Profile ID: %s", latestProfileId);
-
-	// Since we're entering a new Save file, reset the Coin Limit in case it was modified from Lua.
-	miniCL_reset();
+	miniG_set_profile_id(profileId);
 
 	return orig_loadProfileId(this, p1, profile);
 }
 
 int getProfileID(lua_State *L) {
-	if (latestProfileId == NULL) {
+	if (g_cur_profile_id == NULL) {
 		lua_pushnil(L);
 		return 1;
 	}
 
-	lua_pushlstring(L, latestProfileId, strlen(latestProfileId));
+	lua_pushlstring(L, g_cur_profile_id, strlen(g_cur_profile_id));
 	return 1;
 }
 

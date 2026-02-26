@@ -7,8 +7,6 @@
 #include <linux/limits.h>
 #include <stddef.h>
 
-extern AAssetManager *asset_manager;
-
 typedef enum AssetSource {
 	APK = 1,
 	Internal,

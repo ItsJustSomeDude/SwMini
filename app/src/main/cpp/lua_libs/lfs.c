@@ -7,6 +7,8 @@
 ** (http://lunarmodules.github.io/luafilesystem)
 */
 
+#include "features/mini_files/patched_functions.h"
+
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
 #ifndef _WIN32
 #ifndef _AIX
@@ -73,6 +75,9 @@
 #include "lualib.h"
 
 #include "lfs.h"
+#include "log.h"
+
+#define LOG_TAG "MiniLFS"
 
 #define LFS_VERSION "1.8.0"
 #define LFS_LIBNAME "fs"
@@ -154,7 +159,7 @@ typedef struct dir_data {
 #define _O_BINARY             0
 #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
 #define STAT_STRUCT struct stat
-#define STAT_FUNC mini_path_stat
+#define STAT_FUNC patched_stat_
 #define LSTAT_FUNC lstat
 
 #endif
@@ -215,7 +220,6 @@ static int lfs_win32_lstat(const char *path, STAT_STRUCT * buffer)
 
 #endif
 
-#include "features/use_lua_paths.h"
 
 /*
 ** Utility functions

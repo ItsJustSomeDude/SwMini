@@ -23,11 +23,11 @@ public class LibraryManager {
 		setMiniAssetManager(ctx.getAssets());
 
 		File extFilesDir = ctx.getExternalFilesDir(null);
-		String extFiles = (extFilesDir != null) ? extFilesDir.getAbsolutePath() + "/" : null;
+		String extFiles = (extFilesDir != null) ? extFilesDir.getAbsolutePath() : null;
 		File extCacheDir = ctx.getExternalCacheDir();
-		String extCache = (extCacheDir != null) ? extCacheDir.getAbsolutePath() + "/" : null;
-		String files = ctx.getFilesDir().getAbsolutePath() + "/";
-		String cache = ctx.getFilesDir().getAbsolutePath() + "/";
+		String extCache = (extCacheDir != null) ? extCacheDir.getAbsolutePath() : null;
+		String files = ctx.getFilesDir().getAbsolutePath();
+		String cache = ctx.getCacheDir().getAbsolutePath();
 		setMiniFilePaths(files, cache, extFiles, extCache);
 		
 		// if (!BuildConfig.DEBUG)
