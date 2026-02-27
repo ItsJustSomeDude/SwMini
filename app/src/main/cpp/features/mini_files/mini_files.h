@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <linux/limits.h>
 
-#define EXT_RESOURCES_SUBDIR "/assets/"
+#define EXT_RESOURCES_SUBDIR "/resources/"
 #define APK_RESOURCES_SUBDIR "resources/"
 
 #define PrefixFiles     "/Files"
