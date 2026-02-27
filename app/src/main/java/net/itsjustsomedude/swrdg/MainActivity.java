@@ -239,7 +239,7 @@ public class MainActivity extends Activity implements Runnable {
 		MiniOverlay.init(this, this.mainViewLayout);
 
 		ButtonController.init(this, this.mainViewLayout);
-		ButtonController.addButton("Test lol");
+//		ButtonController.addButton("Test lol");
 
 //		MiniOverlay.addCheckbox("network", "Enable Networking", "Allow mod to connect to the internet");
 //		MiniOverlay.addCheckbox("hello", "Hello, world!", "Subtitle for this preference");
