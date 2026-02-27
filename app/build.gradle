@@ -22,7 +22,7 @@ android {
 		minSdk = 24
 		targetSdk = 36
 		versionCode 46
-		versionName '1.4.10'
+		versionName '1.4.12'
 	}
 
 	externalNativeBuild {
@@ -84,7 +84,7 @@ android {
 	packaging {
 		jniLibs {
 			// Legacy Packaging completely breaks stack traces.
-			useLegacyPackaging true
+			useLegacyPackaging = true
 		}
 	}
 
