@@ -9,7 +9,7 @@ plugins {
 
 android {
 	namespace = 'net.itsjustsomedude.swrdg'
-	compileSdk = 35
+	compileSdk = 36
 	ndkVersion = "29.0.14206865"
 
 	buildFeatures {
@@ -20,7 +20,7 @@ android {
 	defaultConfig {
 		applicationId 'net.itsjustsomedude.swrdg'
 		minSdk = 24
-		targetSdk = 35
+		targetSdk = 36
 		versionCode 46
 		versionName '1.4.10'
 	}
@@ -107,7 +107,6 @@ android {
 
 			File resourcesDir = new File(outputDir, "resources")
 			File compiledRes = new File(outputDir, "res")
-			File miniResSrcDir = new File(outputDir, "mini_resources")
 
 			if (compiledRes.exists() && compiledRes.isDirectory() && resourcesDir.exists() && resourcesDir.isDirectory()) {
 				File gitignore = new File(compiledRes, ".gitignore")
