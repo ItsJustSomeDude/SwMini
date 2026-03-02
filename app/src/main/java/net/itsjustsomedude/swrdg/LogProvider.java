@@ -4,10 +4,12 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import androidx.NonNull;
 import androidx.Nullable;
@@ -16,21 +18,38 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 public class LogProvider extends ContentProvider {
-	public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".LogProvider";
 	public static final String LOG_SUBDIR = "export";
+	private static final String TAG = "LogProvider";
 	private static final int FILE = 1;
-
+	private static String authority;
 	private final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-	@Override
-	public boolean onCreate() {
-		uriMatcher.addURI(AUTHORITY, "*", FILE);
-		return true;
+	public static Uri exportUri(String fileName) {
+		return new Uri.Builder()
+			.scheme("content")
+			.authority(authority)
+			.path(fileName)
+			.build();
 	}
 
 	private File getSharedCacheDir(Context context) {
 		// Only expose this subfolder
 		return new File(context.getCacheDir(), LOG_SUBDIR);
+	}
+
+	@Override
+	public boolean onCreate() {
+		return true;
+	}
+
+	@Override
+	public void attachInfo(Context context, ProviderInfo info) {
+		super.attachInfo(context, info);
+
+		authority = info.authority;
+
+		Log.i(TAG, "Log Content Provider initializing, path: " + authority);
+		this.uriMatcher.addURI(authority, "*", FILE);
 	}
 
 	private File getFileForUri(Uri uri) {

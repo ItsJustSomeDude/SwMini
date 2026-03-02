@@ -13,7 +13,8 @@
 #ifdef NDK_DEBUG
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #else
-#define LOGD(...)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+//#define LOGD(...)
 #endif //NDK_DEBUG
 
 int spawn_log_threads();

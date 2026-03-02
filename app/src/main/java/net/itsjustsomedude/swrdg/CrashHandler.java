@@ -161,7 +161,7 @@ public class CrashHandler {
 			return null;
 		}
 
-		Uri uri = Uri.parse("content://net.itsjustsomedude.swrdg.LogProvider/" + fileName);
+		Uri uri = LogProvider.exportUri(fileName);
 
 		Intent intent = new Intent();
 		String title;

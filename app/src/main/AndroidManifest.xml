@@ -17,6 +17,7 @@
 		android:supportsRtl="true"
 		android:theme="@style/Theme.Blank"
 		tools:targetApi="35">
+
 		<activity
 			android:name=".MainActivity"
 			android:configChanges="keyboardHidden|orientation|screenSize"
@@ -31,9 +32,16 @@
 			</intent-filter>
 		</activity>
 
+		<meta-data
+			android:name="ChangingPackageID"
+			android:value="Every mod MUST change the 'authorities' entry under [provider], or users will have issues installing it!" />
+		<meta-data
+			android:name="ChangingPackageID2"
+			android:value="It can be set to the Android Package ID you've chosen for your mod." />
+
 		<provider
 			android:name=".LogProvider"
-			android:authorities="net.itsjustsomedude.swrdg.LogProvider"
+			android:authorities="SwMini.UnknownMod"
 			android:exported="false"
 			android:grantUriPermissions="true" />
 	</application>

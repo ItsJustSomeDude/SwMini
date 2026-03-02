@@ -174,6 +174,7 @@ MiniFILE *_Nullable miniP_fopen(MiniPath *path, const char *_Nonnull mode) {
 	if (path->type == ASSET) {
 		AAsset *a = AAssetManager_open(g_asset_mgr, path->path, AASSET_MODE_UNKNOWN);
 		if (a == NULL) {
+			LOGE("Failed to open asset '%s'", path->path);
 			errno = ENOENT;
 			goto fail;
 		}
@@ -229,6 +230,9 @@ size_t miniP_fread(void *_Nonnull buf, size_t size, size_t count, MiniFILE *_Non
 		if (bytes_read < 0) {
 			errno = EIO;
 			fp->asset_err = true;
+			LOGE("Asset Read Error: asset %p: {asset: %p, eof: %b, err: %i}, buf: %p, size: %i",
+			     fp, fp->asset, fp->asset_eof, fp->asset_err,
+			     buf, count * size);
 			return EOF; /* Read failed. */
 		} else if (bytes_read < count || bytes_read == 0) {
 			/* Read to the end of the file, so set EOF flag. */
