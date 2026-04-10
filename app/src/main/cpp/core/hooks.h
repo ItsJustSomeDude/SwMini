@@ -15,7 +15,13 @@ __attribute__((unused))
 void *hook_engine_offset(unsigned long offset, void *new_addr, void **orig_addr);
 void *engine_symbol_ptr(const char *symbol);
 void *engine_offset_ptr(unsigned int offset);
+
+/** This is almost the same as `engine_offset_ptr`, but on 32bit it sets the thumb flag so it can
+ * be executed safely. */
+void *engine_offset_func(unsigned int offset);
+
 void *engine_bss_offset_ptr(unsigned int offset);
+void *engine_dlsym(const char *symbol);
 
 void *branch_within_engine(long from, long to, bool use_small_instruction);
 
@@ -32,9 +38,6 @@ void write_in_library(long offset, void *data, size_t size);
 /* Use first or second argument, based on 32- or 64-bit build */
 #define archSplit(b32, b64) b32
 #endif
-
-/** Dynamic pointer offset per architecture. Move n pointers ahead. */
-#define pointerOffset(n) (n * sizeof(void*))
 
 #define $(type, base, b32, b64) \
     ((type*)(base + archSplit(b32, b64)))

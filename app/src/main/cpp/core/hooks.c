@@ -59,8 +59,21 @@ void *engine_bss_offset_ptr(unsigned int offset) {
 	return engine_bss_start + offset;
 }
 
+void *engine_dlsym(const char *symbol) {
+	return dlsym(engine_dl_handle, symbol);
+}
+
 void *engine_offset_ptr(unsigned int offset) {
 	return engine_load_bias + offset;
+}
+
+void *engine_offset_func(unsigned int offset) {
+#ifdef __arm__
+	/* Set the Thumb execution flag. Pointer is cast to `int` because 32bit, 4 bytes. */
+	return (void *) ((int) (engine_load_bias + offset) | 1);
+#elif defined(__aarch64__)
+	return engine_load_bias + offset;
+#endif
 }
 
 inline __attribute__((always_inline))
