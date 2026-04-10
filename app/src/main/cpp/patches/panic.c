@@ -169,8 +169,4 @@ void initP_lua_panic() {
 #endif
 	// On 32bit, ProgramState::Update calls ProgramState::Resume, while on 64 bit the resume was inlined.
 	// That's why we only place the hook on 64bit builds.
-
-//    hook_programPanic();
-//    hook_atPanic();
-//    hook_atP2();
 }

@@ -2,20 +2,58 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project("SwMini Natives")
 
-set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
-        include-what-you-use;
-        -Xiwyu;--ignore_re=\/lua\/;
-        # -Xiwyu;--ignore_re=\/lua\/
-)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 add_library(mini SHARED
+        main.c
+
         assembly/thumb.c
         assembly/arm64.c
 
-        caver/caver.c
-        caver/component.c
+        core/assets.c
+        core/cpp_strings.c
+        core/hooks.c
+        core/log.c
+        core/lua.c
+        core/jni.c
+        core/java.c
+
+        "core/impl_files/paths.c"
+        core/impl_files/path_parser.c
+        core/impl_files/resource_paths.c
+
+        core/impl_files/backend_assets/backend.c
+        core/impl_files/backend_assets/dirent.c
+        core/impl_files/backend_assets/stat.c
+        core/impl_files/backend_assets/stdio.c
+        core/impl_files/backend_assets/stdlib.c
+        core/impl_files/backend_assets/unistd.c
+        core/impl_files/backend_assets/utime.c
+
+        core/impl_files/backend_std/backend.c
+        core/impl_files/backend_std/dirent.c
+        core/impl_files/backend_std/stat.c
+        core/impl_files/backend_std/stdio.c
+        core/impl_files/backend_std/stdlib.c
+        core/impl_files/backend_std/unistd.c
+        core/impl_files/backend_std/utime.c
+
+        core/files/dirent.c
+        core/files/stat.c
+        core/files/stdio.c
+        core/files/stdio_files.c
+        core/files/stdlib.c
+        core/files/unistd.c
+        core/files/utime.c
+
+        caver/components.c
         caver/program_state.c
+
+        config/config.c
+        config/mini_config.c
+
+        events/profile.c
+
+        utils/byte_sequence.c
+        utils/files.c
 
         lua/ltablib.c
         lua/lmathlib.c
@@ -37,28 +75,13 @@ add_library(mini SHARED
         lua_libs/mini/scene_find_all.c
         lua_libs/mini/debug.c
         lua_libs/mini/recreate_hero.c
+        lua_libs/mini/sub_library.c
+        lua_libs/mini/the_map_function.c
 
         lua_libs/mini/health/health.c
+        lua_libs/mini/character/exp.c
 
-        lua_libs/mini/sub_library.c
-
-        libs/toml/toml.c
-
-        # prober.c
-        # network.c
-
-        lua_core.c
-        main.c
-        hooks.c
-
-        log.c
-
-        config.c
-        global.c
-        features/mini_config.c
-
-        jni.c
-        java.c
+        lua_libs/mini/components/components.c
 
         patches/32patch.c
         patches/assets.c
@@ -67,65 +90,51 @@ add_library(mini SHARED
         patches/crash_handler.c
         patches/lua_load_file.c
 
-        # patches/assets/index.c
-
-        luasocket/src/luasocket.c
-        luasocket/src/io.c
-        luasocket/src/select.c
-        luasocket/src/auxiliar.c
-        luasocket/src/buffer.c
-        luasocket/src/compat.c
-        luasocket/src/usocket.c
-        luasocket/src/except.c
-        luasocket/src/timeout.c
-        luasocket/src/inet.c
-        luasocket/src/tcp.c
-        luasocket/src/udp.c
-        luasocket/src/options.c
+        features/achievements/achievements.c
+        features/achievements/ach64.c
+        features/achievements/ach32.c
 
         features/coin_limit.c
         features/armor_models.c
-        features/engine_strings.c
 
         features/cstrings/workarounds.c
         features/cstrings/register.c
         features/cstrings/hooks.c
         features/cstrings/file.c
 
-        features/achievements/achievements.c
-        features/achievements/ach64.c
-        features/achievements/ach32.c
+        # 3rd-party libs (Git Submodules)
 
-        features/mini_files/functions.c
-        features/mini_files/patched_functions.c
-        features/mini_files/patched_std.c
-        features/mini_files/resource_paths.c
-        features/mini_files/resources.c
-        features/mini_files/parser.c
+        libs/luasocket/src/luasocket.c
+        libs/luasocket/src/io.c
+        libs/luasocket/src/select.c
+        libs/luasocket/src/auxiliar.c
+        libs/luasocket/src/buffer.c
+        libs/luasocket/src/compat.c
+        libs/luasocket/src/usocket.c
+        libs/luasocket/src/except.c
+        libs/luasocket/src/timeout.c
+        libs/luasocket/src/inet.c
+        libs/luasocket/src/tcp.c
+        libs/luasocket/src/udp.c
+        libs/luasocket/src/options.c
 
-        tools/files.c
+        libs/toml/toml.c
 
-        # stdlib/gabi++/include/new
-        # stdlib/stdlib/new
-        iterate.cpp
+        # C++ Experiments (blank for now)
 )
 
-# Add prebuilt static library
+# GlossHook - prebuilt static library
 add_library(GlossHook SHARED IMPORTED)
-
-# Specify the path to the .so file for each architecture
 set_target_properties(
         GlossHook
         PROPERTIES IMPORTED_LOCATION
         ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libGlossHook.so
 )
 
+# Base include directories
 target_include_directories(mini
         PUBLIC ${CMAKE_SOURCE_DIR}
         PUBLIC ${CMAKE_SOURCE_DIR}/lua
-        #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib
-        #        PUBLIC ${CMAKE_SOURCE_DIR}/stdlib/stdlib/stl
-        #        PUBLIC ${CMAKE_SOURCE_DIR}/gabi++/include
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -139,3 +148,14 @@ target_link_libraries(mini
         log
         android
 )
+
+find_program(IWYU_EXECUTABLE include-what-you-use)
+if(IWYU_EXECUTABLE)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        include-what-you-use;
+        -Xiwyu;--ignore_re=\/lua\/;
+    )
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+else()
+    message(WARNING "IWYU Executable not found, header dependencies will not be checked.")
+endif()

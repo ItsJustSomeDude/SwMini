@@ -39,7 +39,7 @@ int scene_find_all(lua_State *L) {
 
 	LOGD("Iterating the tree...");
 	//
-	iterate_map(&objTreeMaybe);
+//	iterate_map(&objTreeMaybe);
 
 
 

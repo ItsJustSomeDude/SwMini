@@ -57,16 +57,3 @@ void destroy_feature_cstrings() {
 			free((char *) kh_key(replacements_table, k));
 	kh_destroy_str(replacements_table);
 }
-
-JNIEXPORT void JNICALL
-Java_net_itsjustsomedude_swrdg_NativeBridge_addStringReplacement(
-	JNIEnv *env, jclass clazz, jstring jSource, jstring jReplacement
-) {
-	const char *source = (*env)->GetStringUTFChars(env, jSource, 0);
-	const char *replacement = (*env)->GetStringUTFChars(env, jReplacement, 0);
-
-	cstrings_add_replacement(source, replacement);
-
-	(*env)->ReleaseStringUTFChars(env, jSource, source);
-	(*env)->ReleaseStringUTFChars(env, jReplacement, replacement);
-}

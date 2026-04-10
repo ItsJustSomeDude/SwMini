@@ -105,7 +105,7 @@ lua_Hook (*lua_gethook)(lua_State *L);
 int (*lua_gethookmask)(lua_State *L);
 int (*lua_gethookcount)(lua_State *L);
 
-// Builtin library
+/* Builtin library */
 
 int (*luaL_getn)(lua_State *L, int t);
 void (*luaL_setn)(lua_State *L, int t, int n);

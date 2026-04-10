@@ -8,7 +8,10 @@
 
 #define LOG_TAG "LogThreads"
 
-void pipe_handler(const int pipe[2], void (*send_log)(const char *buffer)) {
+/* Max length of log messages. Longer than this will get split. */
+#define LOG_BUFFER_SIZE 1024
+
+static void pipe_handler(const int pipe[2], void (*send_log)(const char *buffer)) {
 	int read_fd = pipe[0];
 	char log_buffer[LOG_BUFFER_SIZE];
 	size_t log_pos = 0;
@@ -18,28 +21,28 @@ void pipe_handler(const int pipe[2], void (*send_log)(const char *buffer)) {
 
 	while ((bytes_read = read(read_fd, &current_byte, 1)) > 0) {
 		if (current_byte == '\n' || log_pos == LOG_BUFFER_SIZE - 1) {
-			// If log buffer is full, or ends with newline, flush it.
+			/* If log buffer is full, or ends with newline, flush it. */
 			log_buffer[log_pos] = '\0';
 			send_log(log_buffer);
 			log_pos = 0;
 		} else {
-			// Add character to log buffer
+			/* Add character to log buffer */
 			log_buffer[log_pos++] = current_byte;
 		}
 	}
 
-	// Pipe closed. Log any data remaining in the log buffer.
+	/* Pipe closed. Log any data remaining in the log buffer. */
 	if (log_pos > 0) {
 		log_buffer[log_pos] = '\0';
 		send_log(log_buffer);
 	}
 }
 
-void send_log_buffer(const char *buffer) {
+static void send_log_buffer(const char *buffer) {
 	__android_log_write(ANDROID_LOG_DEBUG, "libswordigo", buffer);
 }
 
-void *start_stdout_thread(void *_handle) {
+static void *start_stdout_thread(void *_handle) {
 	/* Make stdout line-buffered */
 	setvbuf(stdout, 0, _IOLBF, 0);
 
@@ -56,11 +59,11 @@ void *start_stdout_thread(void *_handle) {
 	return NULL;
 }
 
-void send_error_buffer(const char *buffer) {
+static void send_error_buffer(const char *buffer) {
 	__android_log_write(ANDROID_LOG_ERROR, "libswordigo", buffer);
 }
 
-void *start_stderr_thread(void *_handle) {
+static void *start_stderr_thread(void *_handle) {
 	/* Make stderr unbuffered */
 	setvbuf(stderr, 0, _IOLBF, 0);
 
