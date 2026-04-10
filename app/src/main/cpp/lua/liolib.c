@@ -188,8 +188,7 @@ static int io_popen(lua_State *L) {
 static int io_tmpfile(lua_State *L) {
 	FILE **pf = newfile(L);
 	/* Mini: Make this use the MiniFILE struct. */
-	(*pf)->file = tmpfile();
-	(*pf)->type = REAL;
+	*pf = miniF_tmpfile();
 	return (*pf == NULL) ? pushresult(L, 0, NULL) : 1;
 }
 
@@ -278,10 +277,11 @@ static int io_lines(lua_State *L) {
 static int read_number(lua_State *L, FILE *f) {
 	lua_Number d;
 
-	if (f->type == REAL && fscanf(f, LUA_NUMBER_SCAN, &d) == 1) {
+	/* TODO: This is not good at all. */
+	if (f->backend == &backend_std && fscanf(f, LUA_NUMBER_SCAN, &d) == 1) {
 		lua_pushnumber(L, d);
 		return 1;
-	} else if (f->type == ASSET) {
+	} else if (f->backend == &backend_assets) {
 		const size_t grow_amount = 8;
 
 		/* 1 extra for NULL terminator. */
@@ -350,8 +350,8 @@ static int read_number(lua_State *L, FILE *f) {
 				 */
 				LOGW(
 					"Number parser growing and trying again. "
-					"Last parse: %lf; buffer: '%s' (size: %li, leftover: %li); "
-					"Most recent pass: consumed %li, leftover: %li; "
+					"Last parse: %lf; buffer: '%s' (size: %zu, leftover: %zu); "
+					"Most recent pass: consumed %zu, leftover: %zu; "
 					"Out of range? %b, Match found? %b",
 					parsed_number, buffer, buffer_size, leftover,
 					consumed_bytes, leftover,
@@ -363,8 +363,8 @@ static int read_number(lua_State *L, FILE *f) {
 			} else {
 				LOGE(
 					"Number parser in unknown state! "
-					"Last parse: %lf; buffer: '%s' (size: %li, leftover: %li); "
-					"Most recent pass: consumed %li, leftover: %li; "
+					"Last parse: %lf; buffer: '%s' (size: %zu, leftover: %zu); "
+					"Most recent pass: consumed %zu, leftover: %zu; "
 					"Out of range? %b, Match found? %b",
 					parsed_number, buffer, buffer_size, leftover,
 					consumed_bytes, leftover,
@@ -377,8 +377,8 @@ static int read_number(lua_State *L, FILE *f) {
 		success_return_parsed:
 		LOGD(
 			"Number parsed: %lf "
-			"buffer: '%s' (size: %li, leftover: %li); "
-			"Most recent pass: consumed %li, leftover: %li; "
+			"buffer: '%s' (size: %zu, leftover: %zu); "
+			"Most recent pass: consumed %zu, leftover: %zu; "
 			"Out of range? %b, Match found? %b",
 			parsed_number, buffer, buffer_size, leftover,
 			consumed_bytes, leftover,

@@ -159,9 +159,9 @@ typedef struct dir_data {
 #define _O_TEXT               0
 #define _O_BINARY             0
 #define lfs_setmode(file, m)   ((void)file, (void)m, 0)
-#define STAT_STRUCT struct stat
-#define STAT_FUNC patched_stat_
-#define LSTAT_FUNC lstat
+#define STAT_STRUCT mini_stat
+#define STAT_FUNC miniF_stat
+#define LSTAT_FUNC miniF_lstat
 
 #endif
 
@@ -623,7 +623,7 @@ static int dir_iter(lua_State *L) {
 #ifdef _WIN32
 	struct _finddata_t c_file;
 #else
-	struct dirent *entry;
+	mini_dirent *entry;
 #endif
 	dir_data *d = (dir_data *) luaL_checkudata(L, 1, DIR_METATABLE);
 	luaL_argcheck(L, d->closed == 0, 1, "closed directory");

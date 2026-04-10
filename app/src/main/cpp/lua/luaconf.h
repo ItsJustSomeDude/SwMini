@@ -646,19 +646,25 @@ union luai_Cast { double l_d; long l_l; };
 */
 #if defined(LUA_USE_MKSTEMP)
 
-#include <unistd.h>
-#include "global.h"
-#include "features/mini_files/mini_files.h"
+#include "core/files/stdlib.h"
 
-#define LUA_TMPNAMBUFSIZE    PATH_MAX
+#define LUA_TMPNAMBUFSIZE    32
 #define lua_tmpnam(b, e)    { \
-    char real_path[LUA_TMPNAMBUFSIZE]; \
-    snprintf(real_path, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", g_cache_path); \
-    e = mkstemp(real_path);   \
-    /* real_path now has the full absolute path. */ \
-    real_to_mini_path(b, LUA_TMPNAMBUFSIZE, real_path); \
-    if (e != -1) close(e); \
-    e = (e == -1); }
+    strcpy(b, "/Cache/lua_XXXXXX"); \
+    MiniFILE* lua_tmpnam_file_ = miniF_mkstemp(b); \
+    if (lua_tmpnam_file_ != NULL) miniF_fclose(lua_tmpnam_file_); \
+    e = (lua_tmpnam_file_ == NULL); }
+
+//#define LUA_TMPNAMBUFSIZE    PATH_MAX
+//#define lua_tmpnam(b, e)    { \
+//                              \
+//    char real_path[LUA_TMPNAMBUFSIZE]; \
+//    snprintf(real_path, LUA_TMPNAMBUFSIZE, "%s/lua_XXXXXX", g_cache_path); \
+//    e = mkstemp(real_path);   \
+//    /* real_path now has the full absolute path. */ \
+//    miniP_from_real(b, LUA_TMPNAMBUFSIZE, real_path); \
+//    if (e != -1) close(e); \
+//    e = (e == -1); }
 
 #else
 #define LUA_TMPNAMBUFSIZE	L_tmpnam

@@ -85,4 +85,6 @@ void midLoad() {
 /** This is called after libsw has been initialized from Java. */
 void lateLoad() {
 	LOGD("Performing Late-load");
+
+	miniR_refresh_paths();
 }

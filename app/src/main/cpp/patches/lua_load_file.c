@@ -28,8 +28,8 @@ static const char *getF(lua_State *L, void *ud, size_t *size) {
 		*size = 1;
 		return "\n";
 	}
-	if (miniP_feof(lf->f)) return NULL;
-	*size = miniP_fread(lf->buff, 1, sizeof(lf->buff), lf->f);
+	if (miniF_feof(lf->f)) return NULL;
+	*size = miniF_fread(lf->buff, 1, sizeof(lf->buff), lf->f);
 	return (*size > 0) ? lf->buff : NULL;
 }
 
@@ -46,17 +46,6 @@ STATIC_DL_HOOK_ADDR(
 	int, (lua_State * L, const char *mini_filename)
 ) {
 	/* Begin Mini: */
-	MiniPath p;
-	parse_mini_path(&p, mini_filename);
-	locate_resource(&p);
-	if (p.type == ERROR || p.type == UNKNOWN) {
-		int top = lua_gettop(L);
-		lua_pushfstring(L, "Invalid MiniPath: %s", p.path);
-		lua_remove(L, top + 1);
-		return LUA_ERRFILE;
-	}
-	const char *filename = p.path;
-	LOGD("Using '%s' from '%s'", filename, mini_filename);
 
 	LoadF lf;
 	int status, readstatus;
@@ -68,20 +57,20 @@ STATIC_DL_HOOK_ADDR(
 
 	/* Push Function Name, open the file, return error if failed. */
 	lua_pushfstring(L, "@%s", mini_filename);
-	lf.f = miniP_fopen(&p, "r");
+	lf.f = miniF_fopen(mini_filename, "r");
 	if (lf.f == NULL)
 		return errfile(L, "open", fnameindex);
 
 	/* Get first char, if it's a shebang read to the end of the line. */
-	c = miniP_getc(lf.f);
+	c = miniF_getc(lf.f);
 	if (c == '#') {  /* Unix exec. file? */
 		lf.extraline = 1;
-		while ((c = miniP_getc(lf.f)) != EOF && c != '\n');  /* skip first line */
+		while ((c = miniF_getc(lf.f)) != EOF && c != '\n');  /* skip first line */
 		/* No need to read the next char, because the binary check was removed. */
 		/* if (c == '\n') c = getc(lf.f); */
 	} else {
 		/* Seek back 1, so the read starts at the beginning. */
-		miniP_fseek(lf.f, -1, SEEK_CUR);
+		miniF_fseek(lf.f, -1, SEEK_CUR);
 	}
 
 	/* Skip binary check, because it will be fed into `lua_load` all the same,
@@ -98,8 +87,8 @@ STATIC_DL_HOOK_ADDR(
 	/* ungetc(c, lf.f); */
 
 	status = lua_load(L, getF, &lf, lua_tostring(L, -1));
-	readstatus = miniP_ferror(lf.f);
-	if (filename) miniP_fclose(lf.f);  /* close file (even in case of errors) */
+	readstatus = miniF_ferror(lf.f);
+	if (mini_filename) miniF_fclose(lf.f);  /* close file (even in case of errors) */
 	if (readstatus) {
 		lua_settop(L, fnameindex);  /* ignore results from `lua_load' */
 		return errfile(L, "read", fnameindex);

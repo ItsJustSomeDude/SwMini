@@ -37,12 +37,11 @@ STATIC_DL_HOOK_SYMBOL(
 	bool is_resource = strncmp(path, VanillaResPrefix, strlen(VanillaResPrefix)) == 0;
 	if (!is_resource) {
 		/* Engine sent an absolute path, check it as a file. */
-		struct stat fileStat;
-		/* Explicitly use the non-patched `stat` function. */
-		if ((stat) (path, &fileStat) != 0)
+		struct stat file_stat;
+		if (stat(path, &file_stat) != 0)
 			return false; /* Nonexistent */
 
-		if (!(fileStat.st_mode & S_IRUSR)) {
+		if (!(file_stat.st_mode & S_IRUSR)) {
 			LOGW("Engine queried nonexistent file '%s'", path);
 			return false;
 		}
@@ -50,22 +49,12 @@ STATIC_DL_HOOK_SYMBOL(
 	}
 	/* File starts with `resources/...`. Parse it as a Mini Path, then check if there's a real resource. */
 
-	MiniPath p;
-	parse_mini_path(&p, path);
-	if (p.type != RESOURCE) {
-		/* The engine tried to query for a non-resource file! That shouldn't happen... */
-		LOGW("Engine queried non-resource file '%s'", path);
+	mini_stat asset_stat;
+	miniF_stat(path, &asset_stat);
+	if (!(asset_stat.st_mode & S_IRUSR)) {
+//		LOGW("Engine queried non-resource file '%s'", path);
 		return false;
 	}
-
-	locate_resource(&p);
-	if (p.type == ERROR) {
-		/* Does not exist. */
-//		LOGW("Engine queried non-existent resource '%s'", p.path);
-		return false;
-	}
-
-//	LOGD("Engine found resource '%s' at '%s'", path, p.path);
 	return true;
 }
 
@@ -82,42 +71,29 @@ STATIC_DL_HOOK_SYMBOL(
 	 * Modified version should read path as MiniPath, and try it as a resource.
 	 */
 
-	MiniPath p;
-	parse_mini_path(&p, path);
-	if (p.type != RESOURCE) {
-		LOGW("Engine tried loading non-resource file '%s'", path);
-		goto error;
-	}
-
-	locate_resource(&p);
-	if (p.type == ERROR) {
-		LOGW("Engine tried loading non-existent resource '%s'", p.path);
-		goto error;
-	}
-
-	MiniFILE *file = miniP_fopen(&p, "rb");
+	MiniFILE *file = miniF_fopen(path, "rb");
 	if (file == NULL) {
 		LOGE("Error while opening resource '%s'", path);
 		goto error;
 	}
 
 	/* Move the file pointer to the end to determine the file size */
-	miniP_fseek(file, 0, SEEK_END);
-	size_t len = miniP_ftell(file);
-	miniP_fseek(file, 0, SEEK_SET); /* Move back to the beginning of the file */
+	miniF_fseek(file, 0, SEEK_END);
+	size_t len = miniF_ftell(file);
+	miniF_fseek(file, 0, SEEK_SET); /* Move back to the beginning of the file */
 
 	void *buffer = malloc(len);
 	if (buffer == NULL) {
 		LOGE("Out of memory while loading resource '%s'", path);
-		miniP_fclose(file);
+		miniF_fclose(file);
 		goto error;
 	}
 
 	/* TODO: Better to read in smaller increments? */
-	size_t read_bytes = miniP_fread(buffer, 1, len, file);
+	size_t read_bytes = miniF_fread(buffer, 1, len, file);
 	if (read_bytes != len) {
-		LOGE("Failed to read asset '%s': expected %li, got %li", path, len, read_bytes);
-		miniP_fclose(file);
+		LOGE("Failed to read asset '%s': expected %zu, got %zu", path, len, read_bytes);
+		miniF_fclose(file);
 		free(buffer);
 		goto error;
 	}
@@ -127,7 +103,7 @@ STATIC_DL_HOOK_SYMBOL(
 	LOGD("%s Resource loaded from %s: '%s'", sz,
 	     p.type == ASSET ? "assets" : "file", path);
 
-	miniP_fclose(file);
+	miniF_fclose(file);
 	*out_len = (int) read_bytes;
 	return buffer;
 
