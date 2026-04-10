@@ -18,12 +18,6 @@ typedef struct {
 } Vector3;
 
 STATIC_DL_FUNCTION_SYMBOL(
-	EntityCompnent__Interface,
-	"_ZN5Caver15EntityComponent9InterfaceEv",
-	void*, ()
-)
-
-STATIC_DL_FUNCTION_SYMBOL(
 	GameSceneController__CreateHeroObjectAt,
 	"_ZN5Caver19GameSceneController18CreateHeroObjectAtERKNS_7Vector3Eib",
 	void, (void *this, Vector3 *location, int facing_direction, bool addToScene)
@@ -63,7 +57,7 @@ int recreate_hero(lua_State *L) {
 	Vector3 *pos = $(Vector3, hero, 0x40, 0x70);
 
 	// This offset is in the CreateHeroObjectAt call.
-	void *component = ComponentWithInterface(hero, EntityCompnent__Interface);
+	void *component = SceneObject_ComponentWithInterface(hero, EntityComponent_Interface);
 	int current_direction = *$(int, component, 0x3c, 0x70);
 	LOGD("Direction? %i", current_direction);
 
@@ -78,6 +72,5 @@ int recreate_hero(lua_State *L) {
 }
 
 void init_lua_recreate_hero() {
-	dlsym_EntityCompnent__Interface();
 	dlsym_GameSceneController__CreateHeroObjectAt();
 }

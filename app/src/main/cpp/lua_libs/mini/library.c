@@ -10,18 +10,6 @@
 
 #include <stddef.h>
 
-static int lua_coin_limit(lua_State *L) {
-	lua_Integer n = luaL_checkinteger(L, 1);
-
-	if (n < 0 || n > 0xFFFF)
-		return luaL_error(L, "Coin Limit must be 0–65535");
-
-	unsigned short limit = (unsigned short) n;
-	miniCL_set(limit);
-
-	return 0;
-}
-
 static const luaL_Reg mini_lib[] = {
 	{"SetControlsHidden", setControlsHidden},
 	{"GetProfileID",      getProfileID},
@@ -33,9 +21,11 @@ static const luaL_Reg mini_lib[] = {
 
 //	{"ToggleDebug",       tdb},
 
-	{"SetCoinLimit",      lua_coin_limit},
+	{"SetCoinLimit",      miniCL_set_from_lua},
 
 	{"RecreateHero",      recreate_hero},
+
+	{"map",               the_map_function},
 
 //{ "TestGOV", test },
 //{ "TestGAO", test2 },
@@ -54,16 +44,22 @@ LUALIB_API int miniL_open_mini(lua_State *L) {
 	luaL_register(L, MINI_LIB_NAME, mini_lib);
 
 	miniL_open_health(L);
+	miniL_open_character(L);
+
+	init_the_map_function();
+
+	miniL_register_components_library(L);
 
 	return 1;
 }
 
 void init_mini_lua_lib() {
 	init_setControlsHidden();
-	init_profileId();
 	init_scene_find_all();
 	init_lua_debug();
 	init_lua_recreate_hero();
 
-	init_lua_health();
+	init_lua_character();
+	init_the_map_function();
+	miniL_init_components();
 }

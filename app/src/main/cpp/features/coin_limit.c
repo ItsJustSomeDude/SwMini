@@ -16,6 +16,18 @@ unsigned short current_coin_limit = 999;
 
 unsigned short current_too_rich = 999;
 
+int miniCL_set_from_lua(lua_State *L) {
+	lua_Integer n = luaL_checkinteger(L, 1);
+
+	if (n < 0 || n > 0xFFFF)
+		return luaL_error(L, "Coin Limit must be 0–65535");
+
+	unsigned short limit = (unsigned short) n;
+	miniCL_set(limit);
+
+	return 0;
+}
+
 void miniCL_set_default(unsigned short limit) {
 	default_coin_limit = limit;
 	miniCL_set(limit);

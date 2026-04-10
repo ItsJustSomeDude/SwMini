@@ -11,12 +11,6 @@
 
 #define LOG_TAG "MiniLuaHealth"
 
-STATIC_DL_FUNCTION_SYMBOL(
-	mana_component_interface,
-	"_ZN5Caver13ManaComponent9InterfaceEv",
-	void, (void)
-)
-
 static int current_mana(lua_State *L) {
 	void *prog_state = program_state_from_L(L);
 	SceneObject **object = lua_touserdata(L, 1);
@@ -25,7 +19,7 @@ static int current_mana(lua_State *L) {
 	if (object == NULL || *object == NULL)
 		return 0;
 
-	void *mana_component = ComponentWithInterface(*object, mana_component_interface);
+	void *mana_component = SceneObject_ComponentWithInterface(*object, ManaComponent_Interface);
 	if (mana_component == NULL)
 		return 0;
 
@@ -44,7 +38,7 @@ static int current_mana_percent(lua_State *L) {
 	if (object == NULL || *object == NULL)
 		return 0;
 
-	void *mana_component = ComponentWithInterface(*object, mana_component_interface);
+	void *mana_component = SceneObject_ComponentWithInterface(*object, ManaComponent_Interface);
 	if (mana_component == NULL)
 		return 0;
 
