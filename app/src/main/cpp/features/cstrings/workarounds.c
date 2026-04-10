@@ -14,21 +14,21 @@
 void setup_ui_attack_patch() {
 
 #ifdef __arm__
-	// To find this offset, go into the function Caver::CharacterView::InitWithGameState and find
-	// the string "Attack". In the disassembly, go up a couple instructions from the `bl` and find
-	// the `ldr`. Follow the "DAT" referenced by the `ldr` instruction, and it will lead to a table
-	// entry. Use the offset and value of this referenced entry. Remember to swap endianness of the value.
-	// Increment the value by 1 to shift the string.
+	/* To find this offset, go into the function Caver::CharacterView::InitWithGameState and find
+	 * the string "Attack". In the disassembly, go up a couple instructions from the `bl` and find
+	 * the `ldr`. Follow the "DAT" referenced by the `ldr` instruction, and it will lead to a table
+	 * entry. Use the offset and value of this referenced entry. Remember to swap endianness of the value.
+	 * Increment the value by 1 to shift the string. */
 
 	uint32_t new_value = 0x0016F3F5;
 	write_in_library(0x2bc350, &new_value, 4);
 
 #elif defined(__aarch64__)
-	// To find this offset, go into the function Caver::CharacterView::InitWithGameState and find
-	// the string "Attack". In the disassembly, go up a couple instructions from the `bl` and find
-	// the `add` right after the `adrp`.
-	// Get the offset of that `add` instruction, and also replicate the operands in this call.
-	// Increment the immediate value by 1 to shift the string.
+	/* To find this offset, go into the function Caver::CharacterView::InitWithGameState and find
+	 * the string "Attack". In the disassembly, go up a couple instructions from the `bl` and find
+	 * the `add` right after the `adrp`.
+	 * Get the offset of that `add` instruction, and also replicate the operands in this call.
+	 * Increment the immediate value by 1 to shift the string. */
 
 	uint32_t new_instruction = emit_add_immediate(true, false, 0xef7, 1, 1);
 	LOGD("ADD: %x", new_instruction);
@@ -40,7 +40,7 @@ void setup_ui_attack_patch() {
 }
 
 void setup_ui_health_patch() {
-	// See "setup_ui_attack_patch" above.
+	/* See "setup_ui_attack_patch" above. */
 
 #ifdef __arm__
 	uint32_t new_value = 0x0016f3b4;
