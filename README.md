@@ -1,5 +1,4 @@
 # SwMini
----
 
 SwMini is a Mod Loader, Library, and Patch Set for the mobile game Swordigo® by TouchFoo™. It adds
 the ability to easily change hard-coded vanilla features, expands the Vanilla Lua libraries, improve
@@ -27,7 +26,6 @@ explore many areas, collect weapons, trinkets, and spells, and defeat a multitud
 powerful bosses.
 
 ## Features
----
 
 ### Lua Expansion
 
@@ -180,7 +178,6 @@ inside SwMini. For Advanced usage only.
 -->
 
 ## Credits
----
 
 ### Game
 
