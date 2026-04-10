@@ -28,13 +28,13 @@ void create_achievement(
 	CppString *cpp_desc = NULL;
 	CppString *cpp_counter = NULL;
 
-	create_basic_string(&cpp_id, id);
-	create_basic_string(&cpp_name, name);
-	create_basic_string(&cpp_desc, desc);
+	CppString_create(&cpp_id, id);
+	CppString_create(&cpp_name, name);
+	CppString_create(&cpp_desc, desc);
 	if (counter == NULL) {
-		create_basic_string(&cpp_counter, "");
+		CppString_create(&cpp_counter, "");
 	} else {
-		create_basic_string(&cpp_counter, counter);
+		CppString_create(&cpp_counter, counter);
 	}
 
 	// Allocate the achievement on the stack
@@ -44,6 +44,11 @@ void create_achievement(
 		&cpp_id, &cpp_name, &cpp_desc, points,
 		&cpp_counter, threshold
 	);
+
+	CppString_release(cpp_id);
+	CppString_release(cpp_name);
+	CppString_release(cpp_desc);
+	CppString_release(cpp_counter);
 
 	void *target_func = engine_offset_ptr(0x289ef6);
 

@@ -56,7 +56,7 @@ STATIC_DL_HOOK_SYMBOL(
 		if (k != kh_end(models)) {
 			// Found!
 			CppString *cpp_model = NULL;
-			create_basic_string(&cpp_model, kh_val(models, k));
+			CppString_create(&cpp_model, kh_val(models, k));
 			out = cpp_model;
 			_return;
 		}
@@ -65,7 +65,7 @@ STATIC_DL_HOOK_SYMBOL(
 
 	// No or unknown item.
 	CppString *cpp_default_model = NULL;
-	create_basic_string(&cpp_default_model, default_model);
+	CppString_create(&cpp_default_model, default_model);
 	out = cpp_default_model;
 	_return;
 }

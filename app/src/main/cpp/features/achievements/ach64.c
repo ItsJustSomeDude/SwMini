@@ -329,13 +329,14 @@ void create_achievement(
 	CppString *cpp_desc = NULL;
 	CppString *cpp_counter = NULL;
 
-	create_basic_string(&cpp_id, id);
-	create_basic_string(&cpp_name, name);
-	create_basic_string(&cpp_desc, desc);
+	CppString_create(&cpp_id, id);
+	CppString_create(&cpp_name, name);
+	CppString_create(&cpp_desc, desc);
+
 	if (counter == NULL) {
-		create_basic_string(&cpp_counter, "");
+		CppString_create(&cpp_counter, "");
 	} else {
-		create_basic_string(&cpp_counter, counter);
+		CppString_create(&cpp_counter, counter);
 	}
 
 	// Allocate the achievement on the stack
@@ -346,8 +347,15 @@ void create_achievement(
 		&cpp_counter, threshold
 	);
 
-//	uintptr_t frame_size = 0x740;           // bytes, ≥ 0, multiple of 16
+	CppString_release(cpp_id);
+	CppString_release(cpp_name);
+	CppString_release(cpp_desc);
+	CppString_release(cpp_counter);
+
 	void *target_func = engine_offset_ptr(0x377670);
+
+	// Stack Frame size (hardcoded in asm to save a register): #0x740
+	// bytes, ≥ 0, multiple of 16
 
 	asm volatile (
 		// Store all the things in registers, I'm about to clobber the whole stack!
@@ -400,7 +408,7 @@ void create_achievement(
 		: "r"(shared_achievement_manager), "r"(cpp_name), "r"(cpp_id), "r"(cpp_counter),
 	"r"(&input_achievement),
 	/* Empty Basic String pointer in BSS. Cannot be a local variable due to stack destruction. */
-	"r"(engine_bss_offset_ptr(0x14880)),
+	"r"(CppString_s_empty),
 	"r"(target_func)
 		: "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10",
 	"x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26", "x27", "x28",
