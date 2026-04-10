@@ -1,10 +1,10 @@
 /* clang-format off */
 #include "mini.h" /* clang-format on */
 
-#include "caver/component.h"
-#include "hooks.h"
+#include "caver/components.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
-#include "log.h"
+#include "core/log.h"
 #include "lua.h"
 
 #include <stdbool.h>

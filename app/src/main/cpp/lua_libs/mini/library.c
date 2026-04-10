@@ -5,6 +5,8 @@
 #include "lua.h"
 #include "luaconf.h"
 #include "mini.h"
+#include "lua_libs/mini/character/exp.h"
+#include "lua_libs/mini/components/components.h"
 
 #include <stddef.h>
 

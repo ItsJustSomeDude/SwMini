@@ -1,8 +1,8 @@
-#include "java.h"
+#include "core/java.h"
 #include "jni.h"
 #include "lauxlib.h"
 #include "lni.h"
-#include "log.h"
+#include "core/log.h"
 #include "lua.h"
 
 #include <stdlib.h>
@@ -10,7 +10,7 @@
 #define LOG_TAG "MiniLuaLNIExecute"
 
 int lni_execute(lua_State *L) {
-	JNIEnv *env = get_jni_env();
+	JNIEnv *env = miniJ_get_env();
 	if (!env) {
 		LOGE("Failed to get JNI Env");
 		return 0;

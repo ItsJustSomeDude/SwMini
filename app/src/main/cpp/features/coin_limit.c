@@ -2,8 +2,10 @@
 
 #include "assembly/arm64.h"
 #include "assembly/thumb.h"
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
+#include "lua.h"
+#include "lauxlib.h"
 
 #include <stdint.h>
 
@@ -19,7 +21,7 @@ void miniCL_set_default(unsigned short limit) {
 	miniCL_set(limit);
 }
 
-void miniCL_reset() {
+void miniCL_reset(void) {
 	miniCL_set(default_coin_limit);
 }
 
@@ -136,8 +138,4 @@ void miniCL_set_too_rich(unsigned short amount) {
 #endif
 
 	LOGD("TooRich amount set to %i", amount);
-}
-
-void initF_coin_limit() {
-	//
 }

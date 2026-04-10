@@ -1,8 +1,8 @@
 #ifndef NEEDLE_ACHIEVEMENTS_H
 #define NEEDLE_ACHIEVEMENTS_H
 
-#include "features/cstrings/cstrings.h"
-#include "hooks.h"
+#include "core/cpp_strings.h"
+#include "core/hooks.h"
 
 // All we really need is the size + padding, but this should be the actual structure layout.
 typedef struct {
@@ -29,7 +29,5 @@ void create_achievement(
 );
 
 void miniACH_register();
-
-void init_feature_achievements();
 
 #endif //NEEDLE_ACHIEVEMENTS_H

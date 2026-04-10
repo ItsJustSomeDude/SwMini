@@ -1,9 +1,9 @@
 #include "armor_models.h"
 
-#include "features/cstrings/cstrings.h"
-#include "hooks.h"
+#include "core/cpp_strings.h"
+#include "core/hooks.h"
 #include "libs/khash.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <stdlib.h>
 #include <string.h>

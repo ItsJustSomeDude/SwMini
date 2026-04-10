@@ -18,7 +18,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "features/mini_files/patched_functions.h"
+#include "core/files/patched/stdio.h"
 
 
 static int os_pushresult(lua_State *L, int i, const char *filename) {

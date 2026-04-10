@@ -1,7 +1,7 @@
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
 #include "lua.h"
-#include "patches.h"
+#include "init/patches.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -151,7 +151,7 @@ STATIC_DL_HOOK_SYMBOL(
 	}
 }
 
-void init_patch_panic() {
+void initP_lua_panic() {
 	LOGD("Applying Lua Panic patch");
 
 	dlsym_getSpeedMultiplier();

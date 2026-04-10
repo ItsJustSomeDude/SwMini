@@ -1,4 +1,3 @@
-
 #ifndef SWMINI_LOG_H
 #define SWMINI_LOG_H
 
@@ -15,12 +14,6 @@
 #else
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 //#define LOGD(...)
-#endif //NDK_DEBUG
+#endif /* NDK_DEBUG */
 
-int spawn_log_threads();
-
-// Max length of log messages
-// Longer than this will get split.
-#define LOG_BUFFER_SIZE 1024
-
-#endif //SWMINI_LOG_H
+#endif /* SWMINI_LOG_H */

@@ -9,4 +9,4 @@ toml_table_t *miniC_open_file(const char *file_mini_path);
 
 toml_table_t *miniC_open_config(const char *filename);
 
-#endif //NEEDLE_CONFIG_H
+#endif /* NEEDLE_CONFIG_H */

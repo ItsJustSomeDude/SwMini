@@ -21,8 +21,6 @@ void *branch_within_engine(long from, long to, bool use_small_instruction);
 
 void write_in_library(long offset, void *data, size_t size);
 
-void setup_hooks();
-
 /**
  * This file defines macros to help call and hook functions from dynamically loaded libraries.
  */

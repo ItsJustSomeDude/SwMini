@@ -1,7 +1,10 @@
-#include "hooks.h"
+#include "core/hooks.h"
+#include "offsets/cpp_strings.h"
+#include "core/cpp_strings.h"
+#include "init/features.h"
 
 #include "cstrings.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <string.h>
 
@@ -89,7 +92,7 @@ STATIC_DL_HOOK_OFFSET(
 	}
 }
 
-void init_feature_cstrings() {
+void initF_cstrings() {
 	LOGD("Applying CString Replacement patch");
 
 //	cstrings_add_replacement("Saved Games", "Hooks are working.");

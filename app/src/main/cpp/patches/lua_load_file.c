@@ -1,11 +1,11 @@
 #include <string.h>
 #include <errno.h>
-#include "patches.h"
-#include "hooks.h"
+#include "init/patches.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
-#include "log.h"
-#include "features/mini_files/mini_files.h"
-#include "features/mini_files/patched_functions.h"
+#include "core/log.h"
+#include "core/impl_files/mini_file.h"
+#include "core/files/patched/stdio.h"
 
 #define LOG_TAG "MiniLoadFile"
 
@@ -108,6 +108,6 @@ STATIC_DL_HOOK_ADDR(
 	return status;
 }
 
-void initP_lua_load_file() {
+void initP_lua_loadfile() {
 	hook_load_file();
 }

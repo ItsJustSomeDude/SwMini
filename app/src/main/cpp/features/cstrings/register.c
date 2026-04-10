@@ -2,7 +2,7 @@
 #include "cstrings.h" /* clang-format on */
 
 #include "libs/khash.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <jni.h>
 #include <stdbool.h>

@@ -2,12 +2,12 @@
 
 #include "hooks.h"
 #include "log.h"
-#include "main.h"
+#include "init/core.h"
 
 #include <dlfcn.h>
 
 #define LOG_TAG "MiniLuaCore"
-#endif //ROCK_BUILDER
+#endif /* ROCK_BUILDER */
 
 #include "lua.h"
 #include "lua/lauxlib.h"
@@ -22,7 +22,7 @@
  * This is needed due to dynamic loading and C++ name mangling.
  */
 
-// Core
+/* Core */
 
 lua_State *(*lua_newstate)(lua_Alloc f, void *ud);
 void (*lua_close)(lua_State *L);
@@ -144,8 +144,7 @@ void (*luaL_addstring)(luaL_Buffer *B, const char *s);
 void (*luaL_addvalue)(luaL_Buffer *B);
 void (*luaL_pushresult)(luaL_Buffer *B);
 
-
-// Special - These are the bundled libs:
+/* Special - These are the bundled libs: */
 
 int (*luaopen_base)(lua_State *L);
 int (*luaopen_string)(lua_State *L);
@@ -161,10 +160,10 @@ static void *lua_sym(const char *mangled_symbol) {
 	return addr;
 }
 
-int init_lua() {
-	// Bash command to generate this load blob:
-	// nm -gD libswordigo.so | grep -P '_Z..?lua.+' | while read; do sym="$(awk '{ print $3 }' <<<"$REPLY")"; var="$(c++filt -pi <<<"$sym")"; echo -e "\t${var} = lua_sym(\"${sym}\");"; done
-	// It's different between 32 and 64, so make sure to update both.
+void initC_lua(void) {
+	/* Bash command to generate this load blob:
+		nm -gD lib.so | grep -P '_Z..?lua.+' | while read; do sym="$(awk '{ print $3 }' <<<"$REPLY")"; var="$(c++filt -pi <<<"$sym")"; echo -e "\t${var} = lua_sym(\"${sym}\");"; done
+	 * It's different between 32 and 64, so make sure to update both. */
 
 #if defined(__aarch64__)
 	LOGD("Loading vanilla Lua functions, 64bit mode.");
@@ -405,8 +404,6 @@ int init_lua() {
 	lua_xmove = lua_sym("_Z9lua_xmoveP9lua_StateS0_i");
 	lua_yield = lua_sym("_Z9lua_yieldP9lua_Statei");
 #endif
-
-	return 0;
 }
 
-#endif //ROCK_BUILDER
+#endif /* ROCK_BUILDER */

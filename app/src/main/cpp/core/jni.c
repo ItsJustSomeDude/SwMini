@@ -1,20 +1,20 @@
 #include "java.h"
 #include "main.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <jni.h>
-#include <pthread.h> // For thread-local storage if needed
+#include <pthread.h>
 #include <stddef.h>
 
 #define LOG_TAG "MiniJNI"
 
-JavaVM *g_jvm = NULL;
+JavaVM *miniJ_jvm = NULL;
 
 // Thread-local flag to track attachment (optional, for detach logic)
 static pthread_key_t s_thread_key;
 
 static void thread_destructor(void *data) {
-	if (data) detach_jni_thread();
+	if (data) miniJ_detach_thread();
 }
 
 static void init_thread_key() {
@@ -22,7 +22,7 @@ static void init_thread_key() {
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-	g_jvm = vm;
+	miniJ_jvm = vm;
 
 	JNIEnv *env = NULL;
 	if ((*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_6) != JNI_OK) return JNI_ERR;
@@ -44,13 +44,13 @@ Java_net_itsjustsomedude_swrdg_NativeBridge_lateLoad(JNIEnv *env, jclass clazz) 
 	lateLoad();
 }
 
-JNIEnv *get_jni_env() {
+JNIEnv *miniJ_get_env() {
 	JNIEnv *env = NULL;
-	if ((*g_jvm)->GetEnv(g_jvm, (void **) &env, JNI_VERSION_1_6) == JNI_OK) {
+	if ((*miniJ_jvm)->GetEnv(miniJ_jvm, (void **) &env, JNI_VERSION_1_6) == JNI_OK) {
 		return env;  // Already attached
 	}
 	// Attach (as daemon for background threads)
-	jint result = (*g_jvm)->AttachCurrentThread(g_jvm, &env, NULL);
+	jint result = (*miniJ_jvm)->AttachCurrentThread(miniJ_jvm, &env, NULL);
 	if (result != JNI_OK) return NULL;
 
 	// Mark as attached for later detach (optional)
@@ -59,7 +59,7 @@ JNIEnv *get_jni_env() {
 	return env;
 }
 
-void detach_jni_thread() {
-	(*g_jvm)->DetachCurrentThread(g_jvm);
+void miniJ_detach_thread() {
+	(*miniJ_jvm)->DetachCurrentThread(miniJ_jvm);
 	pthread_setspecific(s_thread_key, NULL);
 }

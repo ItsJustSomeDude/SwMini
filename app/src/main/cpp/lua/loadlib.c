@@ -18,8 +18,8 @@
 #include "lua.h"
 #include "lualib.h"
 /* Mini */
-#include "features/mini_files/patched_functions.h"
-#include "log.h"
+#include "core/files/patched/stdio.h"
+#include "core/log.h"
 #include "luaconf.h"
 
 #define LOG_TAG "LuaM_loadlib"

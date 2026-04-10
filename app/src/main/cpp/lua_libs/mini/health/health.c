@@ -1,10 +1,10 @@
 #include "health.h"
 
 #include "../sublib.h"
-#include "caver/component.h"
+#include "caver/components.h"
 #include "caver/program_state.h"
 #include "caver/scene_object.h"
-#include "hooks.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
 
 #include <stddef.h>
@@ -64,8 +64,4 @@ static const luaL_Reg health_lib[] = {
 
 void miniL_open_health(lua_State *L) {
 	miniL_register(L, MINI_HEALTH_LIB_NAME, health_lib);
-}
-
-void init_lua_health() {
-	dlsym_mana_component_interface();
 }

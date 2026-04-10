@@ -3,7 +3,7 @@
 #include "assembly/arm64.h"
 #include "assembly/thumb.h"
 #include "libs/Gloss.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <dlfcn.h>
 
@@ -120,7 +120,7 @@ void *branch_within_engine(long from, long to, bool use_small_instruction) {
 #endif
 }
 
-void setup_hooks() {
+void initC_engine() {
 	engine_dl_handle = dlopen("libswordigo.so", RTLD_NOLOAD);
 
 	// Fetch the Library Base Offset by capturing a symbol, getting the Symbol Info, and reading the base from there.

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "init/core.h"
 
 #define LOG_TAG "LogThreads"
 
@@ -79,12 +80,10 @@ void *start_stderr_thread(void *_handle) {
 static pthread_t stdout_thread;
 static pthread_t stderr_thread;
 
-int spawn_log_threads() {
+void initC_logging(void) {
 	pthread_create(&stdout_thread, 0, start_stdout_thread, 0);
 	pthread_detach(stdout_thread);
 
 	pthread_create(&stderr_thread, 0, start_stderr_thread, 0);
 	pthread_detach(stderr_thread);
-
-	return 0;
 }

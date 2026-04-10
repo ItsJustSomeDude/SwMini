@@ -1,8 +1,8 @@
 #ifdef __arm__
 
-#include "hooks.h"
-#include "log.h"
-#include "patches.h"
+#include "core/hooks.h"
+#include "core/log.h"
+#include "init/patches.h"
 
 #define LOG_TAG "Mini32Patch"
 
@@ -78,7 +78,7 @@ STATIC_DL_HOOK_SYMBOL(
 	return ret;
 }
 
-void init_patch_32bit() {
+void initP_program_32bit() {
 	LOGD("Applying 32bit Program::Bytes patch");
 
 	default_proto_string = engine_bss_offset_ptr(0x180);

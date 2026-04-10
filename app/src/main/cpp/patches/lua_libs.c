@@ -1,12 +1,12 @@
-#include "hooks.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
-#include "log.h"
+#include "core/log.h"
 #include "lua.h"
 #include "lua_libs/lfs.h"
 #include "lua_libs/mini/mini.h"
 #include "lualib.h"
-#include "luasocket/src/luasocket.h"
-#include "patches.h"
+#include "libs/luasocket/src/luasocket.h"
+#include "init/patches.h"
 
 #include <stddef.h>
 
@@ -16,7 +16,6 @@ static const luaL_Reg lualibs[] = {
 	// We cannot load base, it gets loaded by vanilla.
 	// {"", luaopen_base},
 
-	// Not adding package for now.
 	{LUA_LOADLIBNAME, luaopen_package},
 
 	{LUA_TABLIBNAME,  luaopen_table},
@@ -79,7 +78,7 @@ STATIC_DL_HOOK_ADDR(openString, luaopen_string, void, (lua_State * L)) {
 // lua_pop(L, 1);
 }
 
-void init_patch_lua_libs() {
+void initP_lua_register() {
 	LOGD("Applying Lua Library Loading patch, at address %p", luaopen_string);
 
 	hook_openString();

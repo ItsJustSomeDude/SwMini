@@ -1,4 +1,4 @@
-#include "log.h"
+#include "core/log.h"
 
 #include <asm/fcntl.h>
 #include <asm/signal.h>

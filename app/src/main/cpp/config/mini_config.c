@@ -1,11 +1,11 @@
 #include "mini_config.h"
 
-#include "armor_models.h"
-#include "coin_limit.h"
-#include "config.h"
-#include "java.h"
+#include "features/armor_models.h"
+#include "features/coin_limit.h"
+#include "config/config.h"
+#include "core/java.h"
 #include "libs/toml/toml.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <jni.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 
 void read_mini_config_asset() {
 	const char *asset_path = "mini.toml";
-	JNIEnv *env = get_jni_env();
+	JNIEnv *env = miniJ_get_env();
 
 	toml_table_t *tbl = miniC_open_asset(asset_path);
 	if (tbl == NULL) return;

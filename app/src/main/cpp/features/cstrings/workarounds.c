@@ -2,8 +2,8 @@
 #include "cstrings.h" /* clang-format on */
 
 #include "assembly/arm64.h"
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
 
 #include <stdbool.h>
 #include <stdint.h>

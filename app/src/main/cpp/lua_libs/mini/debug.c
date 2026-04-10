@@ -1,8 +1,8 @@
 /* clang-format off */
 #include "mini.h" /* clang-format on */
 
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
 #include "lua.h"
 
 #define LOG_TAG "MiniLuaDebug"

@@ -2,9 +2,8 @@
 
 #include "achievements.h"
 #include "assembly/arm64.h"
-#include "features/cstrings/cstrings.h"
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -431,7 +430,7 @@ STATIC_DL_HOOK_SYMBOL(
 	LOGD("Done. %p", this);
 }
 
-void init_feature_achievements() {
+void initF_achievements(void) {
 	dlsym_achievement_init();
 	hook_achievement_manager_init();
 

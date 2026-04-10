@@ -7,8 +7,6 @@
 ** (http://lunarmodules.github.io/luafilesystem)
 */
 
-#include "features/mini_files/patched_functions.h"
-
 #ifndef LFS_DO_NOT_USE_LARGE_FILE
 #ifndef _WIN32
 #ifndef _AIX
@@ -75,7 +73,10 @@
 #include "lualib.h"
 
 #include "lfs.h"
-#include "log.h"
+#include "core/log.h"
+#include "core/files/patched/stdio.h"
+#include "core/files/patched/stat.h"
+#include "core/files/patched/dirent.h"
 
 #define LOG_TAG "MiniLFS"
 

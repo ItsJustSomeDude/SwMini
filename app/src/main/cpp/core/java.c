@@ -1,6 +1,6 @@
 #include "java.h"
 
-#include "jni.h"
+#include <jni.h>
 
 jclass g_StringWriter;
 jmethodID g_StringWriter_init;
@@ -13,8 +13,8 @@ jclass g_Arrays;
 jmethodID g_Arrays_copyOfRange;
 
 /** Create references to all the Java classes and Methods we're going to need. */
-void cache_classes() {
-	JNIEnv *env = get_jni_env();
+void initC_jni() {
+	JNIEnv *env = miniJ_get_env();
 
 	g_StringWriter = (*env)->NewGlobalRef(env, (*env)->FindClass(env, "java/io/StringWriter"));
 	g_StringWriter_init = (*env)->GetMethodID(env, g_StringWriter, "<init>", "()V");

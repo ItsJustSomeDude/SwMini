@@ -2,8 +2,9 @@
 
 #include "achievements.h"
 #include "assembly/thumb.h"
-#include "hooks.h"
-#include "log.h"
+#include "core/hooks.h"
+#include "core/log.h"
+#include "init/features.h"
 
 #define LOG_TAG "MiniAchievements"
 
@@ -146,7 +147,7 @@ STATIC_DL_HOOK_SYMBOL(
 }
 
 
-void init_feature_achievements() {
+void initF_achievements() {
 	dlsym_achievement_init();
 
 	hook_achievement_manager_init();

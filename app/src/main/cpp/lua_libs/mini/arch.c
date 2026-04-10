@@ -1,4 +1,4 @@
-#include "hooks.h"
+#include "core/hooks.h"
 #include "lua.h"
 
 int get_arch(lua_State *L) {

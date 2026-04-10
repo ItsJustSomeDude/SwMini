@@ -1,7 +1,7 @@
 #include "config.h"
 
-#include "global.h"
-#include "log.h"
+#include "core/log.h"
+#include "core/assets.h"
 
 #include <android/asset_manager.h>
 #include <stdlib.h>

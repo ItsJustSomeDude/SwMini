@@ -1,12 +1,9 @@
-#include "global.h"
-#include "hooks.h"
-#include "log.h"
-#include "lua_libs/mini/mini.h"
-#include "patches.h"
-#include "features/mini_files/patched_functions.h"
-#include "tools/files.h"
-#include "features/mini_files/mini_files.h"
-#include "features/mini_files/functions.h"
+#include "core/hooks.h"
+#include "core/log.h"
+#include "utils/files.h"
+#include "core/files/stdio.h"
+#include "init/patches.h"
+#include "core/files/stat.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -139,7 +136,7 @@ STATIC_DL_HOOK_SYMBOL(
 	return NULL;
 }
 
-void init_patch_assets() {
+void initP_external_assets() {
 	LOGD("Applying External Assets patch");
 
 	hook_openAsset();

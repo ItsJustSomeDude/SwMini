@@ -1,6 +1,5 @@
-#include "hooks.h"
-#include "log.h"
-#include "patches.h"
+#include "core/hooks.h"
+#include "core/log.h"
 
 #include <errno.h>
 #include <stdbool.h>

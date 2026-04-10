@@ -3,7 +3,7 @@
 
 #include "jni.h"
 #include "libs/khash.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <stdlib.h>
 #include <string.h>

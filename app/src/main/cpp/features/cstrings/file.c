@@ -1,8 +1,8 @@
-#include "config.h"
+#include "config/config.h"
 #include "cstrings.h"
-#include "features/engine_strings.h"
+#include "utils/byte_sequence.h"
 #include "libs/toml/toml.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <stdlib.h>
 

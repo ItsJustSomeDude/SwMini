@@ -1,9 +1,9 @@
 #include "achievements.h"
 
-#include "config.h"
-#include "features/engine_strings.h"
+#include "config/config.h"
+#include "utils/byte_sequence.h"
 #include "libs/toml/toml.h"
-#include "log.h"
+#include "core/log.h"
 
 #include <bits/strcasecmp.h>
 #include <stdlib.h>

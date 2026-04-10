@@ -1,7 +1,7 @@
 #ifndef NEEDLE_CSTRINGS_H
 #define NEEDLE_CSTRINGS_H
 
-#include "hooks.h"
+#include "core/hooks.h"
 
 #include <stdbool.h>
 

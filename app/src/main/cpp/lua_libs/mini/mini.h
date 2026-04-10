@@ -1,7 +1,7 @@
 #ifndef SWMINI_MINI_LUA_LIBRARY_H
 #define SWMINI_MINI_LUA_LIBRARY_H
 
-#include "hooks.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
 #include "lua.h"
 
@@ -12,7 +12,6 @@ void init_mini_lua_lib();
 void init_setControlsHidden();
 int setControlsHidden(lua_State *L);
 
-void init_profileId();
 int getProfileID(lua_State *L);
 
 int scene_find_all(lua_State *L);

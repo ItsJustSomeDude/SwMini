@@ -4,6 +4,7 @@
 ** See Copyright Notice in lua.h
 */
 
+#include "core/impl_files/mini_file.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -18,9 +19,11 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "features/mini_files/patched_functions.h"
-#include "features/mini_files/patched_std.h"
-#include "log.h"
+#include "core/files/patched/stdio.h"
+#include "core/files/patched/stdio_files.h"
+#include "core/log.h"
+#include "core/impl_files/backend_std/backend.h"
+#include "core/impl_files/backend_assets/backend.h"
 
 #define LOG_TAG "MiniLuaIOLib"
 

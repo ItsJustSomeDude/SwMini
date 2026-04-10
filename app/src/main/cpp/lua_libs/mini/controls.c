@@ -1,6 +1,6 @@
-#include "hooks.h"
+#include "core/hooks.h"
 #include "lauxlib.h"
-#include "log.h"
+#include "core/log.h"
 #include "lua.h"
 #include "mini.h"
 

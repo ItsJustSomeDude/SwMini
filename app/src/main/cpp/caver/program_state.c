@@ -1,6 +1,11 @@
 #include "program_state.h"
 
-#include "hooks.h"
+#include "init/engine.h"
+#include "core/hooks.h"
+#include "core/log.h"
+#include "lauxlib.h"
+
+#define LOG_TAG "MiniProgramState"
 
 DL_FUNCTION_SYMBOL(
 	program_state_from_L,
@@ -8,7 +13,7 @@ DL_FUNCTION_SYMBOL(
 	void*, (lua_State * L)
 )
 
-void init_caver_program_state() {
+void initE_program_state() {
 	dlsym_program_state_from_L();
 }
 
