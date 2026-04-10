@@ -25,4 +25,7 @@ void init_lua_debug();
 int recreate_hero(lua_State *L);
 void init_lua_recreate_hero();
 
+int the_map_function(lua_State *L);
+void init_the_map_function(void);
+
 #endif //SWMINI_MINI_LUA_LIBRARY_H
