@@ -29,20 +29,8 @@ MiniDIR *_Nullable assets_opendir(const char *path_string) {
 	out->assets_dir = dir;
 	out->backend = &backend_assets;
 
-	/* Create the fake structure that will be populated by reading. */
-	out->assets_dirent = malloc(sizeof(mini_dirent));
-	if (out->assets_dirent == NULL) {
-		errno = ENOMEM;
-		free(out);
-		return NULL;
-	}
-
 	/* Fill structure with empty data. */
-	out->assets_dirent->d_ino = 0;
-	out->assets_dirent->d_off = 0;
-	out->assets_dirent->d_reclen = sizeof(struct dirent);
-	out->assets_dirent->d_type = DT_UNKNOWN;
-	out->assets_dirent->d_name[0] = '\0';
+	out->dirent.d_name[0] = '\0';
 
 	return out;
 }
@@ -51,17 +39,16 @@ mini_dirent *_Nullable assets_readdir(MiniDIR *_Nonnull dir) {
 	const char *name = AAssetDir_getNextFileName(dir->assets_dir);
 	if (name == NULL) {
 		/* End of files in dir. Don't touch errno. */
-		dir->assets_dirent->d_name[0] = '\0';
+		dir->dirent.d_name[0] = '\0';
 		return NULL;
 	} else {
-		strncpy(dir->assets_dirent->d_name, name, sizeof(dir->assets_dirent->d_name));
+		strncpy(dir->dirent.d_name, name, sizeof(dir->dirent.d_name));
 	}
-	return dir->assets_dirent;
+	return &dir->dirent;
 }
 
 int assets_closedir(MiniDIR *_Nonnull dir) {
 	AAssetDir_close(dir->assets_dir);
-	free(dir->assets_dirent);
 	free(dir);
 	return 0;
 }

@@ -59,7 +59,7 @@ void miniP_parse(ParsedPath *out, const char *raw_path) {
 	} else if (strlcmp(path, "/Assets/") == 0) {
 		/* For "/Assets/", slice off the prefix */
 		const size_t prefix_len = strlen("/Assets/");
-		memmove(out->path, path + prefix_len, strlen(path) - prefix_len);
+		memmove(out->path, path + prefix_len, strlen(path) - prefix_len + 1);
 		out->backend = &backend_assets;
 
 	} else {

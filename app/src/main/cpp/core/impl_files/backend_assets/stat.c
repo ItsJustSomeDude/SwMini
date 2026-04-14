@@ -2,12 +2,15 @@
 
 #include "core/assets.h"
 #include "core/files/stat.h"
+#include "core/log.h"
 
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
 #include <android/asset_manager.h>
+
+#define LOG_TAG "MiniAssetsStat"
 
 int assets_stat(const char *path_string, mini_stat *_Nonnull buf) {
 	memset(buf, 0, sizeof(*buf));

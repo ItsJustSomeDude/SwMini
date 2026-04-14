@@ -2,6 +2,19 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project("SwMini Natives")
 
+find_program(IWYU_EXECUTABLE NAMES include-what-you-use iwyu)
+if(IWYU_EXECUTABLE)
+    set(CMAKE_C_INCLUDE_WHAT_YOU_USE
+        "${IWYU_EXECUTABLE};-Xiwyu;--ignore_re=/lua/"
+    )
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+        "${IWYU_EXECUTABLE};-Xiwyu;--ignore_re=/lua/"
+    )
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+else()
+    message(WARNING "IWYU executable not found, header dependencies will not be checked.")
+endif()
+
 add_library(mini SHARED
         main.c
 
@@ -152,14 +165,3 @@ target_link_libraries(mini
         log
         android
 )
-
-find_program(IWYU_EXECUTABLE include-what-you-use)
-if(IWYU_EXECUTABLE)
-    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE
-        include-what-you-use;
-        -Xiwyu;--ignore_re=\/lua\/;
-    )
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-else()
-    message(WARNING "IWYU Executable not found, header dependencies will not be checked.")
-endif()

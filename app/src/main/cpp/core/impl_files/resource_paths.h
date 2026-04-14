@@ -45,6 +45,6 @@ extern ResPaths *_Nonnull global_res_paths;
 
 void miniR_refresh_paths(void);
 
-void miniR_locate_resource(ParsedPath *out, const char *_Nonnull path);
+void miniR_locate_resource(ParsedPath *_Nonnull out, const char *_Nonnull path);
 
 #endif /* NEEDLE_RESOURCE_PATHS_H */

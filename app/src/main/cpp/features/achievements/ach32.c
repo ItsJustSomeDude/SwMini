@@ -107,6 +107,9 @@ void create_achievement(
 		"add r9, sp, #0x30\n\t"
 		"add r11, sp, #0x4c\n\t" // 0x48 + 0x4
 
+		// Save the value of r7 to just some odd place on the stack.
+		"str r7, [sp, #0x16]\n\t"
+
 		// Place the return address into r7, as it appears it is never used.
 		"adr r7, after_call\n\t"
 
@@ -119,12 +122,16 @@ void create_achievement(
 		"blx r10\n\t"
 
 		"after_call:\n\t"
+
+		// Restore r7
+		"ldr r7, [sp, #0x16]\n\t"
+
 		// Remove the stack frame.
 		"add sp, sp, #0x3c0\n\t"
 
 		: // No outputs.
 		: "r"(shared_achievement_manager), "r"(&input_achievement), "r"(target_func)
-		: "r0", "r1", "r10", "r12", "r4", "r5", "r8", "r9", "r11", "r7", "memory"
+		: "r0", "r1", "r4", "r5", "r8", "r9", "r10", "r11", "r12", "memory"
 		);
 
 	// Stack frame was cleaned up already. ALL registers should be considered clobbered, but since

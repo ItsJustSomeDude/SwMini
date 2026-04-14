@@ -50,8 +50,8 @@ STATIC_DL_HOOK_SYMBOL(
 	/* File starts with `resources/...`. Parse it as a Mini Path, then check if there's a real resource. */
 
 	mini_stat asset_stat;
-	miniF_stat(path, &asset_stat);
-	if (!(asset_stat.st_mode & S_IRUSR)) {
+	int sr = miniF_stat(path, &asset_stat);
+	if (sr != 0 || !(asset_stat.st_mode & S_IRUSR)) {
 //		LOGW("Engine queried non-resource file '%s'", path);
 		return false;
 	}
@@ -98,10 +98,11 @@ STATIC_DL_HOOK_SYMBOL(
 		goto error;
 	}
 
+#ifdef NDK_DEBUG
 	char sz[32];
 	format_bytes(sz, sizeof(sz), len);
-	LOGD("%s Resource loaded from %s: '%s'", sz,
-	     p.type == ASSET ? "assets" : "file", path);
+	LOGD("%s Resource loaded: '%s'", sz, path);
+#endif
 
 	miniF_fclose(file);
 	*out_len = (int) read_bytes;

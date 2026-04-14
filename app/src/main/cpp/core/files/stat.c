@@ -1,3 +1,4 @@
+#include <string.h>
 #include "core/files/stat.h"
 
 #include "core/impl_files/path_parser.h"
@@ -6,6 +7,8 @@
 #define LOG_TAG "MiniFilesStat"
 
 int miniF_stat(const char *path_string, mini_stat *_Nonnull buf) {
+	memset(buf, 0, sizeof(mini_stat));
+
 	ParsedPath path;
 	miniP_parse(&path, path_string);
 
@@ -17,6 +20,8 @@ int miniF_stat(const char *path_string, mini_stat *_Nonnull buf) {
 }
 
 int miniF_lstat(const char *path_string, mini_stat *_Nonnull buf) {
+	memset(buf, 0, sizeof(mini_stat));
+
 	ParsedPath path;
 	miniP_parse(&path, path_string);
 
