@@ -23,7 +23,7 @@ STATIC_DL_FUNCTION_SYMBOL(
 	void*, (lua_State * L)
 )
 
-int scene_find_all(lua_State *L) {
+int miniLL_scene_find_all(lua_State *L) {
 	// Get the scene on the top of the stack.
 	lua_getglobal(L, "scene");
 	if (!lua_islightuserdata(L, -1)) {
@@ -122,7 +122,7 @@ int scene_find_all(lua_State *L) {
 	return 0;
 }
 
-void init_scene_find_all() {
+void initLL_scene_find_all() {
 	dlsym_mapIterHelper();
 	dlsym_pushSceneObject();
 	dlsym_progStateFromL();

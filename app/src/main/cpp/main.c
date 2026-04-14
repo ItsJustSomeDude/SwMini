@@ -1,4 +1,4 @@
-#include "main.h"
+#include "init/main.h"
 
 #include "config/mini_config.h"
 #include "libs/Gloss.h"
@@ -11,6 +11,7 @@
 #include "init/engine.h"
 #include "init/events.h"
 #include "core/impl_files/resource_paths.h"
+#include "init/lua_libs.h"
 
 #include <stdbool.h>
 
@@ -60,7 +61,7 @@ void midLoad() {
 
 	/* Patches */
 	initP_lua_panic();
-	initP_lua_register();
+	initP_program_state();
 	initP_lua_loadfile();
 	initP_external_assets();
 
@@ -76,9 +77,16 @@ void midLoad() {
 	/* Events */
 	initEV_profile();
 
-	/* Misc stuff... */
-	init_mini_lua_lib();
+	/* Lua Libraries */
+	initLL_set_controls_hidden();
+	initLL_debug();
+	initLL_recreate_hero();
+	initLL_map_function();
+	initLL_character();
 
+	initLL_components();
+
+	/* Misc Init stuff that needs to move eventually. */
 	read_mini_config_asset();
 }
 

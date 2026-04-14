@@ -141,7 +141,7 @@ static int number_map(lua_State *L) {
 	return 1;
 }
 
-int the_map_function(lua_State *L) {
+int miniLL_the_map_function(lua_State *L) {
 	int num_args = lua_gettop(L);
 
 	if (num_args == 0) {
@@ -167,5 +167,5 @@ int the_map_function(lua_State *L) {
 	return luaL_error(L, "Invalid argument(s)! (%s)", pick_one(nothing_to_see_here));
 }
 
-void init_the_map_function() {
+void initLL_map_function() {
 }

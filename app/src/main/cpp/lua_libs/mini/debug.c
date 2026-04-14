@@ -13,7 +13,7 @@ STATIC_DL_FUNCTION_SYMBOL(
 	void, (void* this)
 )
 
-int tdb(lua_State *L) {
+int miniLL_toggle_debug(lua_State *L) {
 	lua_getglobal(L, "gameController");
 
 	const void *gameController = lua_topointer(L, -1);
@@ -69,7 +69,7 @@ STATIC_DL_FUNCTION_SYMBOL(
 )
 
 
-void init_lua_debug() {
+void initLL_debug() {
 	dlsym_toggle_debug_info();
 
 	hook_overlay_toggle();

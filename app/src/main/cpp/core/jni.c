@@ -1,5 +1,5 @@
 #include "java.h"
-#include "main.h"
+#include "init/main.h"
 #include "core/log.h"
 
 #include <jni.h>

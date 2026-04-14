@@ -25,7 +25,7 @@ STATIC_DL_FUNCTION_SYMBOL(
 
 // Most of this logic comes from an if block in GameSceneController::EquipItem.
 // It's the block with the CreateHeroObjectAt call.
-int recreate_hero(lua_State *L) {
+int miniLL_recreate_hero(lua_State *L) {
 	// Get the gameController on the top of the stack.
 	lua_getglobal(L, "gameController");
 	if (!lua_islightuserdata(L, -1)) {
@@ -71,6 +71,6 @@ int recreate_hero(lua_State *L) {
 	return 0;
 }
 
-void init_lua_recreate_hero() {
+void initLL_recreate_hero() {
 	dlsym_GameSceneController__CreateHeroObjectAt();
 }

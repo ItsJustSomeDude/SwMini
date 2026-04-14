@@ -43,6 +43,8 @@ LUALIB_API int (luaopen_package)(lua_State *L);
 /* open all previous libraries */
 LUALIB_API void (luaL_openlibs)(lua_State *L);
 
+/* open all default libraries that are not present in the engine. */
+LUALIB_API void luaL_open_ext_libs(lua_State *L);
 
 #ifndef lua_assert
 #define lua_assert(x)    ((void)0)

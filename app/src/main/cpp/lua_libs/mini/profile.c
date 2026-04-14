@@ -8,7 +8,7 @@
 
 #define LOG_TAG "MiniLuaProfile"
 
-int getProfileID(lua_State *L) {
+int miniLL_get_profile_id(lua_State *L) {
 	if (g_profile_id == NULL)
 		lua_pushnil(L);
 	else

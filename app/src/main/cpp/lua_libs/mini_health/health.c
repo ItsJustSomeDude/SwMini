@@ -1,6 +1,4 @@
-#include "health.h"
 
-#include "../sublib.h"
 #include "caver/components.h"
 #include "caver/program_state.h"
 #include "caver/scene_object.h"
@@ -49,13 +47,13 @@ static int current_mana_percent(lua_State *L) {
 	return 1;
 }
 
-#define MINI_HEALTH_LIB_NAME "Health"
 static const luaL_Reg health_lib[] = {
 	{"CurrentMana",        current_mana},
 	{"CurrentManaPercent", current_mana_percent},
 	{NULL, NULL}
 };
 
-void miniL_open_health(lua_State *L) {
-	miniL_register(L, MINI_HEALTH_LIB_NAME, health_lib);
+void miniLL_open_health(lua_State *L) {
+	lua_newtable(L);
+	luaL_register(L, NULL, health_lib);
 }

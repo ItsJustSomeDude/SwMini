@@ -14,7 +14,7 @@ STATIC_DL_FUNCTION_SYMBOL(
 	void, (void* this, bool hide)
 )
 
-int setControlsHidden(lua_State *L) {
+int miniLL_set_controls_hidden(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
 	int hidden = lua_toboolean(L, 1);
 
@@ -54,6 +54,6 @@ int setControlsHidden(lua_State *L) {
 	return 0;
 }
 
-void init_setControlsHidden() {
+void initLL_set_controls_hidden() {
 	dlsym_GameOverlayView_SetControlsHidden();
 }

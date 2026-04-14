@@ -55,18 +55,19 @@ add_library(mini SHARED
         utils/byte_sequence.c
         utils/files.c
 
-        lua/ltablib.c
-        lua/lmathlib.c
         lua/ldblib.c
-        lua/loslib.c
+        lua/linit.c
         lua/liolib.c
+        lua/lmathlib.c
         lua/loadlib.c
+        lua/loslib.c
+        lua/ltablib.c
 
-        lua_libs/lfs.c
+        lua_libs/lfs/lfs.c
 
         lua_libs/lni/register.c
         lua_libs/lni/execute.c
-        lua_libs/lni/bind.c
+        lua_libs/lni/lni.c
 
         lua_libs/mini/controls.c
         lua_libs/mini/library.c
@@ -75,20 +76,22 @@ add_library(mini SHARED
         lua_libs/mini/scene_find_all.c
         lua_libs/mini/debug.c
         lua_libs/mini/recreate_hero.c
-        lua_libs/mini/sub_library.c
         lua_libs/mini/the_map_function.c
 
-        lua_libs/mini/health/health.c
-        lua_libs/mini/character/exp.c
+        lua_libs/mini_health/health.c
+        lua_libs/mini_character/exp.c
 
-        lua_libs/mini/components/components.c
+        lua_libs/components/library.c
+        lua_libs/components/health.c
+        lua_libs/components/swingable_weapon_controller.c
+        lua_libs/components/components.c
 
         patches/32patch.c
         patches/assets.c
         patches/panic.c
-        patches/lua_libs.c
         patches/crash_handler.c
         patches/lua_load_file.c
+        patches/program_state.c
 
         features/achievements/achievements.c
         features/achievements/ach64.c

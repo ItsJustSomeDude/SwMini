@@ -5,27 +5,11 @@
 #include "lauxlib.h"
 #include "lua.h"
 
-#define MINI_LIB_NAME "Mini"
-int miniL_open_mini(lua_State *L);
-void init_mini_lua_lib();
-
-void init_setControlsHidden();
-int setControlsHidden(lua_State *L);
-
-int getProfileID(lua_State *L);
-
-int scene_find_all(lua_State *L);
-void init_scene_find_all();
-
-int get_arch(lua_State *L);
-
-int tdb(lua_State *L);
-void init_lua_debug();
-
-int recreate_hero(lua_State *L);
-void init_lua_recreate_hero();
-
-int the_map_function(lua_State *L);
-void init_the_map_function(void);
+int miniLL_set_controls_hidden(lua_State *L);
+int miniLL_get_profile_id(lua_State *L);
+int miniLL_toggle_debug(lua_State *L);
+int miniLL_recreate_hero(lua_State *L);
+int miniLL_get_arch(lua_State *L);
+int miniLL_the_map_function(lua_State *L);
 
 #endif //SWMINI_MINI_LUA_LIBRARY_H
