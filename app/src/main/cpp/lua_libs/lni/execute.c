@@ -9,105 +9,92 @@
 
 #define LOG_TAG "MiniLuaLNIExecute"
 
-int lni_execute(lua_State *L) {
+/* Executes `method` by name, using args on the top of the Lua stack. */
+int lni_exec_name(lua_State *L, const char *method_name) {
 	JNIEnv *env = miniJ_get_env();
-	if (!env) {
-		LOGE("Failed to get JNI Env");
-		return 0;
-	}
+	if (!env)
+		return luaL_error(L, "LNI Internal Error: %s", "Failed to get JNI Env.");
 
-//	LOGD(
-//		"stack height: %d, types: %s %s %s %s",
-//		lua_gettop(L),
-//		lua_typename(L, lua_type(L, 0)),
-//		lua_typename(L, lua_type(L, 1)),
-//		lua_typename(L, lua_type(L, 2)),
-//		lua_typename(L, lua_type(L, 3))
-//	);
+	/* Number of Lua varargs */
+	int nargs = lua_gettop(L);
 
-	LOGD("At the start of LNI call, stack height is %i", lua_gettop(L));
+	LOGD("Start of LNI Exec. Function: %s Lua Args: %i", method_name, nargs);
 
-	// Check if first argument is method to call
-	if (!lua_isstring(L, 1)) {
-		return luaL_error(L, "First argument must be a string");;
-	}
+//	/* Loop through Lua args, make a string like "SNB" for the arg types. */
+//	char overload_string[32];
+//	for (int lua_i = 1; lua_i < nargs; lua_i++) {
+//		if (lua_isboolean(L, lua_i))
+//			overload_string[lua_i - 1] = 'B';
+//		else if (lua_isnumber(L, lua_i))
+//			overload_string[lua_i - 1] = 'N';
+//		else if (lua_isstring(L, lua_i))
+//			overload_string[lua_i - 1] = 'S';
+//		else
+//			return luaL_error(
+//				L, "Argument %d is of type %s, which cannot be passed to LNI.",
+//				lua_i, lua_typename(L, lua_type(L, lua_i))
+//			);
+//	}
 
-	// Get the first string argument
-	const char *methodName = lua_tostring(L, 1);
-
-	// Count number of varargs
-	int nargs = lua_gettop(L) - 1;
-
-	// TODO: Fetch the Lua Args here so we can find the right Overload.
-
-	LNIMethod *method = get_lni_method(methodName);
-	if (method == NULL) {
-		return luaL_error(L, "Unknown LNI Function %s", methodName);
-	}
+	LNIMethod *method = lni_get_method(method_name);
+	if (method == NULL)
+		return luaL_error(L, "Unknown LNI Function: %s", method_name);
 
 	// Fast Fail if wrong number of arguments.
-	if (nargs != method->paramsLength) {
+	if (nargs != method->params_count)
 		return luaL_error(
-			L,
-			"Wrong number of args for %s: expected %d, found %d",
-			methodName, method->paramsLength, nargs
+			L, "Wrong number of args for %s: expected %d, found %d",
+			method_name, method->params_count, nargs
 		);
-	}
 
 	// Allocate jvalue array for JNI
 	jvalue *args = malloc(nargs * sizeof(jvalue));
-	if (!args) {
-		free(args);
-		return luaL_error(L, "LNI Failure: OOM");;
-	}
+	if (!args)
+		return luaL_error(L, "LNI Internal Error: %s", "Out of Memory.");
 
-	// Convert Lua arguments to JNI jvalue array
-	for (int i = 0; i < nargs; i++) {
-		LOGD("i: %d, stack height: %d, types: %s %s %s", i, lua_gettop(L), lua_typename(L, 1),
-		     lua_typename(L, 2), lua_typename(L, 3));
-		int lua_idx = i + 2; // Lua stack index (skip first string arg)
+	for (int java_i = 0; java_i < nargs; java_i++) {
+		int lua_i = java_i + 1; /* Lua, 1 indexed */
 
-		int reqType = method->params[i];
+		int req_type = method->params[java_i];
+		LOGD("Expecting an arg of type %d on lua index %d", req_type, lua_i);
 
-		LOGD("Expecting an arg of type %d on lua index %d", reqType, lua_idx);
-
-		if (lua_isboolean(L, lua_idx)) {
-			if (reqType != LNI_TYPE_BOOL) {
+		if (lua_isboolean(L, lua_i)) {
+			if (req_type != LNI_TYPE_BOOL) {
 				free(args);
 				// TODO: All of this logic is wrong... It should be "unexpected boolean".
 				// Will be fixed by the Overload rewrite though.
-				return luaL_error(L, "Argument %d must be a boolean.", i + 1);
+				return luaL_error(L, "Argument %d must be a boolean.", lua_i);
 			}
 
 			// LOGD("Pushed boolean to args array");
-			args[i].z = lua_toboolean(L, lua_idx);
-		} else if (lua_isnumber(L, lua_idx)) {
-			if (reqType != LNI_TYPE_NUM) {
+			args[java_i].z = lua_toboolean(L, lua_i);
+		} else if (lua_isnumber(L, lua_i)) {
+			if (req_type != LNI_TYPE_NUM) {
 				free(args);
-				return luaL_error(L, "Argument %d must be a number.", i + 1);
+				return luaL_error(L, "Argument %d must be a number.", lua_i);
 			}
 
 			// LOGD("Pushed number to args array");
-			args[i].d = lua_tonumber(L, lua_idx);
-		} else if (lua_isstring(L, lua_idx)) {
-			if (reqType != LNI_TYPE_STR) {
+			args[java_i].d = lua_tonumber(L, lua_i);
+		} else if (lua_isstring(L, lua_i)) {
+			if (req_type != LNI_TYPE_STR) {
 				free(args);
-				return luaL_error(L, "Argument %d must be a string.", i + 1);
+				return luaL_error(L, "Argument %d must be a string.", lua_i);
 			}
 
 			// LOGD("Pushed string to args array");
-			const char *str = lua_tostring(L, lua_idx);
-			args[i].l = (*env)->NewStringUTF(env, str);
+			const char *str = lua_tostring(L, lua_i);
+			args[java_i].l = (*env)->NewStringUTF(env, str);
 		} else {
 			free(args);
 
 			const char *t =
-				reqType == LNI_TYPE_STR ? "string"
-					: reqType == LNI_TYPE_NUM ? "number"
-					: reqType == LNI_TYPE_BOOL ? "boolean"
+				req_type == LNI_TYPE_STR ? "string"
+					: req_type == LNI_TYPE_NUM ? "number"
+					: req_type == LNI_TYPE_BOOL ? "boolean"
 						: "nil value";
 
-			return luaL_error(L, "Argument %d must be a %s", i + 1, t);
+			return luaL_error(L, "Argument %d must be a %s", lua_i, t);
 		}
 	}
 
@@ -128,7 +115,6 @@ int lni_execute(lua_State *L) {
 		if (method->params[i] == LNI_TYPE_STR)
 			(*env)->DeleteLocalRef(env, args[i].l);
 	}
-	free(args);
 
 	// Check for JNI exceptions
 	jthrowable exc = (*env)->ExceptionOccurred(env);
@@ -205,11 +191,32 @@ int lni_execute(lua_State *L) {
 		(*env)->ReleaseStringUTFChars(env, stringResult, str);
 		(*env)->DeleteLocalRef(env, stringResult);
 	} else {
-		return luaL_error(L, "Um, error maybe? idk. Nil result.");
+		return luaL_error(
+			L, "LNI Internal Error: %s %i", "Unknown Return type", method->returnType
+		);
 	}
 
-	LOGD("At the end of the LNI call, stack height is %i", lua_gettop(L));
+	return 1;
+}
 
-	// Value is on the top of the stack. Return it to Lua.
+/* Execute Lua: `ExecuteLNI("function name", ...)` */
+int miniLL_lni_execute(lua_State *L) {
+	const char *method_name = luaL_checkstring(L, 1);
+	lua_remove(L, 1);
+
+	return lni_exec_name(L, method_name);
+}
+
+static int lni_closure(lua_State *L) {
+	const char *method_name = lua_tostring(L, lua_upvalueindex(1));
+	return lni_exec_name(L, method_name);
+}
+
+int miniLL_lni_bind(lua_State *L) {
+	const char *name = luaL_checkstring(L, 1);
+
+	/* Store the name as upvalue */
+	lua_pushstring(L, name);
+	lua_pushcclosure(L, &lni_closure, 1);
 	return 1;
 }

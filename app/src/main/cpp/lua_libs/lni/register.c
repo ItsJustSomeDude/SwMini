@@ -15,13 +15,13 @@ KHASH_MAP_INIT_STR(str, LNIMethod*)
 /**
  * Hash table to store all the registered LNI methods.
  */
-static kh_str_t *methodsTable = NULL;
+static kh_str_t *methods_table = NULL;
 static khint_t k;
 
 /**
  * `clazz` must be a global reference.
  */
-static LNIMethod *createLNIMethod(
+static LNIMethod *lni_create_method(
 	jclass clazz,
 	jmethodID mid,
 	const int *params,
@@ -35,7 +35,7 @@ static LNIMethod *createLNIMethod(
 	// Assign pointers
 	m->clazz = clazz;
 	m->mid = mid;
-	m->paramsLength = paramsLength;
+	m->params_count = paramsLength;
 	m->returnType = returnType;
 
 	// Allocate memory for the dynamic array
@@ -54,19 +54,19 @@ static LNIMethod *createLNIMethod(
 	return m;
 }
 
-LNIMethod *get_lni_method(const char *methodName) {
-	if (methodsTable == NULL) {
+LNIMethod *lni_get_method(const char *methodName) {
+	if (methods_table == NULL) {
 		// There are no LNI methods registered.
 		return NULL;
 	}
 
 	// Look up the method in the table.
-	k = kh_get_str(methodsTable, methodName);
-	if (k == kh_end(methodsTable)) {
+	k = kh_get_str(methods_table, methodName);
+	if (k == kh_end(methods_table)) {
 		// No match
 		return NULL;
 	}
-	return kh_value(methodsTable, k);
+	return kh_value(methods_table, k);
 }
 
 JNIEXPORT void JNICALL
@@ -133,7 +133,7 @@ Java_net_itsjustsomedude_swrdg_LuaNativeInterface_nativeRegister(
 		return;
 	}
 
-	LNIMethod *newMethod = createLNIMethod(targetGlobal, mid, params, paramsLength, returnType);
+	LNIMethod *newMethod = lni_create_method(targetGlobal, mid, params, paramsLength, returnType);
 	if (newMethod == NULL) {
 		LOGE("Failed to register LNI method %s", methodName);
 		(*env)->ReleaseStringUTFChars(env, jMethodName, methodName);
@@ -152,15 +152,15 @@ Java_net_itsjustsomedude_swrdg_LuaNativeInterface_nativeRegister(
 	}
 
 	// Create hash table if it does not exist.
-	if (methodsTable == NULL) {
-		methodsTable = kh_init_str();
+	if (methods_table == NULL) {
+		methods_table = kh_init_str();
 	}
 
 	int absent;
-	k = kh_put_str(methodsTable, methodNameKey, &absent);
+	k = kh_put_str(methods_table, methodNameKey, &absent);
 	if (absent) {
 		LOGD("Registering new method %s to table", methodNameKey);
-		kh_value(methodsTable, k) = newMethod;
+		kh_value(methods_table, k) = newMethod;
 	}
 
 	(*env)->ReleaseStringUTFChars(env, jMethodName, methodName);
