@@ -15,6 +15,7 @@ add_library(mini SHARED
         core/lua.c
         core/jni.c
         core/java.c
+        core/library_preload.c
 
         "core/impl_files/paths.c"
         core/impl_files/path_parser.c

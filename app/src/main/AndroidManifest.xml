@@ -46,4 +46,7 @@
 			android:grantUriPermissions="true" />
 	</application>
 
+	<queries>
+		<package android:name="com.touchfoo.swordigo" />
+	</queries>
 </manifest>

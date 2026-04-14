@@ -1,12 +1,21 @@
 package net.itsjustsomedude.swrdg;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.os.Build;
+
+import com.touchfoo.swordigo.Debug;
 
 import java.io.File;
 
 public class LibraryManager {
 	private static native void setMiniAssetManager(AssetManager manager);
+
+	private static native boolean nativePreloadLibrary(String libPath);
+
+	private static native boolean nativePreloadEngine(String libPath);
 
 	private static native void setMiniFilePaths(
 		String files, String cache, String extFiles, String extCache
@@ -34,20 +43,46 @@ public class LibraryManager {
 		if (!BuildConfig.DEBUG)
 			CrashHandler.setupCrashHandler(ctx);
 	}
+
+	public static boolean preloadEngine(Context ctx) {
+		PackageManager pm = ctx.getPackageManager();
+
+		try {
+			PackageInfo pkg = pm.getPackageInfo("com.touchfoo.swordigo", 0);
+			if (pkg.applicationInfo == null) {
+				Debug.Log("Failed to locate Vanilla package.");
+				return false;
+			}
+
+			String abi = getPrimaryAbi();
+			if (abi == null) return false;
+
+			String libDir = pkg.applicationInfo.sourceDir + "!/lib/" + abi + "/";
+			Debug.Log("Attempting to preload engine libraries from " + libDir);
+
+			nativePreloadLibrary(libDir + "libopenal-soft.so");
+			nativePreloadEngine(libDir + "libswordigo.so");
+
+			return true;
+		} catch (PackageManager.NameNotFoundException e) {
+			return false;
+		}
+	}
+
+	public static String getPrimaryAbi() {
+		// This is only "constant" because BuildConfig is considered constant, but it's not.
+		// noinspection ConstantValue
+		if ("debug32".equals(BuildConfig.BUILD_TYPE))
+			return "armeabi-v7a";
+
+		for (String abi : Build.SUPPORTED_ABIS) {
+			// Find the first matching supported ABI
+			if (abi.equals("arm64-v8a")) {
+				return abi;
+			} else if (abi.equals("armeabi-v7a")) {
+				return abi;
+			}
+		}
+		return null;
+	}
 }
-
-/*
- * Eventually, this may be used to help to help with loading libraries from Vanilla.
- */
-
-//		String packageName = "com.touchfoo.swordigo";
-//		PackageManager pm = this.getPackageManager();
-//
-//		try {
-//			PackageInfo pkg = pm.getPackageInfo(packageName, 0);
-//			if (pkg.applicationInfo != null) {
-//				Debug.Log("Is this it? " + pkg.applicationInfo.sourceDir);
-//			}
-//		} catch (PackageManager.NameNotFoundException e) {
-//			e.printStackTrace();
-//		}

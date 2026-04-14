@@ -134,7 +134,10 @@ void *branch_within_engine(long from, long to, bool use_small_instruction) {
 }
 
 void initC_engine() {
-	engine_dl_handle = dlopen("libswordigo.so", RTLD_NOLOAD);
+	/* Don't load again if preload has already gotten the handle. */
+	if (engine_dl_handle == NULL) {
+		engine_dl_handle = dlopen("libswordigo.so", RTLD_NOLOAD);
+	}
 
 	// Fetch the Library Base Offset by capturing a symbol, getting the Symbol Info, and reading the base from there.
 	// We use the `.bss` table, as we need to capture that address anyway.

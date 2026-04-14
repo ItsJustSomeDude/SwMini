@@ -175,6 +175,12 @@ public class MainActivity extends Activity implements Runnable {
 	private void createGame() {
 		LibraryManager.loadMini(this);
 
+		// Will be executed on builds without the engine bundled eventually.
+		// LibraryManager.preloadEngine(this);
+
+		// These run after preload (if applicable), they set up handles needed for JNI.
+		// Since `dlopen` adds them to the linker path, they can always use the bare names.
+		// If no preload, this will load them normally.
 		System.loadLibrary("openal-soft");
 		System.loadLibrary("swordigo");
 
@@ -272,20 +278,16 @@ public class MainActivity extends Activity implements Runnable {
 		// Normal startup.
 		this.createGame();
 
-		for (String abi : Build.SUPPORTED_ABIS) {
-			// Find the first matching supported ABI
-			if (abi.equals("arm64-v8a")) {
-				break;
-			} else if (abi.equals("armeabi-v7a") && !Native.getBooleanFromSP("Mini_32bitAck")) {
-				new AlertDialog.Builder(this)
-					.setTitle(R.string.title_32bit_warning)
-					.setMessage(R.string.body_32bit_warning)
-					.setPositiveButton(R.string.btn_32bit_warning, (dialog, which) -> {
-						Native.saveBooleanInSP("Mini_32bitAck", true);
-					})
-					.show();
-				break;
-			}
+		if ("armeabi-v7a".equals(LibraryManager.getPrimaryAbi())
+			&& !Native.getBooleanFromSP("Mini_32bitAck")
+		) {
+			new AlertDialog.Builder(this)
+				.setTitle(R.string.title_32bit_warning)
+				.setMessage(R.string.body_32bit_warning)
+				.setPositiveButton(R.string.btn_32bit_warning, (dialog, which) -> {
+					Native.saveBooleanInSP("Mini_32bitAck", true);
+				})
+				.show();
 		}
 	}
 
