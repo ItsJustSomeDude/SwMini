@@ -34,13 +34,18 @@ void write_in_library(long offset, void *data, size_t size);
 #if defined(__aarch64__)
 /* Use first or second argument, based on 32- or 64-bit build */
 #define archSplit(b32, b64) b64
+
+#define $(type, base, b32, b64) \
+	((type*)((void*) base + (b64)))
+
 #elif defined(__arm__)
 /* Use first or second argument, based on 32- or 64-bit build */
 #define archSplit(b32, b64) b32
-#endif
 
 #define $(type, base, b32, b64) \
-    ((type*)(base + archSplit(b32, b64)))
+    ((type*)((void*) base + (b32)))
+
+#endif
 
 /**
  * Used to make a header for any function from a dynamic library, in an H file.

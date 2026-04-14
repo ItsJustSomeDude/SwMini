@@ -14,6 +14,8 @@
 		while read; do sym="$(c++filt "${REPLY}" | grep -Po 'Caver::\K.+?(?=::)')"; echo "${sym}_Interface = engine_dlsym(\"${REPLY}\");"; done
  */
 
+typedef struct Component Component;
+
 extern void *GlowComponent_Interface;
 extern void *ManaComponent_Interface;
 extern void *LightComponent_Interface;
