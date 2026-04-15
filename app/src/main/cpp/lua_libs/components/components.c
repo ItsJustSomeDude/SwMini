@@ -8,6 +8,10 @@ int miniLL_open_components(lua_State *L) {
 
 	miniLL_components_add(L, "Health", HealthComponent_Interface, HealthFields);
 
+	miniLL_components_add(L, "Entity", EntityComponent_Interface, EntityFields);
+
+	miniLL_components_add(L, "PhysicsObject", PhysicsObjectComponent_Interface, PhysicsFields);
+
 	miniLL_components_add(
 		L, "SwingableWeaponController",
 		SwingableWeaponControllerComponent_Interface, SwingableWeaponControllerFields);
