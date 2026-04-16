@@ -93,12 +93,17 @@ add_library(mini SHARED
         lua_libs/mini/the_map_function.c
 
         lua_libs/mini_health/health.c
+
+        lua_libs/mini_character/mini_character.c
+        lua_libs/mini_character/attributes.c
         lua_libs/mini_character/exp.c
 
         lua_libs/components/library.c
-        lua_libs/components/health.c
-        lua_libs/components/swingable_weapon_controller.c
         lua_libs/components/components.c
+        lua_libs/components/health.c
+        lua_libs/components/physics.c
+        lua_libs/components/entity.c
+        lua_libs/components/swingable_weapon_controller.c
 
         patches/32patch.c
         patches/assets.c

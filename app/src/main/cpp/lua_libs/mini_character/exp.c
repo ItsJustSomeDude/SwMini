@@ -3,6 +3,7 @@
 #include "core/log.h"
 #include "core/hooks.h"
 #include "caver/program_state.h"
+#include "mini_character.h"
 
 #define LOG_TAG "MiniLuaCharacter"
 
@@ -120,7 +121,7 @@ static int set_level_attributes(lua_State *L) {
 	return 0;
 }
 
-static const luaL_Reg character_lib[] = {
+const luaL_Reg exp_functions[] = {
 	{"GetLevel",           get_level},
 	{"SetLevel",           set_level},
 	{"GetExp",             get_exp},
@@ -131,13 +132,7 @@ static const luaL_Reg character_lib[] = {
 	{NULL, NULL}
 };
 
-
-void miniLL_open_character(lua_State *L) {
-	lua_newtable(L);
-	luaL_register(L, NULL, character_lib);
-}
-
-void initLL_character() {
+void initLL_character_exp() {
 	dlsym_ExperienceBar_UpdateExperience();
 	dlsym_CharacterState_ExperiencePointsRequiredForLevel();
 }

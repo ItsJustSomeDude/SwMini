@@ -26,6 +26,8 @@ void miniLL_components_add(
 
 extern const ComponentField SwingableWeaponControllerFields[];
 extern const ComponentField HealthFields[];
+extern const ComponentField EntityFields[];
+extern const ComponentField PhysicsFields[];
 
 /* If needed, you can add "init" header entries here.
  * Example:
